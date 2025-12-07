@@ -1,0 +1,8 @@
+ruff==0.6.9
+pytest==8.3.3
+pytest-django==4.9.0
+pytest-cov==6.0.0
+coverage==7.6.4
+pre-commit==3.7.0
+pip-audit==2.7.3
+safety==3.2.6

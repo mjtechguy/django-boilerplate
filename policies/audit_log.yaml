@@ -1,0 +1,27 @@
+---
+apiVersion: api.cerbos.dev/v1
+resourcePolicy:
+  version: "default"
+  resource: "audit_log"
+  rules:
+    # Platform admins can do everything with audit logs
+    - actions: ["read", "list", "export", "verify_integrity"]
+      effect: EFFECT_ALLOW
+      roles:
+        - platform_admin
+
+    # Org admins and audit viewers can read/list their organization's logs
+    - actions: ["read", "list"]
+      effect: EFFECT_ALLOW
+      roles:
+        - org_admin
+        - audit_viewer
+      condition:
+        match:
+          expr: request.resource.attr.org_id == request.principal.attr.org_id
+
+    # Security admins can verify integrity
+    - actions: ["verify_integrity"]
+      effect: EFFECT_ALLOW
+      roles:
+        - security_admin

@@ -1,0 +1,157 @@
+services:
+  web:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    command: python src/manage.py runserver 0.0.0.0:8000
+    env_file:
+      - ../.env
+    volumes:
+      - ../src:/app/src
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+      - cerbos
+      - keycloak
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  celery:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    command: celery -A config worker -l info
+    working_dir: /app/src
+    env_file:
+      - ../.env
+    volumes:
+      - ../src:/app/src
+    depends_on:
+      - rabbitmq
+      - redis
+      - postgres
+
+  celery-beat:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    command: celery -A config beat -l info
+    working_dir: /app/src
+    env_file:
+      - ../.env
+    volumes:
+      - ../src:/app/src
+    depends_on:
+      - rabbitmq
+      - redis
+      - postgres
+
+  cerbos:
+    image: ghcr.io/cerbos/cerbos:latest
+    command: ["server", "--config=/policies/.cerbos.yaml"]
+    volumes:
+      - ../policies:/policies
+    ports:
+      - "3592:3592"
+      - "3593:3593"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:3592/_cerbos/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0.2
+    command: ["start-dev", "--import-realm", "--health-enabled=true"]
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    volumes:
+      - ../keycloak:/opt/keycloak/data/import
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-app}
+      POSTGRES_USER: ${POSTGRES_USER:-app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-app} -d ${POSTGRES_DB:-app}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rustfs:
+    image: rustfs/rustfs:latest
+    environment:
+      RUSTFS_ROOT_USER: ${AWS_ACCESS_KEY_ID:-rustfsadmin}
+      RUSTFS_ROOT_PASSWORD: ${AWS_SECRET_ACCESS_KEY:-rustfsadmin}
+    volumes:
+      - rustfs-data:/data
+      - rustfs-logs:/logs
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9000/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  stripe-mock:
+    image: stripemock/stripe-mock:latest
+    ports:
+      - "12111:12111"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:12111/healthcheck"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
+  rustfs-data:
+  rustfs-logs:

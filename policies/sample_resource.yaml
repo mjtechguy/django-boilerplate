@@ -1,0 +1,19 @@
+apiVersion: api.cerbos.dev/v1
+resourcePolicy:
+  version: default
+  resource: sample_resource
+  rules:
+    - actions:
+        - read
+      effect: EFFECT_ALLOW
+      roles:
+        - platform_admin
+    - actions:
+        - read
+      effect: EFFECT_ALLOW
+      roles:
+        - org_admin
+        - team_admin
+      condition:
+        match:
+          expr: request.resource.attr.org_id == request.principal.attr.org_id

@@ -1,0 +1,42 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+
+# Environments
+.env
+.env.*
+.venv/
+venv/
+
+# Build / packaging
+*.egg-info/
+dist/
+build/
+
+# IDE / OS
+.DS_Store
+.idea/
+.vscode/
+
+# Coverage / reports
+.coverage
+coverage.xml
+htmlcov/
+
+# Django static/media (local)
+staticfiles/
+media/
+
+# Node (if present later)
+node_modules/
+
+# uv / lock files
+.uv/
+
+# Local dev tools (not committed)
+.devtools/

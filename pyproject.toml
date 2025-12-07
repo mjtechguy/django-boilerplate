@@ -1,0 +1,77 @@
+[project]
+name = "django-boilerplate"
+version = "0.0.1"
+description = "Django + DRF + Keycloak + Cerbos boilerplate"
+requires-python = ">=3.13"
+dependencies = [
+  "Django==6.0",
+  "djangorestframework==3.16.1",
+  "psycopg[binary,pool]==3.3.2",
+  "python-keycloak==5.8.1",
+  "cerbos==0.7.0",
+  "django-axes==8.0.0",
+  "django-cors-headers==4.9.0",
+  "django-csp==4.0",
+  "django-redis==6.0.0",
+  "redis==7.0.1",
+  "celery==5.6.0",
+  "sentry-sdk==2.47.0",
+  "authlib==1.6.5",
+  "requests==2.32.5",
+  "django-storages==1.14.4",
+  "boto3==1.34.75",
+]
+
+[project.optional-dependencies]
+dev = [
+  "ruff==0.6.9",
+  "structlog==24.4.0",
+  "pytest==8.3.3",
+  "pytest-django==4.9.0",
+  "coverage==7.6.4",
+  "pre-commit==3.7.0",
+  "pip-audit==2.7.3",
+  "safety==3.2.6",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.coverage.run]
+source = ["src"]
+branch = true
+omit = [
+    "*/migrations/*",
+    "*/tests/*",
+    "*/__pycache__/*",
+    "*/asgi.py",
+    "*/wsgi.py",
+    "*/manage.py",
+    "*/settings/local.py",
+    "*/settings/production.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "pass",
+]
+fail_under = 75
+show_missing = true
+skip_covered = false
+
+[tool.coverage.html]
+directory = "htmlcov"
+
+[tool.pytest.ini_options]
+addopts = "-q --strict-markers"
+pythonpath = ["src"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+]

@@ -1,0 +1,260 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+
+env:
+  PYTHON_VERSION: "3.13"
+  DJANGO_SETTINGS_MODULE: config.settings.test
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install ruff
+        run: pip install ruff==0.6.9
+
+      - name: Run ruff check
+        run: ruff check .
+
+      - name: Run ruff format check
+        run: ruff format --check .
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: test_db
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      POSTGRES_DB: test_db
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-dev.txt -r requirements-test.txt
+
+      - name: Run tests with coverage
+        run: |
+          pytest src/ \
+            --cov=src \
+            --cov-report=xml \
+            --cov-report=term-missing \
+            --cov-fail-under=75 \
+            -v
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          files: ./coverage.xml
+          fail_ci_if_error: false
+          verbose: true
+
+  test-cerbos:
+    name: Test Cerbos Policies
+    runs-on: ubuntu-latest
+    services:
+      cerbos:
+        image: ghcr.io/cerbos/cerbos:latest
+        ports:
+          - 3592:3592
+          - 3593:3593
+        options: >-
+          --health-cmd "wget -q --spider http://localhost:3592/_cerbos/health || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Wait for Cerbos
+        run: |
+          for i in {1..30}; do
+            if curl -s http://localhost:3592/_cerbos/health > /dev/null; then
+              echo "Cerbos is ready"
+              break
+            fi
+            echo "Waiting for Cerbos..."
+            sleep 2
+          done
+
+      - name: Validate Cerbos policies
+        run: |
+          curl -X POST http://localhost:3592/api/check/resources \
+            -H "Content-Type: application/json" \
+            -d '{
+              "requestId": "test-1",
+              "principal": {
+                "id": "admin",
+                "roles": ["platform_admin"],
+                "attr": {"org_id": "org-1"}
+              },
+              "resources": [{
+                "resource": {
+                  "kind": "sample_resource",
+                  "id": "res-1",
+                  "attr": {"org_id": "org-1"}
+                },
+                "actions": ["read"]
+              }]
+            }' | jq .
+
+  dependency-scan:
+    name: Dependency Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install pip-audit safety
+
+      - name: Run pip-audit
+        run: |
+          pip-audit \
+            --requirement requirements.txt \
+            --requirement requirements-dev.txt \
+            --requirement requirements-test.txt \
+            --strict \
+            || echo "::warning::pip-audit found vulnerabilities"
+
+      - name: Run safety check
+        run: |
+          safety check \
+            -r requirements.txt \
+            -r requirements-dev.txt \
+            -r requirements-test.txt \
+            --full-report \
+            || echo "::warning::safety check found vulnerabilities"
+
+  container-build:
+    name: Container Build & Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build container image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: django-boilerplate:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          load: true
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: django-boilerplate:${{ github.sha }}
+          format: 'table'
+          exit-code: '0'  # Don't fail on vulnerabilities, just report
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Generate SBOM (optional)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: django-boilerplate:${{ github.sha }}
+          format: 'cyclonedx'
+          output: 'sbom.json'
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.json
+          retention-days: 30
+
+  # All checks must pass for PR merge
+  ci-status:
+    name: CI Status
+    runs-on: ubuntu-latest
+    needs: [lint, test, test-cerbos, dependency-scan, container-build]
+    if: always()
+    steps:
+      - name: Check CI status
+        run: |
+          if [[ "${{ needs.lint.result }}" == "failure" ]] || \
+             [[ "${{ needs.test.result }}" == "failure" ]] || \
+             [[ "${{ needs.test-cerbos.result }}" == "failure" ]]; then
+            echo "CI failed"
+            exit 1
+          fi
+          echo "CI passed"
