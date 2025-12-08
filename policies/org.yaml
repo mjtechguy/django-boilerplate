@@ -1,0 +1,35 @@
+apiVersion: api.cerbos.dev/v1
+resourcePolicy:
+  version: default
+  resource: org
+  rules:
+    # Platform admins can perform all actions on all organizations
+    - actions:
+        - create
+        - read
+        - update
+        - delete
+        - list
+      effect: EFFECT_ALLOW
+      roles:
+        - platform_admin
+
+    # Org admins can only read their own organization
+    - actions:
+        - read
+      effect: EFFECT_ALLOW
+      roles:
+        - org_admin
+      condition:
+        match:
+          expr: request.resource.attr.org_id == request.principal.attr.org_id
+
+    # Org admins can update limited fields on their own organization (name only)
+    - actions:
+        - update_name
+      effect: EFFECT_ALLOW
+      roles:
+        - org_admin
+      condition:
+        match:
+          expr: request.resource.attr.org_id == request.principal.attr.org_id

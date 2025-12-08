@@ -6,23 +6,23 @@ This document summarizes the WebSocket implementation added to the Django boiler
 
 ### New Files Created
 
-1. **`/src/api/consumers.py`** (246 lines)
+1. **`/backend/api/consumers.py`** (246 lines)
    - `NotificationConsumer` - Handles user-specific notifications
    - `OrganizationEventsConsumer` - Handles organization-wide events
    - `broadcast_notification()` - Helper to send notifications to users
    - `broadcast_org_event()` - Helper to broadcast events to organization members
 
-2. **`/src/api/middleware.py`** (93 lines)
+2. **`/backend/api/middleware.py`** (93 lines)
    - `JWTAuthMiddleware` - WebSocket authentication middleware
    - Extracts JWT from query string or Authorization header
    - Validates tokens using Keycloak (same as REST API)
    - Sets `scope["user"]` and `scope["token_claims"]`
 
-3. **`/src/api/routing.py`** (14 lines)
+3. **`/backend/api/routing.py`** (14 lines)
    - WebSocket URL patterns configuration
    - Routes for `/ws/notifications/` and `/ws/events/<org_id>/`
 
-4. **`/src/api/tests/test_websockets.py`** (510+ lines)
+4. **`/backend/api/tests/test_websockets.py`** (510+ lines)
    - Comprehensive test suite using `channels.testing`
    - Tests authentication (valid/invalid tokens, headers, query strings)
    - Tests both consumer types with various scenarios
@@ -30,7 +30,7 @@ This document summarizes the WebSocket implementation added to the Django boiler
    - Tests organization membership verification
    - Tests ping/pong keep-alive mechanism
 
-5. **`/src/api/websocket_signals.py`** (143 lines)
+5. **`/backend/api/websocket_signals.py`** (143 lines)
    - Example integration with Django signals
    - Signal handlers for automatic WebSocket broadcasting
    - Helper functions for common notification patterns
@@ -49,16 +49,16 @@ This document summarizes the WebSocket implementation added to the Django boiler
    - Added `channels[daphne]==4.0.0`
    - Added `channels-redis==4.2.0`
 
-2. **`/src/config/settings/base.py`**
+2. **`/backend/config/settings/base.py`**
    - Added `"daphne"` to `INSTALLED_APPS` (must be first)
    - Added `ASGI_APPLICATION = "config.asgi.application"`
    - Added `CHANNEL_LAYERS` configuration with Redis backend
 
-3. **`/src/config/settings/test.py`**
+3. **`/backend/config/settings/test.py`**
    - Added `CHANNEL_LAYERS` with `InMemoryChannelLayer` for testing
    - No Redis required for tests
 
-4. **`/src/config/asgi.py`**
+4. **`/backend/config/asgi.py`**
    - Complete rewrite for WebSocket support
    - Added `ProtocolTypeRouter` for HTTP/WebSocket routing
    - Added `AllowedHostsOriginValidator` for security
@@ -223,7 +223,7 @@ python manage.py runserver
 ### Run All WebSocket Tests
 
 ```bash
-pytest src/api/tests/test_websockets.py -v
+pytest backend/api/tests/test_websockets.py -v
 ```
 
 ### Test Coverage

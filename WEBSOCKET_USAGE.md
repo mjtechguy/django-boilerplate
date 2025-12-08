@@ -228,7 +228,7 @@ WebSocket connections may be closed with the following custom codes:
 Run the WebSocket tests:
 
 ```bash
-pytest src/api/tests/test_websockets.py -v
+pytest backend/api/tests/test_websockets.py -v
 ```
 
 The test suite includes:

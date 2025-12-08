@@ -235,13 +235,13 @@ function NotificationPanel({ token }) {
 
 ```bash
 # All WebSocket tests
-pytest src/api/tests/test_websockets.py -v
+pytest backend/api/tests/test_websockets.py -v
 
 # Specific test
-pytest src/api/tests/test_websockets.py::test_notification_consumer_connect_authenticated -v
+pytest backend/api/tests/test_websockets.py::test_notification_consumer_connect_authenticated -v
 
 # With coverage
-pytest src/api/tests/test_websockets.py --cov=api.consumers --cov=api.middleware
+pytest backend/api/tests/test_websockets.py --cov=api.consumers --cov=api.middleware
 ```
 
 ### Mock Authentication in Tests
@@ -400,5 +400,5 @@ channel_layer = get_channel_layer()
 
 - Full documentation: `WEBSOCKET_USAGE.md`
 - Implementation details: `WEBSOCKET_IMPLEMENTATION.md`
-- Test examples: `src/api/tests/test_websockets.py`
-- Signal integration: `src/api/websocket_signals.py`
+- Test examples: `backend/api/tests/test_websockets.py`
+- Signal integration: `backend/api/websocket_signals.py`

@@ -6,7 +6,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=off \
     PIP_DISABLE_PIP_VERSION_CHECK=on \
     PIP_DEFAULT_TIMEOUT=100 \
-    PYTHONPATH=/app/src
+    PYTHONPATH=/app/backend
 
 WORKDIR /app
 
@@ -20,4 +20,4 @@ COPY . .
 
 ENV DJANGO_SETTINGS_MODULE=config.settings.local
 
-CMD ["bash", "-c", "python src/manage.py migrate && python src/manage.py runserver 0.0.0.0:8000"]
+CMD ["bash", "-c", "python backend/manage.py migrate && python backend/manage.py runserver 0.0.0.0:8000"]

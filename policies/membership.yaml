@@ -1,0 +1,50 @@
+apiVersion: api.cerbos.dev/v1
+resourcePolicy:
+  version: default
+  resource: membership
+  rules:
+    # Platform admins can perform all actions on all memberships
+    - actions:
+        - create
+        - read
+        - update
+        - delete
+        - list
+      effect: EFFECT_ALLOW
+      roles:
+        - platform_admin
+
+    # Org admins can manage memberships in their own organization
+    - actions:
+        - create
+        - read
+        - update
+        - delete
+        - list
+      effect: EFFECT_ALLOW
+      roles:
+        - org_admin
+      condition:
+        match:
+          expr: request.resource.attr.org_id == request.principal.attr.org_id
+
+    # Team admins can read team memberships only
+    - actions:
+        - read
+        - list
+      effect: EFFECT_ALLOW
+      roles:
+        - team_admin
+      condition:
+        match:
+          expr: request.resource.attr.team_id == request.principal.attr.team_id
+
+    # Users can read their own memberships
+    - actions:
+        - read
+      effect: EFFECT_ALLOW
+      roles:
+        - user
+      condition:
+        match:
+          expr: request.resource.attr.user_id == request.principal.id

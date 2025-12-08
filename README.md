@@ -83,7 +83,7 @@ docker compose -f compose/docker-compose.yml up -d
 docker compose -f compose/docker-compose.yml ps
 
 # Run database migrations
-docker compose -f compose/docker-compose.yml exec -w /app/src web python manage.py migrate
+docker compose -f compose/docker-compose.yml exec -w /app/backend web python manage.py migrate
 ```
 
 ### 4. Verify Setup
@@ -371,7 +371,7 @@ KEYS cerbos:decision:*
 DEL cerbos:decision:*  # Delete all decision cache keys
 
 # Or from Django shell:
-docker compose -f compose/docker-compose.yml exec -w /app/src web python manage.py shell
+docker compose -f compose/docker-compose.yml exec -w /app/backend web python manage.py shell
 >>> from api.cerbos_client import invalidate_decision_cache
 >>> invalidate_decision_cache()
 ```
@@ -427,16 +427,16 @@ open http://localhost:15672/#/queues/%2F/dlq
 
 ```bash
 # Show pending migrations
-docker compose -f compose/docker-compose.yml exec -w /app/src web python manage.py showmigrations
+docker compose -f compose/docker-compose.yml exec -w /app/backend web python manage.py showmigrations
 
 # Apply migrations
-docker compose -f compose/docker-compose.yml exec -w /app/src web python manage.py migrate
+docker compose -f compose/docker-compose.yml exec -w /app/backend web python manage.py migrate
 ```
 
 ### Create Superuser
 
 ```bash
-docker compose -f compose/docker-compose.yml exec -w /app/src web python manage.py createsuperuser
+docker compose -f compose/docker-compose.yml exec -w /app/backend web python manage.py createsuperuser
 ```
 
 ## Architecture Overview
@@ -463,12 +463,12 @@ sequenceDiagram
 
 | Path | Description |
 |------|-------------|
-| `src/api/auth.py` | JWT authentication class |
-| `src/api/permissions.py` | Cerbos permission class |
-| `src/api/cerbos_client.py` | Cerbos client with caching |
-| `src/config/middleware.py` | Request ID, admin hostname middleware |
-| `src/config/logging.py` | Structured logging with PII redaction |
-| `src/config/observability.py` | Metrics and request context |
+| `backend/api/auth.py` | JWT authentication class |
+| `backend/api/permissions.py` | Cerbos permission class |
+| `backend/api/cerbos_client.py` | Cerbos client with caching |
+| `backend/config/middleware.py` | Request ID, admin hostname middleware |
+| `backend/config/logging.py` | Structured logging with PII redaction |
+| `backend/config/observability.py` | Metrics and request context |
 | `policies/sample_resource.yaml` | Sample Cerbos policy |
 | `keycloak/realm-app.json` | Keycloak realm configuration |
 
@@ -499,10 +499,10 @@ source .venv/bin/activate
 ruff check .
 
 # Run tests
-DJANGO_SETTINGS_MODULE=config.settings.test pytest src/ -v
+DJANGO_SETTINGS_MODULE=config.settings.test pytest backend/ -v
 
 # Run tests with coverage
-DJANGO_SETTINGS_MODULE=config.settings.test pytest src/ --cov=src --cov-report=term-missing
+DJANGO_SETTINGS_MODULE=config.settings.test pytest backend/ --cov=backend --cov-report=term-missing
 
 # Security scan
 pip-audit -r requirements.txt
@@ -517,7 +517,7 @@ Current coverage: **77%+** (threshold: 75%)
 
 1. Create a new Django app:
 ```bash
-cd src
+cd backend
 python manage.py startapp mymodule
 ```
 
