@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Plus } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -65,20 +66,24 @@ export function CreateUserDialog() {
   const onLocalSubmit = async (data: CreateUserInput) => {
     try {
       await createUser.mutateAsync(data);
+      toast.success("User created successfully");
       setOpen(false);
       localForm.reset();
     } catch (error) {
-      console.error("Failed to create user:", error);
+      const message = error instanceof Error ? error.message : "Failed to create user";
+      toast.error(message);
     }
   };
 
   const onOidcSubmit = async (data: InviteUserInput) => {
     try {
       await inviteUser.mutateAsync(data);
+      toast.success("User invitation sent successfully");
       setOpen(false);
       oidcForm.reset();
     } catch (error) {
-      console.error("Failed to invite user:", error);
+      const message = error instanceof Error ? error.message : "Failed to invite user";
+      toast.error(message);
     }
   };
 

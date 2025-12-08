@@ -18,6 +18,7 @@ from api.views_admin_memberships import (
     AdminMembershipDetailView,
     AdminMembershipListCreateView,
 )
+from api.views_alerts import AlertListView
 from api.views_audit import (
     AuditChainVerificationView,
     AuditLogExportView,
@@ -25,6 +26,13 @@ from api.views_audit import (
     AuditLogVerifyView,
 )
 from api.views_impersonation import ImpersonationLogListView
+from api.views_billing import (
+    AvailablePlansView,
+    BillingPortalView,
+    BillingStatusView,
+    CheckoutSessionView,
+    CreateStripeCustomerView,
+)
 from api.views_licensing import OrgLicenseView, StripeWebhookView
 from api.views_monitoring import (
     AppMetricsView,
@@ -54,6 +62,12 @@ urlpatterns = [
     path("ping", AuthPingView.as_view(), name="api-ping"),
     path("protected", SampleProtectedView.as_view(), name="api-protected"),
     path("orgs/<uuid:org_id>/license", OrgLicenseView.as_view(), name="org-license"),
+    # Billing endpoints
+    path("orgs/<uuid:org_id>/billing", BillingStatusView.as_view(), name="org-billing-status"),
+    path("orgs/<uuid:org_id>/billing/checkout", CheckoutSessionView.as_view(), name="org-billing-checkout"),
+    path("orgs/<uuid:org_id>/billing/portal", BillingPortalView.as_view(), name="org-billing-portal"),
+    path("orgs/<uuid:org_id>/billing/customer", CreateStripeCustomerView.as_view(), name="org-billing-customer"),
+    path("billing/plans", AvailablePlansView.as_view(), name="billing-plans"),
     path("admin/orgs", AdminOrgListCreateView.as_view(), name="admin-org-list"),
     path("admin/orgs/<uuid:org_id>", AdminOrgDetailView.as_view(), name="admin-org-detail"),
     # Team admin endpoints
@@ -70,6 +84,8 @@ urlpatterns = [
     path("admin/memberships", AdminMembershipListCreateView.as_view(), name="admin-membership-list"),
     path("admin/memberships/<uuid:membership_id>", AdminMembershipDetailView.as_view(), name="admin-membership-detail"),
     path("admin/settings/site", SiteSettingsAdminView.as_view(), name="admin-site-settings"),
+    # Admin alerts (aggregated from multiple sources)
+    path("admin/alerts", AlertListView.as_view(), name="admin-alerts"),
     # Public site settings (for branding)
     path("settings/site", SiteSettingsView.as_view(), name="site-settings"),
     path("stripe/webhook", StripeWebhookView.as_view(), name="stripe-webhook"),

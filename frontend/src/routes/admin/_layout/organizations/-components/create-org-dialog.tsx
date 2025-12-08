@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
 import { Plus, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -43,10 +44,12 @@ export function CreateOrgDialog({ trigger }: CreateOrgDialogProps) {
   const onSubmit = async (data: CreateOrgInput) => {
     try {
       await createOrg.mutateAsync(data);
+      toast.success("Organization created successfully");
       setOpen(false);
       form.reset();
     } catch (error) {
-      console.error("Failed to create organization:", error);
+      const message = error instanceof Error ? error.message : "Failed to create organization";
+      toast.error(message);
     }
   };
 

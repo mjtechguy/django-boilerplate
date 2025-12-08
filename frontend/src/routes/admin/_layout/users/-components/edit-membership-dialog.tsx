@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { Loader2, Plus } from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { Loader2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,116 +21,101 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useCreateMembership, type CreateMembershipInput } from "@/lib/api/memberships";
-import { useOrganizations } from "@/lib/api/organizations";
+import {
+  useUpdateMembership,
+  updateMembershipInputSchema,
+  type UpdateMembershipInput,
+} from "@/lib/api/memberships";
+import { type UserMembership } from "@/lib/api/users";
 import { useTeams } from "@/lib/api/teams";
 
-interface AddMembershipDialogProps {
-  userId: number;
+interface EditMembershipDialogProps {
+  membership: UserMembership;
   onSuccess?: () => void;
-}
-
-interface FormData {
-  org: string;
-  team: string | null;
-  org_roles: string[];
-  team_roles: string[];
+  trigger?: React.ReactNode;
 }
 
 const ORG_ROLES = ["user", "org_admin", "billing_admin"];
 const TEAM_ROLES = ["member", "team_admin", "team_lead"];
 
-export function AddMembershipDialog({ userId, onSuccess }: AddMembershipDialogProps) {
+export function EditMembershipDialog({
+  membership,
+  onSuccess,
+  trigger,
+}: EditMembershipDialogProps) {
   const [open, setOpen] = useState(false);
-  const [selectedOrg, setSelectedOrg] = useState<string>("");
-  const createMembership = useCreateMembership();
-  const { data: orgsData, isLoading: orgsLoading } = useOrganizations({ status: "active" });
-  const { data: teamsData } = useTeams({ org_id: selectedOrg || undefined });
+  const updateMembership = useUpdateMembership(membership.id);
+  const { data: teamsData } = useTeams({ org_id: membership.org });
 
-  const form = useForm<FormData>({
+  const form = useForm<UpdateMembershipInput>({
+    resolver: zodResolver(updateMembershipInputSchema),
     defaultValues: {
-      org: "",
-      team: null,
-      org_roles: ["user"],
-      team_roles: [],
+      org_roles: membership.org_roles,
+      team_roles: membership.team_roles,
+      team: membership.team,
     },
   });
 
-  const onSubmit = async (data: FormData) => {
+  // Reset form when membership changes or dialog opens
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        org_roles: membership.org_roles,
+        team_roles: membership.team_roles,
+        team: membership.team,
+      });
+    }
+  }, [open, membership, form]);
+
+  const onSubmit = async (data: UpdateMembershipInput) => {
     try {
-      const payload: CreateMembershipInput = {
-        user: userId,
-        org: data.org,
-        team: data.team,
-        org_roles: data.org_roles,
-        team_roles: data.team_roles,
-      };
-      await createMembership.mutateAsync(payload);
-      toast.success("Membership added successfully");
+      await updateMembership.mutateAsync(data);
+      toast.success("Membership updated successfully");
       setOpen(false);
-      form.reset({ org: "", team: null, org_roles: ["user"], team_roles: [] });
-      setSelectedOrg("");
       onSuccess?.();
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to add membership";
+      const message = error instanceof Error ? error.message : "Failed to update membership";
       toast.error(message);
     }
   };
 
-  const handleOrgChange = (value: string) => {
-    setSelectedOrg(value);
-    form.setValue("org", value);
-    form.setValue("team", null);
-  };
+  const selectedTeam = form.watch("team");
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Plus className="mr-2 h-4 w-4" />
-          Add Membership
-        </Button>
+        {trigger || (
+          <Button variant="ghost" size="sm">
+            <Pencil className="h-4 w-4" />
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <DialogHeader>
-            <DialogTitle>Add Organization Membership</DialogTitle>
+            <DialogTitle>Edit Membership</DialogTitle>
             <DialogDescription>
-              Assign this user to an organization and optionally a team.
+              Update role assignments for this membership in {membership.org_name}.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="org">Organization</Label>
-              <Select
-                value={form.watch("org")}
-                onValueChange={handleOrgChange}
-                disabled={orgsLoading}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select an organization" />
-                </SelectTrigger>
-                <SelectContent>
-                  {orgsData?.results.map((org) => (
-                    <SelectItem key={org.id} value={org.id}>
-                      {org.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {form.formState.errors.org && (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.org.message}
-                </p>
-              )}
+              <Label>Organization</Label>
+              <div className="text-sm text-muted-foreground px-3 py-2 border rounded-md bg-muted/50">
+                {membership.org_name}
+              </div>
             </div>
 
             <div className="grid gap-2">
               <Label htmlFor="team">Team (optional)</Label>
               <Select
-                value={form.watch("team") ?? "none"}
-                onValueChange={(value) => form.setValue("team", value === "none" ? null : value)}
-                disabled={!selectedOrg}
+                value={selectedTeam ?? "none"}
+                onValueChange={(value) => {
+                  form.setValue("team", value === "none" ? null : value);
+                  if (value === "none") {
+                    form.setValue("team_roles", []);
+                  }
+                }}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select a team" />
@@ -164,7 +150,7 @@ export function AddMembershipDialog({ userId, onSuccess }: AddMembershipDialogPr
               </Select>
             </div>
 
-            {form.watch("team") && (
+            {selectedTeam && selectedTeam !== "none" && (
               <div className="grid gap-2">
                 <Label htmlFor="team_roles">Team Role</Label>
                 <Select
@@ -193,11 +179,11 @@ export function AddMembershipDialog({ userId, onSuccess }: AddMembershipDialogPr
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={createMembership.isPending}>
-              {createMembership.isPending && (
+            <Button type="submit" disabled={updateMembership.isPending}>
+              {updateMembership.isPending && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              Add Membership
+              Save Changes
             </Button>
           </DialogFooter>
         </form>

@@ -1,4 +1,5 @@
 import { Loader2, AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -27,9 +28,11 @@ export function DeactivateUserDialog({
     if (!user) return;
     try {
       await deactivateUser.mutateAsync(user.id);
+      toast.success("User deactivated successfully");
       onOpenChange(false);
     } catch (error) {
-      console.error("Failed to deactivate user:", error);
+      const message = error instanceof Error ? error.message : "Failed to deactivate user";
+      toast.error(message);
     }
   };
 

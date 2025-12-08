@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { formatDistanceToNow } from "date-fns";
 import {
   Building2,
   Users,
@@ -12,6 +13,8 @@ import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/shared/page-header";
 import { useReadiness, useAppMetrics } from "@/lib/api/monitoring";
 import { useOrganizations } from "@/lib/api/organizations";
+import { useUsers } from "@/lib/api/users";
+import { useAlerts } from "@/lib/api/alerts";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const Route = createFileRoute("/admin/_layout/")({
@@ -22,6 +25,8 @@ function AdminDashboard() {
   const { data: healthData, isLoading: healthLoading } = useReadiness();
   const { data: metricsData, isLoading: metricsLoading } = useAppMetrics();
   const { data: orgsData, isLoading: orgsLoading } = useOrganizations();
+  const { data: usersData, isLoading: usersLoading } = useUsers({ is_active: true });
+  const { data: alertsData, isLoading: alertsLoading } = useAlerts({ limit: 5 });
 
   return (
     <div className="space-y-6">
@@ -34,17 +39,15 @@ function AdminDashboard() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Total Organizations"
-          value={orgsData?.results?.length ?? 0}
+          value={orgsData?.count ?? 0}
           icon={Building2}
           isLoading={orgsLoading}
-          trend="+12%"
         />
         <StatCard
           title="Active Users"
-          value={245}
+          value={usersData?.count ?? 0}
           icon={Users}
-          isLoading={false}
-          trend="+8%"
+          isLoading={usersLoading}
         />
         <StatCard
           title="API Requests (24h)"
@@ -100,23 +103,28 @@ function AdminDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              <AlertItem
-                message="High memory usage on worker-02"
-                severity="warning"
-                time="5 min ago"
-              />
-              <AlertItem
-                message="Failed webhook delivery to acme.com"
-                severity="error"
-                time="23 min ago"
-              />
-              <AlertItem
-                message="License expiring: TechStart Inc"
-                severity="info"
-                time="1 hour ago"
-              />
-            </div>
+            {alertsLoading ? (
+              <div className="space-y-3">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+            ) : alertsData?.results && alertsData.results.length > 0 ? (
+              <div className="space-y-3">
+                {alertsData.results.map((alert) => (
+                  <AlertItem
+                    key={alert.id}
+                    message={alert.message}
+                    severity={alert.severity}
+                    time={formatDistanceToNow(new Date(alert.timestamp), { addSuffix: true })}
+                  />
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No recent alerts
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>

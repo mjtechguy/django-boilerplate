@@ -41,10 +41,25 @@ class Org(TimeStampedModel):
     license_tier = models.CharField(max_length=64, default="free")
     feature_flags = JSONField(default=dict, blank=True)
 
+    # Stripe billing fields
+    stripe_customer_id = models.CharField(
+        max_length=255, blank=True, null=True, db_index=True,
+        help_text="Stripe customer ID for billing"
+    )
+    stripe_subscription_id = models.CharField(
+        max_length=255, blank=True, null=True,
+        help_text="Active Stripe subscription ID"
+    )
+    billing_email = models.EmailField(
+        blank=True, null=True,
+        help_text="Billing contact email"
+    )
+
     class Meta:
         indexes = [
             models.Index(fields=["status"]),
             models.Index(fields=["license_tier"]),
+            models.Index(fields=["stripe_customer_id"]),
         ]
 
     def __str__(self) -> str:  # pragma: no cover

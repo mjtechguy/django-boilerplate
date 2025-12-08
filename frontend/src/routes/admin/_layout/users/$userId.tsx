@@ -14,6 +14,7 @@ import { useUser, useResendInvite, type UserMembership } from "@/lib/api/users";
 import { EditUserDialog } from "./-components/edit-user-dialog";
 import { DeactivateUserDialog } from "./-components/deactivate-user-dialog";
 import { AddMembershipDialog } from "./-components/add-membership-dialog";
+import { EditMembershipDialog } from "./-components/edit-membership-dialog";
 import { RemoveMembershipDialog } from "./-components/remove-membership-dialog";
 
 export const Route = createFileRoute("/admin/_layout/users/$userId")({
@@ -136,14 +137,17 @@ function UserDetailPage() {
       id: "actions",
       header: () => <span className="sr-only">Actions</span>,
       cell: ({ row }) => (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-destructive hover:text-destructive"
-          onClick={() => handleRemoveMembership(row.original)}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-1">
+          <EditMembershipDialog membership={row.original} />
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-destructive hover:text-destructive"
+            onClick={() => handleRemoveMembership(row.original)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
       ),
     },
   ];

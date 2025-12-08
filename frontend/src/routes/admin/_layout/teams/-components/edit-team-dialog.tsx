@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -42,9 +43,11 @@ export function EditTeamDialog({ team, open, onOpenChange }: EditTeamDialogProps
   const onSubmit = async (data: UpdateTeamInput) => {
     try {
       await updateTeam.mutateAsync(data);
+      toast.success("Team updated successfully");
       onOpenChange(false);
     } catch (error) {
-      console.error("Failed to update team:", error);
+      const message = error instanceof Error ? error.message : "Failed to update team";
+      toast.error(message);
     }
   };
 

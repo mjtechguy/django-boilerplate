@@ -1,18 +1,25 @@
-import { createFileRoute, redirect, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate, Link, useSearch } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { z } from "zod";
 import { useAuth } from "@/lib/auth";
 import { LoginForm } from "@/components/auth/login-form";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Shield } from "lucide-react";
 
+// Define search params schema for redirect
+const loginSearchSchema = z.object({
+  redirect: z.string().optional(),
+});
+
 export const Route = createFileRoute("/login")({
-  beforeLoad: async ({ context }) => {
+  validateSearch: loginSearchSchema,
+  beforeLoad: async ({ context, search }) => {
     const { auth } = context;
 
-    // If already authenticated, redirect to home
+    // If already authenticated, redirect to intended destination or home
     if (auth.isAuthenticated && !auth.isLoading) {
-      throw redirect({ to: "/" });
+      throw redirect({ to: search.redirect || "/" });
     }
   },
   component: LoginPage,
@@ -21,16 +28,17 @@ export const Route = createFileRoute("/login")({
 function LoginPage() {
   const { login, isLoading, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const { redirect: redirectTo } = useSearch({ from: "/login" });
 
   useEffect(() => {
     // Auto-redirect if already authenticated
     if (isAuthenticated && !isLoading) {
-      navigate({ to: "/" });
+      navigate({ to: redirectTo || "/" });
     }
-  }, [isAuthenticated, isLoading, navigate]);
+  }, [isAuthenticated, isLoading, navigate, redirectTo]);
 
   const handleLoginSuccess = () => {
-    navigate({ to: "/" });
+    navigate({ to: redirectTo || "/" });
   };
 
   if (isLoading) {

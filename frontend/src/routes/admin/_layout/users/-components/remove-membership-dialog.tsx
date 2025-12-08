@@ -1,4 +1,5 @@
 import { Loader2, AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -33,10 +34,12 @@ export function RemoveMembershipDialog({
     if (!membership) return;
     try {
       await deleteMembership.mutateAsync(membership.id);
+      toast.success("Membership removed successfully");
       onOpenChange(false);
       onSuccess?.();
     } catch (error) {
-      console.error("Failed to remove membership:", error);
+      const message = error instanceof Error ? error.message : "Failed to remove membership";
+      toast.error(message);
     }
   };
 

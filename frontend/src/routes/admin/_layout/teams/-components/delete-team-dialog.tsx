@@ -1,4 +1,5 @@
 import { Loader2, AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -27,9 +28,11 @@ export function DeleteTeamDialog({
     if (!team) return;
     try {
       await deleteTeam.mutateAsync(team.id);
+      toast.success("Team deleted successfully");
       onOpenChange(false);
     } catch (error) {
-      console.error("Failed to delete team:", error);
+      const message = error instanceof Error ? error.message : "Failed to delete team";
+      toast.error(message);
     }
   };
 

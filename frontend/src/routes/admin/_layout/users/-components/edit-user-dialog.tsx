@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -47,9 +48,11 @@ export function EditUserDialog({ user, open, onOpenChange }: EditUserDialogProps
   const onSubmit = async (data: UpdateUserInput) => {
     try {
       await updateUser.mutateAsync(data);
+      toast.success("User updated successfully");
       onOpenChange(false);
     } catch (error) {
-      console.error("Failed to update user:", error);
+      const message = error instanceof Error ? error.message : "Failed to update user";
+      toast.error(message);
     }
   };
 

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Plus } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -40,10 +41,12 @@ export function CreateTeamDialog() {
   const onSubmit = async (data: CreateTeamInput) => {
     try {
       await createTeam.mutateAsync(data);
+      toast.success("Team created successfully");
       setOpen(false);
       form.reset();
     } catch (error) {
-      console.error("Failed to create team:", error);
+      const message = error instanceof Error ? error.message : "Failed to create team";
+      toast.error(message);
     }
   };
 

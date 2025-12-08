@@ -456,18 +456,36 @@ class TestPrometheusMetricsEndpoint(TestCase):
     """Tests for Prometheus metrics endpoint."""
 
     def setUp(self):
-        """Set up test client."""
+        """Set up test client with authentication."""
         self.client = APIClient()
+        # Mock platform admin claims for authentication
+        self.platform_admin_claims = {
+            "sub": "platform-admin-user",
+            "email": "admin@example.com",
+            "realm_access": {"roles": ["platform_admin"]},
+        }
 
-    def test_prometheus_metrics_endpoint(self):
+    def _mock_validate(self, token):
+        """Mock token validation to return platform admin claims."""
+        return self.platform_admin_claims
+
+    @patch("api.auth.KeycloakJWTAuthentication._validate_token")
+    def test_prometheus_metrics_endpoint(self, mock_validate):
         """Test that Prometheus metrics endpoint returns text format."""
+        mock_validate.side_effect = self._mock_validate
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer mock-token")
+
         response = self.client.get("/api/v1/monitoring/metrics")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("text/plain", response["Content-Type"])
 
-    def test_app_metrics_json_endpoint(self):
+    @patch("api.auth.KeycloakJWTAuthentication._validate_token")
+    def test_app_metrics_json_endpoint(self, mock_validate):
         """Test that app metrics endpoint returns JSON."""
+        mock_validate.side_effect = self._mock_validate
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer mock-token")
+
         response = self.client.get("/api/v1/monitoring/metrics/json")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)

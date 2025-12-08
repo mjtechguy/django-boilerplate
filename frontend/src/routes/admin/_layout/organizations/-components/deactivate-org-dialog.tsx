@@ -1,4 +1,5 @@
 import { Loader2, AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -27,9 +28,11 @@ export function DeactivateOrgDialog({
     if (!org) return;
     try {
       await deleteOrg.mutateAsync(org.id);
+      toast.success("Organization deactivated successfully");
       onOpenChange(false);
     } catch (error) {
-      console.error("Failed to deactivate organization:", error);
+      const message = error instanceof Error ? error.message : "Failed to deactivate organization";
+      toast.error(message);
     }
   };
 

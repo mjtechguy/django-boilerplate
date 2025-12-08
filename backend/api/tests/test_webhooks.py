@@ -426,11 +426,31 @@ class TestDeliverWebhookTask:
 
 @pytest.mark.django_db
 class TestWebhookAPI:
-    """Tests for webhook REST API endpoints."""
+    """Tests for webhook REST API endpoints.
 
-    def setup_method(self):
-        """Setup test client."""
+    Webhook endpoints require platform_admin authentication.
+    """
+
+    @pytest.fixture(autouse=True)
+    def setup_auth(self, monkeypatch):
+        """Setup authenticated client with platform_admin role."""
         self.client = APIClient()
+
+        # Mock platform admin claims
+        platform_admin_claims = {
+            "sub": "platform-admin-user",
+            "email": "admin@example.com",
+            "realm_access": {"roles": ["platform_admin"]},
+        }
+
+        def mock_validate(self_auth, token):
+            return platform_admin_claims
+
+        monkeypatch.setattr(
+            "api.auth.KeycloakJWTAuthentication._validate_token", mock_validate
+        )
+
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer mock-token")
 
     def test_list_webhook_endpoints(self):
         """Test listing webhook endpoints."""

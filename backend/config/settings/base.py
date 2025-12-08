@@ -363,7 +363,55 @@ X_FRAME_OPTIONS = "DENY"
 # Stripe Integration
 STRIPE_ENABLED = os.getenv("STRIPE_ENABLED", "false").lower() == "true"
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY", "")
+STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY", "")
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
+
+# Stripe Price ID to License Tier Mapping
+# Configure these in your environment to map Stripe prices to your license tiers
+STRIPE_PRICE_TIER_MAP = {
+    os.getenv("STRIPE_PRICE_STARTER", "price_starter"): "starter",
+    os.getenv("STRIPE_PRICE_PRO", "price_pro"): "pro",
+    os.getenv("STRIPE_PRICE_ENTERPRISE", "price_enterprise"): "enterprise",
+}
+
+# Default feature flags per tier
+STRIPE_TIER_FEATURES = {
+    "free": {
+        "max_users": 5,
+        "max_teams": 1,
+        "api_rate_limit": 100,
+        "audit_retention_days": 30,
+        "sso_enabled": False,
+        "webhooks_enabled": False,
+    },
+    "starter": {
+        "max_users": 25,
+        "max_teams": 5,
+        "api_rate_limit": 1000,
+        "audit_retention_days": 90,
+        "sso_enabled": False,
+        "webhooks_enabled": True,
+    },
+    "pro": {
+        "max_users": 100,
+        "max_teams": 20,
+        "api_rate_limit": 5000,
+        "audit_retention_days": 365,
+        "sso_enabled": True,
+        "webhooks_enabled": True,
+    },
+    "enterprise": {
+        "max_users": -1,  # Unlimited
+        "max_teams": -1,
+        "api_rate_limit": -1,
+        "audit_retention_days": -1,  # Unlimited
+        "sso_enabled": True,
+        "webhooks_enabled": True,
+    },
+}
+
+# Frontend billing URLs - defined after FRONTEND_URL below
+# STRIPE_SUCCESS_URL and STRIPE_CANCEL_URL are set at the end of settings
 
 # Admin hostname separation (production security)
 # When set, Django admin is only accessible from this hostname
@@ -451,3 +499,7 @@ PASSWORD_HASHERS = [
 
 # Frontend URLs for email templates
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
+
+# Stripe billing redirect URLs (must be after FRONTEND_URL)
+STRIPE_SUCCESS_URL = os.getenv("STRIPE_SUCCESS_URL", f"{FRONTEND_URL}/admin/billing/success")
+STRIPE_CANCEL_URL = os.getenv("STRIPE_CANCEL_URL", f"{FRONTEND_URL}/admin/billing")

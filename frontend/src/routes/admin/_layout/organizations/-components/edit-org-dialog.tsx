@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -60,9 +61,11 @@ export function EditOrgDialog({ org, open, onOpenChange }: EditOrgDialogProps) {
     if (!org) return;
     try {
       await updateOrg.mutateAsync(data);
+      toast.success("Organization updated successfully");
       onOpenChange(false);
     } catch (error) {
-      console.error("Failed to update organization:", error);
+      const message = error instanceof Error ? error.message : "Failed to update organization";
+      toast.error(message);
     }
   };
 

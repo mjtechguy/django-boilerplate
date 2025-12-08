@@ -62,4 +62,11 @@ export const queryKeys = {
     global: () => ["settings", "global"] as const,
     org: (orgId: string) => ["settings", "org", orgId] as const,
   },
+
+  // Alerts
+  alerts: {
+    all: ["alerts"] as const,
+    list: (filters?: Record<string, unknown>) =>
+      ["alerts", "list", filters] as const,
+  },
 } as const;

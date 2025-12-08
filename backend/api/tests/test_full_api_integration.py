@@ -574,23 +574,32 @@ class TestAdminEndpoints:
 class TestWebhookEndpoints:
     """Test webhook management endpoints.
 
-    Note: Webhook views currently use AllowAny permission.
-    This tests the current behavior - org isolation would need
-    to be implemented in the views.
+    Webhook views require platform_admin authentication.
     """
 
-    def test_webhook_list_public_access(self):
-        """Webhook list is currently public (AllowAny permission)."""
+    def test_webhook_list_requires_auth(self):
+        """Webhook list requires authentication."""
         client = create_unauthenticated_client()
         response = client.get("/api/v1/webhooks")
-        # Currently AllowAny - returns 200
+        assert response.status_code == 401
+
+    def test_webhook_list_requires_platform_admin(self, seed_users, monkeypatch):
+        """Webhook list requires platform_admin role."""
+        client = create_authenticated_client(seed_users["acme_admin"], monkeypatch)
+        response = client.get("/api/v1/webhooks")
+        assert response.status_code == 403
+
+    def test_webhook_list_platform_admin(self, seed_users, seed_webhooks, monkeypatch):
+        """Platform admin can list webhooks."""
+        client = create_authenticated_client(seed_users["platform_admin"], monkeypatch)
+        response = client.get("/api/v1/webhooks")
         assert response.status_code == 200
 
     def test_webhook_list_with_org_filter(
         self, seed_users, seed_organizations, seed_webhooks, monkeypatch
     ):
         """Test filtering webhooks by org_id query param."""
-        client = create_unauthenticated_client()
+        client = create_authenticated_client(seed_users["platform_admin"], monkeypatch)
         acme_id = str(seed_organizations["acme"].id)
         response = client.get(f"/api/v1/webhooks?org_id={acme_id}")
         assert response.status_code == 200
@@ -599,9 +608,9 @@ class TestWebhookEndpoints:
         for webhook in results:
             assert str(webhook["org_id"]) == acme_id
 
-    def test_webhook_create(self, seed_organizations):
+    def test_webhook_create(self, seed_users, seed_organizations, monkeypatch):
         """Test creating a webhook endpoint."""
-        client = create_unauthenticated_client()
+        client = create_authenticated_client(seed_users["platform_admin"], monkeypatch)
         acme_id = str(seed_organizations["acme"].id)
         response = client.post(
             "/api/v1/webhooks",
@@ -617,11 +626,10 @@ class TestWebhookEndpoints:
         assert response.status_code == 201
         assert response.data["url"] == "https://new-webhook.acme.example.com/hook"
 
-    def test_webhook_detail_access(self, seed_webhooks):
-        """Test webhook detail access."""
-        # Webhooks are currently public
+    def test_webhook_detail_access(self, seed_users, seed_webhooks, monkeypatch):
+        """Test webhook detail access requires platform_admin."""
         webhook = seed_webhooks[0]
-        client = create_unauthenticated_client()
+        client = create_authenticated_client(seed_users["platform_admin"], monkeypatch)
         response = client.get(f"/api/v1/webhooks/{webhook.id}")
         assert response.status_code == 200
         assert response.data["id"] == str(webhook.id)
