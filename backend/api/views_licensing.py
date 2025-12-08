@@ -15,7 +15,9 @@ from rest_framework.views import APIView
 
 from api.licensing import get_license, set_stripe_sync_status, update_license
 from api.models import Org
+from api.models_local_auth import LocalUserProfile
 from api.stripe_client import get_tier_features, map_price_to_tier
+from api.views_user_billing import update_user_license
 
 logger = structlog.get_logger(__name__)
 
@@ -230,17 +232,44 @@ class StripeWebhookView(APIView):
 
     def _handle_subscription_created(self, subscription: Dict[str, Any]):
         """Handle customer.subscription.created event."""
-        self._update_org_from_subscription(subscription, "created")
+        self._update_from_subscription(subscription, "created")
 
     def _handle_subscription_updated(self, subscription: Dict[str, Any]):
         """Handle customer.subscription.updated event."""
-        self._update_org_from_subscription(subscription, "updated")
+        self._update_from_subscription(subscription, "updated")
 
     def _handle_subscription_deleted(self, subscription: Dict[str, Any]):
         """Handle customer.subscription.deleted event - downgrade to free."""
-        org_id = subscription.get("metadata", {}).get("org_id")
+        metadata = subscription.get("metadata", {})
+        subscription_type = metadata.get("type", "org")
+        org_id = metadata.get("org_id", "")
         customer_id = subscription.get("customer")
 
+        # Route to user or org handler
+        if subscription_type == "user" or (org_id and org_id.startswith("user_")):
+            self._handle_user_subscription_deleted(org_id, customer_id)
+        else:
+            self._handle_org_subscription_deleted(org_id, customer_id)
+
+    def _handle_user_subscription_deleted(self, org_id: str, customer_id: str):
+        """Handle user subscription deletion - downgrade to free."""
+        user_id = org_id.replace("user_", "") if org_id.startswith("user_") else None
+        profile = self._find_user_profile(user_id, customer_id)
+        if not profile:
+            return
+
+        # Downgrade to free tier
+        update_user_license(profile.user, "free", get_tier_features("free"))
+        profile.stripe_subscription_id = None
+        profile.save(update_fields=["stripe_subscription_id", "updated_at"])
+
+        logger.info(
+            "user_subscription_deleted",
+            user_id=profile.user.id,
+        )
+
+    def _handle_org_subscription_deleted(self, org_id: str, customer_id: str):
+        """Handle org subscription deletion - downgrade to free."""
         org = self._find_org(org_id, customer_id)
         if not org:
             return
@@ -276,20 +305,75 @@ class StripeWebhookView(APIView):
             subscription_id=subscription_id,
         )
 
-    def _update_org_from_subscription(self, subscription: Dict[str, Any], action: str):
-        """Update org license based on subscription."""
-        org_id = subscription.get("metadata", {}).get("org_id")
+    def _update_from_subscription(self, subscription: Dict[str, Any], action: str):
+        """Update org or user license based on subscription metadata."""
+        metadata = subscription.get("metadata", {})
+        subscription_type = metadata.get("type", "org")  # Default to org for backwards compat
+        org_id = metadata.get("org_id", "")
         customer_id = subscription.get("customer")
         subscription_id = subscription.get("id")
         subscription_status = subscription.get("status")
 
-        org = self._find_org(org_id, customer_id)
-        if not org:
-            return
-
         # Get price ID from subscription items
         items = subscription.get("items", {}).get("data", [])
         price_id = items[0].get("price", {}).get("id") if items else None
+
+        # Route to user or org handler
+        if subscription_type == "user" or (org_id and org_id.startswith("user_")):
+            self._update_user_from_subscription(
+                subscription, action, customer_id, subscription_id,
+                subscription_status, price_id, org_id
+            )
+        else:
+            self._update_org_from_subscription(
+                subscription, action, customer_id, subscription_id,
+                subscription_status, price_id, org_id
+            )
+
+    def _update_user_from_subscription(
+        self, subscription: Dict[str, Any], action: str,
+        customer_id: str, subscription_id: str,
+        subscription_status: str, price_id: Optional[str], org_id: str
+    ):
+        """Update user license based on subscription."""
+        # Extract user_id from org_id (format: "user_123")
+        user_id = org_id.replace("user_", "") if org_id.startswith("user_") else None
+
+        profile = self._find_user_profile(user_id, customer_id)
+        if not profile:
+            return
+
+        if price_id and subscription_status == "active":
+            # Map price to tier and update license
+            tier = map_price_to_tier(price_id)
+            features = get_tier_features(tier)
+            update_user_license(profile.user, tier, features)
+
+            profile.stripe_subscription_id = subscription_id
+            profile.save(update_fields=["stripe_subscription_id", "updated_at"])
+
+            logger.info(
+                f"user_subscription_{action}",
+                user_id=profile.user.id,
+                tier=tier,
+                subscription_id=subscription_id,
+            )
+        elif subscription_status in ("past_due", "unpaid"):
+            logger.warning(
+                "user_subscription_payment_issue",
+                user_id=profile.user.id,
+                status=subscription_status,
+            )
+
+    def _update_org_from_subscription(
+        self, subscription: Dict[str, Any], action: str,
+        customer_id: str, subscription_id: str,
+        subscription_status: str, price_id: Optional[str], org_id: str
+    ):
+        """Update org license based on subscription."""
+        org = self._find_org(org_id, customer_id)
+        if not org:
+            return
 
         if price_id and subscription_status == "active":
             # Map price to tier and update license
@@ -316,12 +400,35 @@ class StripeWebhookView(APIView):
                 status=subscription_status,
             )
 
+    def _find_user_profile(
+        self, user_id: Optional[str], customer_id: Optional[str]
+    ) -> Optional[LocalUserProfile]:
+        """Find user profile by user ID or Stripe customer ID."""
+        if user_id:
+            try:
+                return LocalUserProfile.objects.get(user_id=user_id)
+            except LocalUserProfile.DoesNotExist:
+                pass
+
+        if customer_id:
+            try:
+                return LocalUserProfile.objects.get(stripe_customer_id=customer_id)
+            except LocalUserProfile.DoesNotExist:
+                pass
+
+        logger.warning(
+            "user_not_found_for_webhook",
+            user_id=user_id,
+            customer_id=customer_id,
+        )
+        return None
+
     def _find_org(self, org_id: Optional[str], customer_id: Optional[str]) -> Optional[Org]:
         """Find org by ID or Stripe customer ID."""
-        if org_id:
+        if org_id and not org_id.startswith("user_"):
             try:
                 return Org.objects.get(id=org_id)
-            except Org.DoesNotExist:
+            except (Org.DoesNotExist, ValueError):
                 pass
 
         if customer_id:

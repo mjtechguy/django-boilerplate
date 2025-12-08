@@ -33,6 +33,12 @@ from api.views_billing import (
     CheckoutSessionView,
     CreateStripeCustomerView,
 )
+from api.views_user_billing import (
+    CreateUserStripeCustomerView,
+    UserBillingPortalView,
+    UserBillingStatusView,
+    UserCheckoutSessionView,
+)
 from api.views_licensing import OrgLicenseView, StripeWebhookView
 from api.views_monitoring import (
     AppMetricsView,
@@ -68,6 +74,11 @@ urlpatterns = [
     path("orgs/<uuid:org_id>/billing/portal", BillingPortalView.as_view(), name="org-billing-portal"),
     path("orgs/<uuid:org_id>/billing/customer", CreateStripeCustomerView.as_view(), name="org-billing-customer"),
     path("billing/plans", AvailablePlansView.as_view(), name="billing-plans"),
+    # User billing endpoints (B2C)
+    path("me/billing", UserBillingStatusView.as_view(), name="user-billing-status"),
+    path("me/billing/checkout", UserCheckoutSessionView.as_view(), name="user-billing-checkout"),
+    path("me/billing/portal", UserBillingPortalView.as_view(), name="user-billing-portal"),
+    path("me/billing/customer", CreateUserStripeCustomerView.as_view(), name="user-billing-customer"),
     path("admin/orgs", AdminOrgListCreateView.as_view(), name="admin-org-list"),
     path("admin/orgs/<uuid:org_id>", AdminOrgDetailView.as_view(), name="admin-org-detail"),
     # Team admin endpoints

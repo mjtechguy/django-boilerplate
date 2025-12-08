@@ -71,12 +71,31 @@ class LocalUserProfile(TimeStampedModel):
     last_login_at = models.DateTimeField(null=True, blank=True)
     last_login_ip = models.GenericIPAddressField(null=True, blank=True)
 
+    # Stripe billing fields (B2C user-level subscriptions)
+    stripe_customer_id = models.CharField(
+        max_length=255, blank=True, null=True, db_index=True,
+        help_text="Stripe customer ID for user billing"
+    )
+    stripe_subscription_id = models.CharField(
+        max_length=255, blank=True, null=True,
+        help_text="Active Stripe subscription ID"
+    )
+    license_tier = models.CharField(
+        max_length=64, default="free",
+        help_text="User's subscription tier: free, starter, pro, enterprise"
+    )
+    feature_flags = models.JSONField(
+        default=dict, blank=True,
+        help_text="User-specific feature flags from subscription"
+    )
+
     class Meta:
         verbose_name = "Local User Profile"
         verbose_name_plural = "Local User Profiles"
         indexes = [
             models.Index(fields=["email_verification_token"]),
             models.Index(fields=["password_reset_token"]),
+            models.Index(fields=["stripe_customer_id"]),
         ]
 
     def __str__(self) -> str:
