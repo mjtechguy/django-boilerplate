@@ -50,3 +50,13 @@ cryptography==44.0.0
 
 # Password hashing
 argon2-cffi==23.1.0
+
+# API Key management
+djangorestframework-api-key==3.0.0
+
+# TOTP MFA
+pyotp==2.9.0
+qrcode[pil]==8.0
+
+# Social OAuth
+django-allauth[socialaccount]==65.3.0

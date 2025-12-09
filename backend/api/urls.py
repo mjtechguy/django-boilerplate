@@ -1,6 +1,20 @@
 from django.urls import include, path
 
 from api.views import AuthPingView
+from api.views_api_keys import (
+    UserAPIKeyCreateView,
+    UserAPIKeyListView,
+    UserAPIKeyRevokeView,
+)
+from api.views_access_keys import (
+    AccessKeyCreateView,
+    AccessKeyListView,
+    AccessKeyRevokeView,
+)
+from api.views_social_auth import (
+    SocialAccountDisconnectView,
+    SocialAccountsView,
+)
 from api.views_admin_orgs import AdminOrgDetailView, AdminOrgListCreateView
 from api.views_admin_teams import (
     AdminTeamDetailView,
@@ -86,6 +100,17 @@ urlpatterns = [
     path("me/billing/checkout", UserCheckoutSessionView.as_view(), name="user-billing-checkout"),
     path("me/billing/portal", UserBillingPortalView.as_view(), name="user-billing-portal"),
     path("me/billing/customer", CreateUserStripeCustomerView.as_view(), name="user-billing-customer"),
+    # User API Keys
+    path("me/api-keys", UserAPIKeyListView.as_view(), name="user-api-key-list"),
+    path("me/api-keys/create", UserAPIKeyCreateView.as_view(), name="user-api-key-create"),
+    path("me/api-keys/<str:key_id>", UserAPIKeyRevokeView.as_view(), name="user-api-key-revoke"),
+    # S3-style Access Keys
+    path("me/access-keys", AccessKeyListView.as_view(), name="access-key-list"),
+    path("me/access-keys/create", AccessKeyCreateView.as_view(), name="access-key-create"),
+    path("me/access-keys/<int:key_id>", AccessKeyRevokeView.as_view(), name="access-key-revoke"),
+    # Social accounts
+    path("me/social-accounts", SocialAccountsView.as_view(), name="social-accounts-list"),
+    path("me/social-accounts/<int:account_id>", SocialAccountDisconnectView.as_view(), name="social-account-disconnect"),
     path("admin/orgs", AdminOrgListCreateView.as_view(), name="admin-org-list"),
     path("admin/orgs/<uuid:org_id>", AdminOrgDetailView.as_view(), name="admin-org-detail"),
     # Team admin endpoints

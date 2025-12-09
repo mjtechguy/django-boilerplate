@@ -8,6 +8,12 @@ from django.utils import timezone
 
 from api.encryption import EncryptedCharField, EncryptedJSONField, EncryptedTextField
 
+# Import models from separate modules for Django migration detection
+from api.models_api_keys import UserAPIKey  # noqa: F401
+from api.models_access_keys import AccessKeyPair  # noqa: F401
+from api.models_mfa import MFAToken, TOTPDevice  # noqa: F401
+from api.models_social_auth import SocialAccount  # noqa: F401
+
 User = get_user_model()
 
 

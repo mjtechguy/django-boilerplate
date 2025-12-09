@@ -27,6 +27,12 @@ class EncryptionManager:
             cls._instance._initialize_keys()
         return cls._instance
 
+    @classmethod
+    def reset(cls):
+        """Reset singleton instance. Useful for tests with overridden settings."""
+        if cls._instance is not None:
+            cls._instance = None
+
     def _initialize_keys(self):
         """Load encryption keys from settings."""
         # Support multiple keys for rotation

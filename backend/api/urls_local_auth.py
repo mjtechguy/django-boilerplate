@@ -14,6 +14,21 @@ from api.views_local_auth import (
     RegisterView,
     TokenRefreshView,
 )
+from api.views_mfa import (
+    MFABackupCodesView,
+    MFAConfirmView,
+    MFADisableView,
+    MFASetupView,
+    MFAStatusView,
+    MFAVerifyView,
+)
+from api.views_social_auth import (
+    SocialAccountDisconnectView,
+    SocialAccountsView,
+    SocialCallbackView,
+    SocialLoginView,
+    SocialProvidersView,
+)
 from api.views_password_reset import (
     EmailVerificationView,
     PasswordResetConfirmView,
@@ -45,4 +60,17 @@ urlpatterns = [
         PasswordResetConfirmView.as_view(),
         name="auth-password-reset-confirm",
     ),
+
+    # MFA endpoints
+    path("mfa/setup", MFASetupView.as_view(), name="auth-mfa-setup"),
+    path("mfa/confirm", MFAConfirmView.as_view(), name="auth-mfa-confirm"),
+    path("mfa/disable", MFADisableView.as_view(), name="auth-mfa-disable"),
+    path("mfa/backup-codes", MFABackupCodesView.as_view(), name="auth-mfa-backup-codes"),
+    path("mfa/status", MFAStatusView.as_view(), name="auth-mfa-status"),
+    path("mfa/verify", MFAVerifyView.as_view(), name="auth-mfa-verify"),
+
+    # Social OAuth endpoints
+    path("social/providers", SocialProvidersView.as_view(), name="auth-social-providers"),
+    path("social/<str:provider>/login", SocialLoginView.as_view(), name="auth-social-login"),
+    path("social/callback", SocialCallbackView.as_view(), name="auth-social-callback"),
 ]

@@ -195,7 +195,21 @@ class LoginView(APIView):
         # Record successful login
         profile.record_login_attempt(success=True, ip_address=ip_address)
 
-        # Generate tokens
+        # Check if MFA is enabled
+        if self._has_mfa_enabled(user):
+            # Return MFA challenge instead of tokens
+            from api.models_mfa import MFAToken
+
+            mfa_token = MFAToken.create_token(user)
+            return Response(
+                {
+                    "mfa_required": True,
+                    "mfa_token": mfa_token.token,
+                    "message": "MFA verification required",
+                }
+            )
+
+        # Generate tokens (no MFA required)
         access_token = generate_access_token(user, roles=profile.roles)
         refresh_token = generate_refresh_token(user)
 
@@ -220,6 +234,15 @@ class LoginView(APIView):
                 }
             ).data
         )
+
+    def _has_mfa_enabled(self, user) -> bool:
+        """Check if user has MFA enabled."""
+        try:
+            from api.models_mfa import TOTPDevice
+
+            return TOTPDevice.objects.filter(user=user, confirmed=True).exists()
+        except Exception:
+            return False
 
     def _get_client_ip(self, request) -> str:
         """Extract client IP from request."""

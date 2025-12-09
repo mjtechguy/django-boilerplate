@@ -21,6 +21,8 @@ def test_settings_and_patches():
         "default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"},
         "idempotency": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"},
     }
+    # Test encryption key - only for tests!
+    test_encryption_key = "0YWTBYHQnZek-VOlZPk-a2j8nHm0WqkhHpPHH9k6oVQ="
     with override_settings(
         CACHES=caches,
         DATABASES={
@@ -29,5 +31,11 @@ def test_settings_and_patches():
                 "NAME": ":memory:",
             }
         },
+        FIELD_ENCRYPTION_KEYS=[test_encryption_key],
     ):
+        # Reset EncryptionManager singleton to pick up test settings
+        from api.encryption import EncryptionManager
+        EncryptionManager.reset()
         yield
+        # Reset again after tests to clean up
+        EncryptionManager.reset()

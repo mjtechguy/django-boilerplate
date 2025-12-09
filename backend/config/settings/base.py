@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "taggit",
     # DRF and other apps
     "rest_framework",
+    "rest_framework_api_key",
     "corsheaders",
     "axes",
     "drf_spectacular",
