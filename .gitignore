@@ -11,7 +11,9 @@ __pycache__/
 
 # Environments
 .env
-.env.*
+.env.local
+.env.*.local
+!.env.example
 .venv/
 venv/
 

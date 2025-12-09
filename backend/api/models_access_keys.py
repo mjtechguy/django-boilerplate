@@ -81,3 +81,8 @@ class AccessKeyPair(models.Model):
 
         self.last_used_at = timezone.now()
         self.save(update_fields=["last_used_at"])
+
+    def revoke(self):
+        """Revoke this access key."""
+        self.revoked = True
+        self.save(update_fields=["revoked"])

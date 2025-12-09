@@ -17,6 +17,12 @@ from rest_framework.views import APIView
 
 from api.local_jwt import generate_access_token, generate_refresh_token
 from api.models_mfa import MFAToken, TOTPDevice
+from api.throttling_mfa import (
+    MFAIPThrottle,
+    MFATokenThrottle,
+    MFAUserThrottle,
+    increment_mfa_failures,
+)
 
 logger = structlog.get_logger(__name__)
 
@@ -293,9 +299,15 @@ class MFAVerifyView(APIView):
 
     Used after successful password auth when MFA is required.
     Accepts temporary MFA token and TOTP code, returns JWT tokens.
+
+    Rate limited with multi-layer throttling:
+    - Per-token: 5 attempts per 15 minutes
+    - Per-user: 10 attempts per hour
+    - Per-IP: 20 attempts per hour
     """
 
     permission_classes = [AllowAny]
+    throttle_classes = [MFATokenThrottle, MFAUserThrottle, MFAIPThrottle]
 
     def post(self, request):
         """Verify MFA code and complete login."""
@@ -338,6 +350,8 @@ class MFAVerifyView(APIView):
         code_valid = device.verify_code(code) or device.verify_backup_code(code)
 
         if not code_valid:
+            # Increment throttle counters on failure (not on success - prevents timing attacks)
+            increment_mfa_failures(request)
             logger.warning(
                 "mfa_login_verify_failed",
                 user_id=user.id,

@@ -143,6 +143,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "api.auth.HybridJWTAuthentication",
+        "api.auth_access_key.AccessKeyAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
     "DEFAULT_PARSER_CLASSES": [
@@ -492,6 +493,15 @@ PASSWORD_RESET_TOKEN_TTL = int(os.getenv("PASSWORD_RESET_TOKEN_TTL", "3600"))  #
 LOCAL_AUTH_MAX_FAILED_ATTEMPTS = int(os.getenv("LOCAL_AUTH_MAX_FAILED_ATTEMPTS", "5"))
 LOCAL_AUTH_LOCKOUT_DURATION = int(os.getenv("LOCAL_AUTH_LOCKOUT_DURATION", "1800"))  # 30 minutes
 
+# Social Authentication (OAuth)
+# Google OAuth - https://console.cloud.google.com/
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET", "")
+
+# GitHub OAuth - https://github.com/settings/developers
+GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID", "")
+GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET", "")
+
 # Password hashers - Argon2 first for local auth
 PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.Argon2PasswordHasher",
@@ -499,6 +509,10 @@ PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
     "django.contrib.auth.hashers.BCryptSHA256PasswordHasher",
 ]
+
+# Access Key Authentication Settings
+# Timestamp tolerance for HMAC signature validation (in seconds)
+AKSK_TIMESTAMP_TOLERANCE_SECONDS = int(os.getenv("AKSK_TIMESTAMP_TOLERANCE_SECONDS", "300"))  # 5 minutes
 
 # Frontend URLs for email templates
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")

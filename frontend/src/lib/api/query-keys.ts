@@ -69,4 +69,17 @@ export const queryKeys = {
     list: (filters?: Record<string, unknown>) =>
       ["alerts", "list", filters] as const,
   },
+
+  // MFA
+  mfa: {
+    all: ["mfa"] as const,
+    status: () => ["mfa", "status"] as const,
+  },
+
+  // Social Auth
+  social: {
+    all: ["social"] as const,
+    providers: () => ["social", "providers"] as const,
+    accounts: () => ["social", "accounts"] as const,
+  },
 } as const;
