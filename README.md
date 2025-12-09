@@ -8,8 +8,10 @@ Production-ready, multi-tenant SaaS boilerplate with enterprise security feature
 - [Service Topology](#service-topology)
 - [Quickstart](#quickstart)
 - [Environment Variables](#environment-variables)
+- [Secrets Handling](#secrets-handling)
 - [API Reference](#api-reference)
 - [Authentication](#authentication)
+- [Authentication Audiences](#authentication-audiences)
 - [Stripe Billing](#stripe-billing)
 - [Frontend Admin Console](#frontend-admin-console)
 - [Audit Trail](#audit-trail)
@@ -27,7 +29,7 @@ Production-ready, multi-tenant SaaS boilerplate with enterprise security feature
 - **Argon2 Passwords**: Industry-standard password hashing
 - **MFA Support**: Multi-factor authentication via Keycloak
 - **Account Lockout**: Brute-force protection with django-axes
-- **Rate Limiting**: Global and per-tenant throttling
+- **Rate Limiting**: Global and per-tenant throttling with tier-based quotas
 
 ### Multi-Tenancy
 - **Organizations**: Multi-org data isolation
@@ -129,7 +131,35 @@ docker compose -f compose/docker-compose.yml ps
 docker compose -f compose/docker-compose.yml exec -w /app/backend web python manage.py migrate
 ```
 
-### 4. Access Services
+### 4. Seed Data (Development)
+
+Add test data to your database:
+
+```bash
+# Seed Django database with test org, team, users
+docker compose -f compose/docker-compose.yml exec -w /app/backend web python manage.py shell < test-seed/seed.py
+
+# Seed Keycloak with test users (run from host with venv activated)
+python test-seed/keycloak_seed.py
+```
+
+### 5. Verify Setup
+
+Confirm all services are working:
+
+```bash
+# Check all services are healthy
+docker compose -f compose/docker-compose.yml ps
+
+# Get a test token (outputs tokens for all test users)
+python test-seed/keycloak_tokens.py
+
+# Test an API call
+TOKEN="<paste access token from above>"
+curl -H "Authorization: Bearer $TOKEN" http://localhost:8000/api/v1/auth/me
+```
+
+### 7. Access Services
 
 | Service | URL | Credentials |
 |---------|-----|-------------|
@@ -139,7 +169,7 @@ docker compose -f compose/docker-compose.yml exec -w /app/backend web python man
 | RabbitMQ | http://localhost:15672 | guest / guest |
 | Mailpit | http://localhost:8025 | - |
 
-### 5. Create Admin User (Local Auth)
+### 8. Create Admin User (Local Auth)
 
 ```bash
 # Register via API
@@ -252,6 +282,40 @@ docker compose -f compose/docker-compose.yml exec -w /app/backend web \
 | `ENVIRONMENT` | Environment name | `development` |
 | `AUDIT_PII_POLICY` | PII handling: mask, hash, drop | `mask` |
 | `SENTRY_DSN` | Sentry DSN (empty to disable) | `` |
+
+## Secrets Handling
+
+### Development
+In development, use the `.env` file with demo credentials. The included values are safe for local testing.
+
+### Production
+Never commit real secrets. Use a secret manager:
+
+| Secret Manager | Setup |
+|----------------|-------|
+| AWS Secrets Manager | Store as JSON, load via boto3 |
+| HashiCorp Vault | Use hvac library |
+| GCP Secret Manager | Use google-cloud-secret-manager |
+| Azure Key Vault | Use azure-keyvault-secrets |
+
+### Secrets Inventory
+
+These variables contain sensitive data and MUST be secured in production:
+
+| Variable | Type | Generation |
+|----------|------|------------|
+| `DJANGO_SECRET_KEY` | String | `python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"` |
+| `POSTGRES_PASSWORD` | String | Strong random password |
+| `RABBITMQ_PASSWORD` | String | Strong random password |
+| `LOCAL_AUTH_PRIVATE_KEY` | RSA PEM | `python -c "from api.local_jwt import generate_key_pair; priv, pub = generate_key_pair(); print(priv)"` |
+| `LOCAL_AUTH_PUBLIC_KEY` | RSA PEM | Generated with private key |
+| `STRIPE_SECRET_KEY` | String | From Stripe dashboard |
+| `STRIPE_WEBHOOK_SECRET` | String | From Stripe webhook settings |
+| `AUDIT_SIGNING_KEY` | Hex | `python -c "import secrets; print(secrets.token_hex(32))"` |
+| `FIELD_ENCRYPTION_KEYS` | Fernet | `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"` |
+
+### Key Rotation
+See [Runbooks](#runbooks) for key rotation procedures.
 
 ## API Reference
 
@@ -462,6 +526,47 @@ sequenceDiagram
 | `team_admin` | Team | Manage team members |
 | `user` | Self | Basic access |
 
+## Authentication Audiences
+
+The system uses three Keycloak clients for different access levels:
+
+### Keycloak Clients
+
+| Client | Audience | Purpose |
+|--------|----------|---------|
+| `api` | `api` | General API access for all authenticated users |
+| `global-admin` | `global-admin` | Platform administration (super-admin features) |
+| `org-admin` | `org-admin` | Organization-level administration |
+
+### JWT Audience Validation
+
+The API validates the `aud` (audience) claim in JWTs:
+
+- Requests to `/api/v1/admin/*` endpoints require `global-admin` or `org-admin` audience
+- Requests to `/api/v1/orgs/{id}/*` endpoints validate org membership
+- All other authenticated endpoints accept the `api` audience
+
+### ADMIN_HOSTNAME
+
+The `ADMIN_HOSTNAME` environment variable enables hostname-based access control:
+
+```bash
+# When set, Django admin and platform admin APIs only accessible from this hostname
+ADMIN_HOSTNAME=admin.yourdomain.com
+```
+
+This provides defense-in-depth by ensuring admin interfaces aren't exposed on public domains.
+
+### Role Assignment
+
+| Role | Source | Scope |
+|------|--------|-------|
+| `platform_admin` | Keycloak realm role | Global platform access |
+| `support_readonly` | Keycloak realm role | Read-only platform access |
+| `org_admin` | Keycloak client role (api) | Organization management |
+| `team_admin` | Keycloak client role (api) | Team management |
+| `org_member`, `team_member` | Database Membership | Data access |
+
 ## Stripe Billing
 
 ### B2B (Organization) Billing
@@ -643,20 +748,63 @@ Webhooks include an `X-Webhook-Signature` header (HMAC-SHA256) for verification.
 
 Files stored in `media/` directory.
 
-### S3/MinIO Storage
+### Enabling S3/MinIO in Development
+
+The Docker Compose stack includes MinIO (S3-compatible storage):
+
+1. Enable S3 in `.env`:
+   ```bash
+   USE_S3=true
+   AWS_ACCESS_KEY_ID=rustfsadmin
+   AWS_SECRET_ACCESS_KEY=rustfsadmin
+   AWS_STORAGE_BUCKET_NAME=app-media
+   AWS_S3_ENDPOINT_URL=http://rustfs:9000
+   ```
+
+2. Create the bucket (first time only):
+   ```bash
+   # Access MinIO console at http://localhost:9001
+   # Login: rustfsadmin / rustfsadmin
+   # Create bucket: app-media
+   ```
+
+3. Restart the web service:
+   ```bash
+   docker compose -f compose/docker-compose.yml restart web
+   ```
+
+### Production S3 Setup
+
+1. Create an S3 bucket with appropriate lifecycle policies
+2. Create an IAM user with these permissions:
+   ```json
+   {
+     "Version": "2012-10-17",
+     "Statement": [{
+       "Effect": "Allow",
+       "Action": ["s3:PutObject", "s3:GetObject", "s3:DeleteObject", "s3:ListBucket"],
+       "Resource": ["arn:aws:s3:::your-bucket", "arn:aws:s3:::your-bucket/*"]
+     }]
+   }
+   ```
+3. Set environment variables (omit `AWS_S3_ENDPOINT_URL` for real AWS S3)
+
+### Migrating from Local to S3
 
 ```bash
+# Sync existing media files to S3
+aws s3 sync media/ s3://your-bucket/media/
+
+# Update .env and restart
 USE_S3=true
-AWS_ACCESS_KEY_ID=your-access-key
-AWS_SECRET_ACCESS_KEY=your-secret-key
-AWS_STORAGE_BUCKET_NAME=your-bucket
-AWS_S3_ENDPOINT_URL=https://s3.amazonaws.com  # or MinIO URL
+# ... other S3 vars
+docker compose restart web
 ```
 
 ### MinIO (Local S3)
 
 Included in Docker Compose:
-- Console: http://localhost:9001 (minio/minio123)
+- Console: http://localhost:9001 (rustfsadmin/rustfsadmin)
 - API: http://localhost:9000
 
 ## Runbooks
@@ -692,7 +840,118 @@ curl http://localhost:8000/api/v1/monitoring/queues | jq '.queues[] | select(.na
 docker compose -f compose/docker-compose.yml exec -w /app/backend web python manage.py migrate
 ```
 
+### Invalidate Cerbos Decision Cache
+
+```bash
+# Cerbos caches decisions in Redis for 30s by default
+# To force re-evaluation, flush the cache:
+docker compose -f compose/docker-compose.yml exec redis redis-cli KEYS "cerbos:*" | xargs docker compose -f compose/docker-compose.yml exec redis redis-cli DEL
+
+# Or restart Cerbos to clear its internal cache:
+docker compose -f compose/docker-compose.yml restart cerbos
+```
+
+### Restart Individual Services
+
+```bash
+# Restart without losing data
+docker compose -f compose/docker-compose.yml restart web
+docker compose -f compose/docker-compose.yml restart celery
+
+# Full recreate (pulls latest config)
+docker compose -f compose/docker-compose.yml up -d --force-recreate web
+```
+
+### Reset Keycloak Realm
+
+```bash
+# Export current realm (backup)
+docker compose -f compose/docker-compose.yml exec keycloak \
+  /opt/keycloak/bin/kc.sh export --dir /tmp/export --realm app
+
+# Re-import realm from file
+docker compose -f compose/docker-compose.yml restart keycloak
+# Keycloak auto-imports from /opt/keycloak/data/import on startup
+```
+
+### Celery Queue Debugging
+
+```bash
+# View all queues and message counts
+curl http://localhost:8000/api/v1/monitoring/queues | jq
+
+# View registered tasks
+curl http://localhost:8000/api/v1/monitoring/tasks | jq
+
+# Inspect Celery worker
+docker compose -f compose/docker-compose.yml exec celery celery -A config inspect active
+docker compose -f compose/docker-compose.yml exec celery celery -A config inspect reserved
+docker compose -f compose/docker-compose.yml exec celery celery -A config inspect scheduled
+
+# Purge all pending tasks (DANGER: loses tasks!)
+docker compose -f compose/docker-compose.yml exec celery celery -A config purge -f
+```
+
+### RabbitMQ Troubleshooting
+
+```bash
+# Check RabbitMQ is running
+docker compose -f compose/docker-compose.yml exec rabbitmq rabbitmqctl status
+
+# List queues with message counts
+docker compose -f compose/docker-compose.yml exec rabbitmq rabbitmqctl list_queues name messages consumers
+
+# Check connections
+docker compose -f compose/docker-compose.yml exec rabbitmq rabbitmqctl list_connections
+
+# Access management UI
+# http://localhost:15672 (guest/guest)
+```
+
+### Reload Cerbos Policies
+
+```bash
+# Cerbos watches the policies directory for changes
+# Just edit the YAML files and Cerbos auto-reloads
+
+# Verify policies are valid
+docker compose -f compose/docker-compose.yml exec cerbos \
+  /cerbos server --config=/policies/.cerbos.yaml --verify-only
+
+# Force policy reload
+docker compose -f compose/docker-compose.yml restart cerbos
+```
+
+### Database Backup/Restore
+
+```bash
+# Backup
+docker compose -f compose/docker-compose.yml exec postgres \
+  pg_dump -U app app > backup_$(date +%Y%m%d_%H%M%S).sql
+
+# Restore
+docker compose -f compose/docker-compose.yml exec -T postgres \
+  psql -U app app < backup_20240101_120000.sql
+```
+
 ## Architecture Overview
+
+### Product Overview
+
+This boilerplate provides a production-ready foundation for multi-tenant B2B/B2C SaaS applications:
+
+- **Multi-tenant by default**: Organizations → Teams → Users hierarchy with data isolation
+- **Hybrid authentication**: Enterprise SSO via Keycloak OIDC or built-in local auth with email verification
+- **Fine-grained authorization**: Cerbos policies enable RBAC and ABAC at resource level
+- **Flexible billing**: Stripe integration supports both org-level (B2B) and user-level (B2C) subscriptions
+- **License tier gating**: Feature flags and rate limits vary by subscription tier (free, starter, pro, enterprise)
+- **Audit compliance**: Tamper-evident audit logs with hash chain verification and HMAC signatures
+- **Async task processing**: Celery with RabbitMQ for background jobs and dead letter queues
+- **Modern admin console**: React frontend with TanStack libraries for data management
+- **API-first design**: All configuration exposed via authenticated endpoints for future portal integration
+- **Enterprise-grade hardening**: Separation of global admin vs org admin vs end-user boundaries, configurable fail modes, PII handling policies
+
+See [PRD.md](PRD.md) for full product requirements and specifications.
 
 ### Request/AuthZ Flow
 
@@ -727,6 +986,55 @@ sequenceDiagram
 | `backend/api/audit.py` | Audit logging system |
 | `policies/*.yaml` | Cerbos policy definitions |
 | `frontend/src/routes/` | React admin pages |
+
+### Configuration Files
+
+#### Keycloak Realm (`keycloak/realm-app.json`)
+
+Pre-configured realm with:
+- **Realm**: `app`
+- **Clients**: `api` (public), `global-admin` (confidential), `org-admin` (confidential), `end-user` (public)
+- **Realm Roles**: `platform_admin`, `support_readonly`
+- **Client Roles** (api): `org_admin`, `org_member`, `team_admin`, `team_member`, `billing_admin`
+
+To customize:
+1. Edit `keycloak/realm-app.json`
+2. Restart Keycloak: `docker compose -f compose/docker-compose.yml restart keycloak`
+
+#### Cerbos Policies (`policies/`)
+
+YAML-based policy files defining access rules:
+
+| Policy File | Resources | Description |
+|-------------|-----------|-------------|
+| `org.yaml` | Organization | Org CRUD, platform_admin bypass |
+| `team.yaml` | Team | Team management, org_admin access |
+| `user.yaml` | User | User profile, self-edit |
+| `membership.yaml` | Membership | Role assignments |
+| `audit_log.yaml` | AuditLog | Log viewing permissions |
+| `sample_resource.yaml` | Sample | Example policy template |
+
+To add a new policy:
+1. Create `policies/your_resource.yaml`
+2. Define `resourcePolicy` with rules for each action
+3. Cerbos auto-reloads on file change
+
+Example policy structure:
+```yaml
+apiVersion: api.cerbos.dev/v1
+resourcePolicy:
+  version: "default"
+  resource: "your_resource"
+  rules:
+    - actions: ["read"]
+      effect: EFFECT_ALLOW
+      roles: ["org_member"]
+      condition:
+        match:
+          expr: request.resource.attr.org_id == request.principal.attr.org_id
+```
+
+See [Cerbos documentation](https://docs.cerbos.dev/) for policy syntax.
 
 ## Testing
 
