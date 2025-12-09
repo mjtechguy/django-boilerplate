@@ -154,10 +154,12 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_CLASSES": [
         "rest_framework.throttling.AnonRateThrottle",
         "rest_framework.throttling.UserRateThrottle",
+        "api.throttling.OrgRateThrottle",
     ],
     "DEFAULT_THROTTLE_RATES": {
         "anon": os.getenv("THROTTLE_RATE_ANON", "100/hour"),
         "user": os.getenv("THROTTLE_RATE_USER", "1000/hour"),
+        "org": "1000/hour",  # Default org rate, overridden per-org by license tier
     },
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
@@ -395,7 +397,7 @@ STRIPE_TIER_FEATURES = {
     "pro": {
         "max_users": 100,
         "max_teams": 20,
-        "api_rate_limit": 5000,
+        "api_rate_limit": 10000,
         "audit_retention_days": 365,
         "sso_enabled": True,
         "webhooks_enabled": True,

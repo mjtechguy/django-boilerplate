@@ -24,6 +24,38 @@ def build_principal_from_claims(claims: Dict[str, Any]) -> Tuple[str, Set[str], 
         "risk_flags": claims.get("risk_flags", []),
     }
 
+    # Enrich with database Membership data
+    from api.models import Membership
+    from django.contrib.auth import get_user_model
+
+    User = get_user_model()
+
+    # Try to get user by principal_id (sub claim)
+    try:
+        user = User.objects.get(username=principal_id)
+        # Query all memberships for this user
+        memberships = Membership.objects.filter(user=user).select_related('org', 'team')
+
+        # Collect org_roles and team_roles from all memberships
+        org_roles_list = []
+        team_roles_list = []
+
+        for membership in memberships:
+            if membership.org_roles:
+                org_roles_list.extend(membership.org_roles)
+            if membership.team_roles:
+                team_roles_list.extend(membership.team_roles)
+
+        # Add to attributes
+        if org_roles_list:
+            attrs["org_roles"] = org_roles_list
+        if team_roles_list:
+            attrs["team_roles"] = team_roles_list
+
+    except User.DoesNotExist:
+        # User not found in database, continue with token claims only
+        pass
+
     return principal_id, roles, attrs
 
 

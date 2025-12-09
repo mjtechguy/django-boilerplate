@@ -18,6 +18,8 @@ from api.views_admin_memberships import (
     AdminMembershipDetailView,
     AdminMembershipListCreateView,
 )
+from api.views_org_teams import OrgTeamDetailView, OrgTeamListCreateView
+from api.views_org_members import OrgMemberDetailView, OrgMemberListCreateView
 from api.views_alerts import AlertListView
 from api.views_audit import (
     AuditChainVerificationView,
@@ -68,6 +70,11 @@ urlpatterns = [
     path("ping", AuthPingView.as_view(), name="api-ping"),
     path("protected", SampleProtectedView.as_view(), name="api-protected"),
     path("orgs/<uuid:org_id>/license", OrgLicenseView.as_view(), name="org-license"),
+    # Org-scoped admin endpoints (org_admin can manage their own org)
+    path("orgs/<uuid:org_id>/teams", OrgTeamListCreateView.as_view(), name="org-team-list"),
+    path("orgs/<uuid:org_id>/teams/<uuid:team_id>", OrgTeamDetailView.as_view(), name="org-team-detail"),
+    path("orgs/<uuid:org_id>/members", OrgMemberListCreateView.as_view(), name="org-member-list"),
+    path("orgs/<uuid:org_id>/members/<int:user_id>", OrgMemberDetailView.as_view(), name="org-member-detail"),
     # Billing endpoints
     path("orgs/<uuid:org_id>/billing", BillingStatusView.as_view(), name="org-billing-status"),
     path("orgs/<uuid:org_id>/billing/checkout", CheckoutSessionView.as_view(), name="org-billing-checkout"),
