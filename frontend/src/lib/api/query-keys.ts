@@ -17,6 +17,16 @@ export const queryKeys = {
     members: (id: string) => ["teams", id, "members"] as const,
   },
 
+  // Divisions
+  divisions: {
+    all: ["divisions"] as const,
+    list: (orgId?: string, filters?: Record<string, unknown>) =>
+      ["divisions", "list", orgId, filters] as const,
+    byOrg: (orgId: string) => ["divisions", "byOrg", orgId] as const,
+    detail: (id: string) => ["divisions", id] as const,
+    teams: (id: string) => ["divisions", id, "teams"] as const,
+  },
+
   // Users
   users: {
     all: ["users"] as const,

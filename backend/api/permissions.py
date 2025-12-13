@@ -18,6 +18,7 @@ def build_principal_from_claims(claims: Dict[str, Any]) -> Tuple[str, Set[str], 
 
     attrs = {
         "org_id": claims.get("org_id", ""),
+        "division_id": claims.get("division_id", ""),
         "team_ids": claims.get("team_ids", []),
         "license_tier": claims.get("license_tier", "free"),
         "mfa_level": claims.get("mfa_level", 0),
@@ -34,21 +35,26 @@ def build_principal_from_claims(claims: Dict[str, Any]) -> Tuple[str, Set[str], 
     try:
         user = User.objects.get(username=principal_id)
         # Query all memberships for this user
-        memberships = Membership.objects.filter(user=user).select_related('org', 'team')
+        memberships = Membership.objects.filter(user=user).select_related('org', 'division', 'team')
 
-        # Collect org_roles and team_roles from all memberships
+        # Collect org_roles, division_roles, and team_roles from all memberships
         org_roles_list = []
+        division_roles_list = []
         team_roles_list = []
 
         for membership in memberships:
             if membership.org_roles:
                 org_roles_list.extend(membership.org_roles)
+            if membership.division_roles:
+                division_roles_list.extend(membership.division_roles)
             if membership.team_roles:
                 team_roles_list.extend(membership.team_roles)
 
         # Add to attributes
         if org_roles_list:
             attrs["org_roles"] = org_roles_list
+        if division_roles_list:
+            attrs["division_roles"] = division_roles_list
         if team_roles_list:
             attrs["team_roles"] = team_roles_list
 
@@ -139,6 +145,24 @@ class IsOrgAdmin(permissions.BasePermission):
         roles = _extract_roles_from_claims(claims)
 
         return "org_admin" in roles
+
+
+class IsDivisionAdmin(permissions.BasePermission):
+    """
+    Permission check for division administrator role.
+    User must have division_admin role or be a platform_admin.
+    """
+
+    message = _("Division administrator access required.")
+
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return False
+
+        claims = getattr(request, "token_claims", {})
+        roles = _extract_roles_from_claims(claims)
+
+        return "platform_admin" in roles or "division_admin" in roles
 
 
 class IsAuditViewer(permissions.BasePermission):

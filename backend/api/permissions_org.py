@@ -70,3 +70,69 @@ class IsOrgAdminForOrg(permissions.BasePermission):
 
         # Check if the org_id matches
         return str(org_id_from_claims) == str(org_id_from_url)
+
+
+class IsDivisionAdminForDivision(permissions.BasePermission):
+    """
+    Permission check for division-scoped admin operations.
+
+    Requirements:
+    - User must be authenticated
+    - User can access if they are:
+      1. platform_admin (can access any division)
+      2. org_admin of the parent organization
+      3. division_admin of the specific division
+    """
+
+    message = _("Division administrator access required for this division.")
+
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return False
+
+        claims = getattr(request, "token_claims", {})
+        roles = _extract_roles_from_claims(claims)
+
+        # Platform admins can access any division
+        if "platform_admin" in roles:
+            return True
+
+        # Get division_id from URL path parameter
+        division_id = view.kwargs.get("division_id") or view.kwargs.get("pk")
+        if not division_id:
+            return False
+
+        # Import models
+        from api.models import Division, Membership
+
+        # Get the division and its parent org
+        try:
+            division = Division.objects.select_related("org").get(pk=division_id)
+        except Division.DoesNotExist:
+            return False
+
+        # Get user_id from claims
+        user_id = claims.get("sub")
+        if not user_id:
+            return False
+
+        # Check if user has org_admin role for the parent org
+        org_membership = Membership.objects.filter(
+            user_id=user_id,
+            org=division.org,
+            division__isnull=True  # Org-level membership
+        ).first()
+
+        if org_membership and "org_admin" in (org_membership.org_roles or []):
+            return True
+
+        # Check if user has division_admin role for this specific division
+        div_membership = Membership.objects.filter(
+            user_id=user_id,
+            division=division
+        ).first()
+
+        if div_membership and "division_admin" in (div_membership.division_roles or []):
+            return True
+
+        return False

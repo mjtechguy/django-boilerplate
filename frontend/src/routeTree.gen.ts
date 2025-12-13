@@ -30,6 +30,7 @@ import { Route as OrgLayoutWebhooksIndexRouteImport } from './routes/org/_layout
 import { Route as OrgLayoutUsersIndexRouteImport } from './routes/org/_layout/users/index'
 import { Route as OrgLayoutTeamsIndexRouteImport } from './routes/org/_layout/teams/index'
 import { Route as OrgLayoutSettingsIndexRouteImport } from './routes/org/_layout/settings/index'
+import { Route as OrgLayoutDivisionsIndexRouteImport } from './routes/org/_layout/divisions/index'
 import { Route as OrgLayoutBillingIndexRouteImport } from './routes/org/_layout/billing/index'
 import { Route as OrgLayoutAuditIndexRouteImport } from './routes/org/_layout/audit/index'
 import { Route as AppLayoutProfileIndexRouteImport } from './routes/app/_layout/profile/index'
@@ -40,10 +41,12 @@ import { Route as AdminLayoutSettingsIndexRouteImport } from './routes/admin/_la
 import { Route as AdminLayoutPoliciesIndexRouteImport } from './routes/admin/_layout/policies/index'
 import { Route as AdminLayoutOrganizationsIndexRouteImport } from './routes/admin/_layout/organizations/index'
 import { Route as AdminLayoutMonitoringIndexRouteImport } from './routes/admin/_layout/monitoring/index'
+import { Route as AdminLayoutDivisionsIndexRouteImport } from './routes/admin/_layout/divisions/index'
 import { Route as AdminLayoutAuditIndexRouteImport } from './routes/admin/_layout/audit/index'
 import { Route as AdminLayoutUsersUserIdRouteImport } from './routes/admin/_layout/users/$userId'
 import { Route as AdminLayoutTeamsTeamIdRouteImport } from './routes/admin/_layout/teams/$teamId'
 import { Route as AdminLayoutOrganizationsOrgIdRouteImport } from './routes/admin/_layout/organizations/$orgId'
+import { Route as OrgLayoutDivisionsDivisionIdIndexRouteImport } from './routes/org/_layout/divisions/$divisionId/index'
 
 const VerifyEmailRoute = VerifyEmailRouteImport.update({
   id: '/verify-email',
@@ -147,6 +150,11 @@ const OrgLayoutSettingsIndexRoute = OrgLayoutSettingsIndexRouteImport.update({
   path: '/settings/',
   getParentRoute: () => OrgLayoutRoute,
 } as any)
+const OrgLayoutDivisionsIndexRoute = OrgLayoutDivisionsIndexRouteImport.update({
+  id: '/divisions/',
+  path: '/divisions/',
+  getParentRoute: () => OrgLayoutRoute,
+} as any)
 const OrgLayoutBillingIndexRoute = OrgLayoutBillingIndexRouteImport.update({
   id: '/billing/',
   path: '/billing/',
@@ -202,6 +210,12 @@ const AdminLayoutMonitoringIndexRoute =
     path: '/monitoring/',
     getParentRoute: () => AdminLayoutRoute,
   } as any)
+const AdminLayoutDivisionsIndexRoute =
+  AdminLayoutDivisionsIndexRouteImport.update({
+    id: '/divisions/',
+    path: '/divisions/',
+    getParentRoute: () => AdminLayoutRoute,
+  } as any)
 const AdminLayoutAuditIndexRoute = AdminLayoutAuditIndexRouteImport.update({
   id: '/audit/',
   path: '/audit/',
@@ -223,6 +237,12 @@ const AdminLayoutOrganizationsOrgIdRoute =
     path: '/organizations/$orgId',
     getParentRoute: () => AdminLayoutRoute,
   } as any)
+const OrgLayoutDivisionsDivisionIdIndexRoute =
+  OrgLayoutDivisionsDivisionIdIndexRouteImport.update({
+    id: '/divisions/$divisionId/',
+    path: '/divisions/$divisionId/',
+    getParentRoute: () => OrgLayoutRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -243,6 +263,7 @@ export interface FileRoutesByFullPath {
   '/admin/teams/$teamId': typeof AdminLayoutTeamsTeamIdRoute
   '/admin/users/$userId': typeof AdminLayoutUsersUserIdRoute
   '/admin/audit': typeof AdminLayoutAuditIndexRoute
+  '/admin/divisions': typeof AdminLayoutDivisionsIndexRoute
   '/admin/monitoring': typeof AdminLayoutMonitoringIndexRoute
   '/admin/organizations': typeof AdminLayoutOrganizationsIndexRoute
   '/admin/policies': typeof AdminLayoutPoliciesIndexRoute
@@ -253,10 +274,12 @@ export interface FileRoutesByFullPath {
   '/app/profile': typeof AppLayoutProfileIndexRoute
   '/org/audit': typeof OrgLayoutAuditIndexRoute
   '/org/billing': typeof OrgLayoutBillingIndexRoute
+  '/org/divisions': typeof OrgLayoutDivisionsIndexRoute
   '/org/settings': typeof OrgLayoutSettingsIndexRoute
   '/org/teams': typeof OrgLayoutTeamsIndexRoute
   '/org/users': typeof OrgLayoutUsersIndexRoute
   '/org/webhooks': typeof OrgLayoutWebhooksIndexRoute
+  '/org/divisions/$divisionId': typeof OrgLayoutDivisionsDivisionIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -274,6 +297,7 @@ export interface FileRoutesByTo {
   '/admin/teams/$teamId': typeof AdminLayoutTeamsTeamIdRoute
   '/admin/users/$userId': typeof AdminLayoutUsersUserIdRoute
   '/admin/audit': typeof AdminLayoutAuditIndexRoute
+  '/admin/divisions': typeof AdminLayoutDivisionsIndexRoute
   '/admin/monitoring': typeof AdminLayoutMonitoringIndexRoute
   '/admin/organizations': typeof AdminLayoutOrganizationsIndexRoute
   '/admin/policies': typeof AdminLayoutPoliciesIndexRoute
@@ -284,10 +308,12 @@ export interface FileRoutesByTo {
   '/app/profile': typeof AppLayoutProfileIndexRoute
   '/org/audit': typeof OrgLayoutAuditIndexRoute
   '/org/billing': typeof OrgLayoutBillingIndexRoute
+  '/org/divisions': typeof OrgLayoutDivisionsIndexRoute
   '/org/settings': typeof OrgLayoutSettingsIndexRoute
   '/org/teams': typeof OrgLayoutTeamsIndexRoute
   '/org/users': typeof OrgLayoutUsersIndexRoute
   '/org/webhooks': typeof OrgLayoutWebhooksIndexRoute
+  '/org/divisions/$divisionId': typeof OrgLayoutDivisionsDivisionIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -312,6 +338,7 @@ export interface FileRoutesById {
   '/admin/_layout/teams/$teamId': typeof AdminLayoutTeamsTeamIdRoute
   '/admin/_layout/users/$userId': typeof AdminLayoutUsersUserIdRoute
   '/admin/_layout/audit/': typeof AdminLayoutAuditIndexRoute
+  '/admin/_layout/divisions/': typeof AdminLayoutDivisionsIndexRoute
   '/admin/_layout/monitoring/': typeof AdminLayoutMonitoringIndexRoute
   '/admin/_layout/organizations/': typeof AdminLayoutOrganizationsIndexRoute
   '/admin/_layout/policies/': typeof AdminLayoutPoliciesIndexRoute
@@ -322,10 +349,12 @@ export interface FileRoutesById {
   '/app/_layout/profile/': typeof AppLayoutProfileIndexRoute
   '/org/_layout/audit/': typeof OrgLayoutAuditIndexRoute
   '/org/_layout/billing/': typeof OrgLayoutBillingIndexRoute
+  '/org/_layout/divisions/': typeof OrgLayoutDivisionsIndexRoute
   '/org/_layout/settings/': typeof OrgLayoutSettingsIndexRoute
   '/org/_layout/teams/': typeof OrgLayoutTeamsIndexRoute
   '/org/_layout/users/': typeof OrgLayoutUsersIndexRoute
   '/org/_layout/webhooks/': typeof OrgLayoutWebhooksIndexRoute
+  '/org/_layout/divisions/$divisionId/': typeof OrgLayoutDivisionsDivisionIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -348,6 +377,7 @@ export interface FileRouteTypes {
     | '/admin/teams/$teamId'
     | '/admin/users/$userId'
     | '/admin/audit'
+    | '/admin/divisions'
     | '/admin/monitoring'
     | '/admin/organizations'
     | '/admin/policies'
@@ -358,10 +388,12 @@ export interface FileRouteTypes {
     | '/app/profile'
     | '/org/audit'
     | '/org/billing'
+    | '/org/divisions'
     | '/org/settings'
     | '/org/teams'
     | '/org/users'
     | '/org/webhooks'
+    | '/org/divisions/$divisionId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -379,6 +411,7 @@ export interface FileRouteTypes {
     | '/admin/teams/$teamId'
     | '/admin/users/$userId'
     | '/admin/audit'
+    | '/admin/divisions'
     | '/admin/monitoring'
     | '/admin/organizations'
     | '/admin/policies'
@@ -389,10 +422,12 @@ export interface FileRouteTypes {
     | '/app/profile'
     | '/org/audit'
     | '/org/billing'
+    | '/org/divisions'
     | '/org/settings'
     | '/org/teams'
     | '/org/users'
     | '/org/webhooks'
+    | '/org/divisions/$divisionId'
   id:
     | '__root__'
     | '/'
@@ -416,6 +451,7 @@ export interface FileRouteTypes {
     | '/admin/_layout/teams/$teamId'
     | '/admin/_layout/users/$userId'
     | '/admin/_layout/audit/'
+    | '/admin/_layout/divisions/'
     | '/admin/_layout/monitoring/'
     | '/admin/_layout/organizations/'
     | '/admin/_layout/policies/'
@@ -426,10 +462,12 @@ export interface FileRouteTypes {
     | '/app/_layout/profile/'
     | '/org/_layout/audit/'
     | '/org/_layout/billing/'
+    | '/org/_layout/divisions/'
     | '/org/_layout/settings/'
     | '/org/_layout/teams/'
     | '/org/_layout/users/'
     | '/org/_layout/webhooks/'
+    | '/org/_layout/divisions/$divisionId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -595,6 +633,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OrgLayoutSettingsIndexRouteImport
       parentRoute: typeof OrgLayoutRoute
     }
+    '/org/_layout/divisions/': {
+      id: '/org/_layout/divisions/'
+      path: '/divisions'
+      fullPath: '/org/divisions'
+      preLoaderRoute: typeof OrgLayoutDivisionsIndexRouteImport
+      parentRoute: typeof OrgLayoutRoute
+    }
     '/org/_layout/billing/': {
       id: '/org/_layout/billing/'
       path: '/billing'
@@ -665,6 +710,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLayoutMonitoringIndexRouteImport
       parentRoute: typeof AdminLayoutRoute
     }
+    '/admin/_layout/divisions/': {
+      id: '/admin/_layout/divisions/'
+      path: '/divisions'
+      fullPath: '/admin/divisions'
+      preLoaderRoute: typeof AdminLayoutDivisionsIndexRouteImport
+      parentRoute: typeof AdminLayoutRoute
+    }
     '/admin/_layout/audit/': {
       id: '/admin/_layout/audit/'
       path: '/audit'
@@ -693,6 +745,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLayoutOrganizationsOrgIdRouteImport
       parentRoute: typeof AdminLayoutRoute
     }
+    '/org/_layout/divisions/$divisionId/': {
+      id: '/org/_layout/divisions/$divisionId/'
+      path: '/divisions/$divisionId'
+      fullPath: '/org/divisions/$divisionId'
+      preLoaderRoute: typeof OrgLayoutDivisionsDivisionIdIndexRouteImport
+      parentRoute: typeof OrgLayoutRoute
+    }
   }
 }
 
@@ -702,6 +761,7 @@ interface AdminLayoutRouteChildren {
   AdminLayoutTeamsTeamIdRoute: typeof AdminLayoutTeamsTeamIdRoute
   AdminLayoutUsersUserIdRoute: typeof AdminLayoutUsersUserIdRoute
   AdminLayoutAuditIndexRoute: typeof AdminLayoutAuditIndexRoute
+  AdminLayoutDivisionsIndexRoute: typeof AdminLayoutDivisionsIndexRoute
   AdminLayoutMonitoringIndexRoute: typeof AdminLayoutMonitoringIndexRoute
   AdminLayoutOrganizationsIndexRoute: typeof AdminLayoutOrganizationsIndexRoute
   AdminLayoutPoliciesIndexRoute: typeof AdminLayoutPoliciesIndexRoute
@@ -716,6 +776,7 @@ const AdminLayoutRouteChildren: AdminLayoutRouteChildren = {
   AdminLayoutTeamsTeamIdRoute: AdminLayoutTeamsTeamIdRoute,
   AdminLayoutUsersUserIdRoute: AdminLayoutUsersUserIdRoute,
   AdminLayoutAuditIndexRoute: AdminLayoutAuditIndexRoute,
+  AdminLayoutDivisionsIndexRoute: AdminLayoutDivisionsIndexRoute,
   AdminLayoutMonitoringIndexRoute: AdminLayoutMonitoringIndexRoute,
   AdminLayoutOrganizationsIndexRoute: AdminLayoutOrganizationsIndexRoute,
   AdminLayoutPoliciesIndexRoute: AdminLayoutPoliciesIndexRoute,
@@ -768,20 +829,25 @@ interface OrgLayoutRouteChildren {
   OrgLayoutIndexRoute: typeof OrgLayoutIndexRoute
   OrgLayoutAuditIndexRoute: typeof OrgLayoutAuditIndexRoute
   OrgLayoutBillingIndexRoute: typeof OrgLayoutBillingIndexRoute
+  OrgLayoutDivisionsIndexRoute: typeof OrgLayoutDivisionsIndexRoute
   OrgLayoutSettingsIndexRoute: typeof OrgLayoutSettingsIndexRoute
   OrgLayoutTeamsIndexRoute: typeof OrgLayoutTeamsIndexRoute
   OrgLayoutUsersIndexRoute: typeof OrgLayoutUsersIndexRoute
   OrgLayoutWebhooksIndexRoute: typeof OrgLayoutWebhooksIndexRoute
+  OrgLayoutDivisionsDivisionIdIndexRoute: typeof OrgLayoutDivisionsDivisionIdIndexRoute
 }
 
 const OrgLayoutRouteChildren: OrgLayoutRouteChildren = {
   OrgLayoutIndexRoute: OrgLayoutIndexRoute,
   OrgLayoutAuditIndexRoute: OrgLayoutAuditIndexRoute,
   OrgLayoutBillingIndexRoute: OrgLayoutBillingIndexRoute,
+  OrgLayoutDivisionsIndexRoute: OrgLayoutDivisionsIndexRoute,
   OrgLayoutSettingsIndexRoute: OrgLayoutSettingsIndexRoute,
   OrgLayoutTeamsIndexRoute: OrgLayoutTeamsIndexRoute,
   OrgLayoutUsersIndexRoute: OrgLayoutUsersIndexRoute,
   OrgLayoutWebhooksIndexRoute: OrgLayoutWebhooksIndexRoute,
+  OrgLayoutDivisionsDivisionIdIndexRoute:
+    OrgLayoutDivisionsDivisionIdIndexRoute,
 }
 
 const OrgLayoutRouteWithChildren = OrgLayoutRoute._addFileChildren(

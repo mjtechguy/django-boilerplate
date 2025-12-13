@@ -1,28 +1,26 @@
 apiVersion: api.cerbos.dev/v1
 resourcePolicy:
   version: default
-  resource: team
+  resource: division
   rules:
-    # Platform admins can perform all actions on all teams
+    # Platform admins can perform all actions on all divisions
     - actions:
         - create
         - read
         - update
         - delete
         - list
-        - list_members
       effect: EFFECT_ALLOW
       roles:
         - platform_admin
 
-    # Org admins can manage teams in their own organization
+    # Org admins can manage divisions in their own organization
     - actions:
         - create
         - read
         - update
         - delete
         - list
-        - list_members
       effect: EFFECT_ALLOW
       roles:
         - org_admin
@@ -30,14 +28,10 @@ resourcePolicy:
         match:
           expr: request.resource.attr.org_id == request.principal.attr.org_id
 
-    # Division admins can manage teams in their own division
+    # Division admins can read their own division
     - actions:
-        - create
         - read
-        - update
-        - delete
         - list
-        - list_members
       effect: EFFECT_ALLOW
       roles:
         - division_admin
@@ -45,13 +39,13 @@ resourcePolicy:
         match:
           expr: request.resource.attr.division_id == request.principal.attr.division_id
 
-    # Team admins can only read their own team
+    # Regular users can read divisions in their organization
     - actions:
         - read
-        - list_members
+        - list
       effect: EFFECT_ALLOW
       roles:
-        - team_admin
+        - user
       condition:
         match:
-          expr: request.resource.attr.team_id == request.principal.attr.team_id
+          expr: request.resource.attr.org_id == request.principal.attr.org_id

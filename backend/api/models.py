@@ -72,14 +72,55 @@ class Org(TimeStampedModel):
         return f"Org<{self.name}>"
 
 
-class Team(TimeStampedModel):
+class Division(TimeStampedModel):
+    """Sub-organization unit with optional independent billing."""
+
+    class BillingMode(models.TextChoices):
+        INHERIT = "inherit", "Inherit from Org"
+        INDEPENDENT = "independent", "Independent Billing"
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    org = models.ForeignKey(Org, related_name="teams", on_delete=models.CASCADE)
+    org = models.ForeignKey(Org, related_name="divisions", on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
+
+    # Hybrid billing support
+    billing_mode = models.CharField(
+        max_length=16, choices=BillingMode.choices, default=BillingMode.INHERIT
+    )
+    license_tier = models.CharField(max_length=64, blank=True)
+    feature_flags = JSONField(default=dict, blank=True)
+
+    # Stripe fields (only if billing_mode=independent)
+    stripe_customer_id = models.CharField(max_length=255, blank=True, null=True, db_index=True)
+    stripe_subscription_id = models.CharField(max_length=255, blank=True, null=True)
+    billing_email = models.EmailField(blank=True, null=True)
 
     class Meta:
         unique_together = [("org", "name")]
-        indexes = [models.Index(fields=["org"])]
+        indexes = [
+            models.Index(fields=["org"]),
+            models.Index(fields=["billing_mode"]),
+            models.Index(fields=["stripe_customer_id"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"Division<{self.name}>"
+
+
+class Team(TimeStampedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    org = models.ForeignKey(Org, related_name="teams", on_delete=models.CASCADE)
+    division = models.ForeignKey(
+        Division, related_name="teams", on_delete=models.CASCADE, null=True, blank=True
+    )
+    name = models.CharField(max_length=255)
+
+    class Meta:
+        unique_together = [("org", "division", "name")]
+        indexes = [
+            models.Index(fields=["org"]),
+            models.Index(fields=["division"]),
+        ]
 
     def __str__(self) -> str:  # pragma: no cover
         return f"Team<{self.name}>"
@@ -89,17 +130,22 @@ class Membership(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, related_name="memberships", on_delete=models.CASCADE)
     org = models.ForeignKey(Org, related_name="memberships", on_delete=models.CASCADE)
+    division = models.ForeignKey(
+        Division, related_name="memberships", on_delete=models.CASCADE, null=True, blank=True
+    )
     team = models.ForeignKey(
         Team, related_name="memberships", on_delete=models.CASCADE, null=True, blank=True
     )
     org_roles = JSONField(default=list, blank=True)
+    division_roles = JSONField(default=list, blank=True)
     team_roles = JSONField(default=list, blank=True)
 
     class Meta:
-        unique_together = [("user", "org", "team")]
+        unique_together = [("user", "org", "division", "team")]
         indexes = [
             models.Index(fields=["user", "org"]),
             models.Index(fields=["org"]),
+            models.Index(fields=["division"]),
             models.Index(fields=["team"]),
         ]
 

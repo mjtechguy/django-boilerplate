@@ -34,6 +34,7 @@ class OrgMemberListCreateView(APIView):
         Query parameters:
         - search: Search by email, first_name, last_name
         - team_id: Filter by team membership
+        - division_id: Filter by division membership
         - limit: Number of results to return (default: 50, max: 1000)
         - offset: Number of results to skip (default: 0)
 
@@ -42,8 +43,10 @@ class OrgMemberListCreateView(APIView):
         Body: {
             "user_id": "user-uuid",
             "team_id": "team-uuid" (optional),
+            "division_id": "division-uuid" (optional),
             "org_roles": ["user", "org_admin"] (optional),
-            "team_roles": ["member", "lead"] (optional)
+            "team_roles": ["member", "lead"] (optional),
+            "division_roles": ["member", "lead"] (optional)
         }
     """
 
@@ -70,7 +73,7 @@ class OrgMemberListCreateView(APIView):
             )
 
         # Build queryset for memberships in this org
-        queryset = Membership.objects.filter(org_id=org_id).select_related("user", "org", "team")
+        queryset = Membership.objects.filter(org_id=org_id).select_related("user", "org", "team", "division")
 
         # Apply filters
         search = request.query_params.get("search")
@@ -84,6 +87,10 @@ class OrgMemberListCreateView(APIView):
         team_id = request.query_params.get("team_id")
         if team_id:
             queryset = queryset.filter(team_id=team_id)
+
+        division_id = request.query_params.get("division_id")
+        if division_id:
+            queryset = queryset.filter(division_id=division_id)
 
         # Order by created_at descending
         queryset = queryset.order_by("-created_at")
@@ -136,7 +143,7 @@ class OrgMemberListCreateView(APIView):
         )
 
         # Re-fetch with related objects for response
-        membership = Membership.objects.select_related("user", "org", "team").get(
+        membership = Membership.objects.select_related("user", "org", "team", "division").get(
             id=membership.id
         )
         return Response(MembershipSerializer(membership).data, status=status.HTTP_201_CREATED)

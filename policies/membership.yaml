@@ -28,6 +28,20 @@ resourcePolicy:
         match:
           expr: request.resource.attr.org_id == request.principal.attr.org_id
 
+    # Division admins can manage memberships in their own division
+    - actions:
+        - create
+        - read
+        - update
+        - delete
+        - list
+      effect: EFFECT_ALLOW
+      roles:
+        - division_admin
+      condition:
+        match:
+          expr: request.resource.attr.division_id == request.principal.attr.division_id
+
     # Team admins can read team memberships only
     - actions:
         - read

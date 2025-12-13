@@ -31,6 +31,7 @@ class OrgTeamListCreateView(APIView):
     GET /api/v1/orgs/{org_id}/teams
         Query parameters:
         - search: Search by name (case-insensitive contains)
+        - division_id: Filter teams by division
         - limit: Number of results to return (default: 50, max: 1000)
         - offset: Number of results to skip (default: 0)
 
@@ -52,7 +53,7 @@ class OrgTeamListCreateView(APIView):
         )
 
         # Build queryset with annotations for counts
-        queryset = Team.objects.filter(org_id=org_id).select_related("org").annotate(
+        queryset = Team.objects.filter(org_id=org_id).select_related("org", "division").annotate(
             _members_count=Count("memberships", distinct=True),
         )
 
@@ -60,6 +61,10 @@ class OrgTeamListCreateView(APIView):
         search = request.query_params.get("search")
         if search:
             queryset = queryset.filter(name__icontains=search)
+
+        division_id = request.query_params.get("division_id")
+        if division_id:
+            queryset = queryset.filter(division_id=division_id)
 
         # Order by created_at descending
         queryset = queryset.order_by("-created_at")
@@ -127,7 +132,7 @@ class OrgTeamDetailView(APIView):
     def get_object(self, org_id, team_id) -> Team | None:
         """Get team by ID within the org or return None."""
         try:
-            return Team.objects.select_related("org").get(id=team_id, org_id=org_id)
+            return Team.objects.select_related("org", "division").get(id=team_id, org_id=org_id)
         except Team.DoesNotExist:
             return None
 

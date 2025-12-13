@@ -1,4 +1,5 @@
 from django.urls import include, path
+from rest_framework.routers import DefaultRouter
 
 from api.views import AuthPingView
 from api.views_api_keys import (
@@ -32,6 +33,8 @@ from api.views_admin_memberships import (
     AdminMembershipDetailView,
     AdminMembershipListCreateView,
 )
+from api.views_admin_divisions import AdminDivisionViewSet
+from api.views_org_divisions import OrgDivisionViewSet
 from api.views_org_teams import OrgTeamDetailView, OrgTeamListCreateView
 from api.views_org_members import OrgMemberDetailView, OrgMemberListCreateView
 from api.views_alerts import AlertListView
@@ -55,6 +58,12 @@ from api.views_user_billing import (
     UserBillingStatusView,
     UserCheckoutSessionView,
 )
+from api.views_division_billing import (
+    DivisionBillingPortalView,
+    DivisionBillingStatusView,
+    DivisionCheckoutSessionView,
+    DivisionCreateStripeCustomerView,
+)
 from api.views_licensing import OrgLicenseView, StripeWebhookView
 from api.views_monitoring import (
     AppMetricsView,
@@ -77,6 +86,10 @@ from api.views_webhooks import (
     WebhookTestView,
 )
 
+# Router for ViewSets
+router = DefaultRouter()
+router.register(r"admin/divisions", AdminDivisionViewSet, basename="admin-divisions")
+
 urlpatterns = [
     # Local authentication
     path("auth/", include("api.urls_local_auth")),
@@ -89,7 +102,26 @@ urlpatterns = [
     path("orgs/<uuid:org_id>/teams/<uuid:team_id>", OrgTeamDetailView.as_view(), name="org-team-detail"),
     path("orgs/<uuid:org_id>/members", OrgMemberListCreateView.as_view(), name="org-member-list"),
     path("orgs/<uuid:org_id>/members/<int:user_id>", OrgMemberDetailView.as_view(), name="org-member-detail"),
-    # Billing endpoints
+    # Org-scoped division routes
+    path("orgs/<uuid:org_id>/divisions/", OrgDivisionViewSet.as_view({
+        "get": "list",
+        "post": "create",
+    }), name="org-divisions-list"),
+    path("orgs/<uuid:org_id>/divisions/<uuid:pk>/", OrgDivisionViewSet.as_view({
+        "get": "retrieve",
+        "put": "update",
+        "patch": "partial_update",
+        "delete": "destroy",
+    }), name="org-divisions-detail"),
+    path("orgs/<uuid:org_id>/divisions/<uuid:pk>/teams/", OrgDivisionViewSet.as_view({
+        "get": "teams",
+    }), name="org-divisions-teams"),
+    # Division billing endpoints (independent billing mode only)
+    path("orgs/<uuid:org_id>/divisions/<uuid:division_id>/billing", DivisionBillingStatusView.as_view(), name="division-billing-status"),
+    path("orgs/<uuid:org_id>/divisions/<uuid:division_id>/billing/checkout", DivisionCheckoutSessionView.as_view(), name="division-billing-checkout"),
+    path("orgs/<uuid:org_id>/divisions/<uuid:division_id>/billing/portal", DivisionBillingPortalView.as_view(), name="division-billing-portal"),
+    path("orgs/<uuid:org_id>/divisions/<uuid:division_id>/billing/customer", DivisionCreateStripeCustomerView.as_view(), name="division-billing-customer"),
+    # Org billing endpoints
     path("orgs/<uuid:org_id>/billing", BillingStatusView.as_view(), name="org-billing-status"),
     path("orgs/<uuid:org_id>/billing/checkout", CheckoutSessionView.as_view(), name="org-billing-checkout"),
     path("orgs/<uuid:org_id>/billing/portal", BillingPortalView.as_view(), name="org-billing-portal"),
@@ -169,3 +201,6 @@ urlpatterns = [
     path("health/ready", ReadinessView.as_view(), name="readiness"),
     path("health/live", LivenessView.as_view(), name="liveness"),
 ]
+
+# Include router URLs
+urlpatterns += router.urls
