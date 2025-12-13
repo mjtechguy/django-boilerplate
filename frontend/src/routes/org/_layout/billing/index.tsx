@@ -65,8 +65,8 @@ function BillingPage() {
             <Badge
               className={
                 license.status === "active"
-                  ? "bg-emerald-500/10 text-emerald-600"
-                  : "bg-amber-500/10 text-amber-600"
+                  ? "bg-green-500/10 text-green-600 dark:text-green-500"
+                  : "bg-yellow-500/10 text-yellow-600 dark:text-yellow-500"
               }
             >
               {license.status === "active" ? (
@@ -120,8 +120,8 @@ function BillingPage() {
           <div className="grid gap-3 md:grid-cols-2">
             {license.features.map((feature) => (
               <div key={feature} className="flex items-center gap-2">
-                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/10">
-                  <Check className="h-3 w-3 text-emerald-600" />
+                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-green-500/10">
+                  <Check className="h-3 w-3 text-green-600 dark:text-green-500" />
                 </div>
                 <span className="text-sm">{feature}</span>
               </div>
@@ -192,7 +192,7 @@ function UsageCard({ title, icon: Icon, used, total, unit }: UsageCardProps) {
           <div className="h-2 rounded-full bg-muted overflow-hidden">
             <div
               className={`h-full rounded-full transition-all ${
-                isWarning ? "bg-amber-500" : "bg-emerald-500"
+                isWarning ? "bg-yellow-500" : "bg-green-500"
               }`}
               style={{ width: `${percentage}%` }}
             />
@@ -231,9 +231,9 @@ function BillingHistoryItem({
           variant="outline"
           className={
             status === "paid"
-              ? "border-emerald-500 text-emerald-600"
+              ? "border-green-500 text-green-600 dark:text-green-500"
               : status === "failed"
-                ? "border-red-500 text-red-600"
+                ? "border-destructive text-destructive"
                 : ""
           }
         >

@@ -95,7 +95,7 @@ function NotificationsPage() {
         {unreadCount > 0 && (
           <Badge
             variant="default"
-            className="bg-blue-500/10 text-blue-600 hover:bg-blue-500/20"
+            className="bg-primary/10 text-primary hover:bg-primary/20"
           >
             {unreadCount} unread
           </Badge>
@@ -134,23 +134,23 @@ function NotificationItem({ notification }: NotificationItemProps) {
   const typeConfig = {
     info: {
       icon: Info,
-      color: "text-blue-600",
-      bg: "bg-blue-500/10",
+      color: "text-primary",
+      bg: "bg-primary/10",
     },
     warning: {
       icon: AlertTriangle,
-      color: "text-amber-600",
-      bg: "bg-amber-500/10",
+      color: "text-yellow-600 dark:text-yellow-500",
+      bg: "bg-yellow-500/10",
     },
     success: {
       icon: Check,
-      color: "text-emerald-600",
-      bg: "bg-emerald-500/10",
+      color: "text-green-600 dark:text-green-500",
+      bg: "bg-green-500/10",
     },
     error: {
       icon: AlertCircle,
-      color: "text-red-600",
-      bg: "bg-red-500/10",
+      color: "text-destructive",
+      bg: "bg-destructive/10",
     },
   };
 
@@ -179,7 +179,7 @@ function NotificationItem({ notification }: NotificationItemProps) {
             </p>
           </div>
           {!notification.read && (
-            <div className="h-2 w-2 rounded-full bg-blue-500 shrink-0 mt-2" />
+            <div className="h-2 w-2 rounded-full bg-primary shrink-0 mt-2" />
           )}
         </div>
         <div className="flex items-center gap-3 mt-2">

@@ -33,11 +33,11 @@ export const Route = createFileRoute("/admin/_layout/monitoring/")({
 function StatusIcon({ status }: { status: HealthStatus }) {
   switch (status) {
     case "healthy":
-      return <CheckCircle2 className="h-5 w-5 text-emerald-500" />;
+      return <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-500" />;
     case "degraded":
-      return <AlertTriangle className="h-5 w-5 text-amber-500" />;
+      return <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-500" />;
     case "unhealthy":
-      return <AlertCircle className="h-5 w-5 text-red-500" />;
+      return <AlertCircle className="h-5 w-5 text-destructive" />;
   }
 }
 
@@ -190,10 +190,10 @@ function MonitoringPage() {
         <Card
           className={`border-2 ${
             overview.overall_status === "healthy"
-              ? "border-emerald-500/50 bg-emerald-500/5"
+              ? "border-green-500/50 bg-green-500/5"
               : overview.overall_status === "degraded"
-                ? "border-amber-500/50 bg-amber-500/5"
-                : "border-red-500/50 bg-red-500/5"
+                ? "border-yellow-500/50 bg-yellow-500/5"
+                : "border-destructive/50 bg-destructive/5"
           }`}
         >
           <CardContent className="flex items-center justify-between py-4">
@@ -345,7 +345,7 @@ function MonitoringPage() {
                 </div>
                 <Progress
                   value={server.memory.percent}
-                  className={`h-2 ${server.memory.percent > 90 ? "[&>div]:bg-red-500" : ""}`}
+                  className={`h-2 ${server.memory.percent > 90 ? "[&>div]:bg-destructive" : ""}`}
                 />
                 <div className="text-xs text-muted-foreground">
                   Available: {server.memory.available_gb}GB
@@ -370,7 +370,7 @@ function MonitoringPage() {
                 </div>
                 <Progress
                   value={server.disk.percent}
-                  className={`h-2 ${server.disk.percent > 90 ? "[&>div]:bg-red-500" : ""}`}
+                  className={`h-2 ${server.disk.percent > 90 ? "[&>div]:bg-destructive" : ""}`}
                 />
                 <div className="text-xs text-muted-foreground">
                   Free: {server.disk.free_gb}GB
@@ -402,19 +402,19 @@ function MonitoringPage() {
                 {/* Totals */}
                 <div className="grid grid-cols-3 gap-4 pb-4 border-b">
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-emerald-600">
+                    <p className="text-2xl font-bold text-green-600 dark:text-green-500">
                       {celeryStats.totals.active}
                     </p>
                     <p className="text-xs text-muted-foreground">Active</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-amber-600">
+                    <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-500">
                       {celeryStats.totals.reserved}
                     </p>
                     <p className="text-xs text-muted-foreground">Reserved</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-blue-600">
+                    <p className="text-2xl font-bold text-primary">
                       {celeryStats.totals.scheduled}
                     </p>
                     <p className="text-xs text-muted-foreground">Scheduled</p>
@@ -474,7 +474,7 @@ function MonitoringPage() {
                     <div className="flex items-center gap-3">
                       <div
                         className={`h-2 w-2 rounded-full ${
-                          stats.consumers > 0 ? "bg-emerald-500" : "bg-amber-500"
+                          stats.consumers > 0 ? "bg-green-500" : "bg-yellow-500"
                         }`}
                       />
                       <span className="font-medium">{name}</span>

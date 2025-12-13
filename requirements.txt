@@ -60,3 +60,7 @@ qrcode[pil]==8.0
 
 # Social OAuth
 django-allauth[socialaccount]==65.3.0
+
+# Billing
+stripe==11.0.0
+djangorestframework-api-key==3.0.0

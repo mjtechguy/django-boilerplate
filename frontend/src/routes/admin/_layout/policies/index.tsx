@@ -20,8 +20,8 @@ function PoliciesPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">
-                <CheckCircle className="h-6 w-6 text-emerald-600" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+                <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-500" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Policy Status</p>
@@ -34,8 +34,8 @@ function PoliciesPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
-                <FileCode className="h-6 w-6 text-blue-600" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                <FileCode className="h-6 w-6 text-primary" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Total Policies</p>
@@ -48,8 +48,8 @@ function PoliciesPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
-                <Clock className="h-6 w-6 text-amber-600" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900/30">
+                <Clock className="h-6 w-6 text-yellow-600 dark:text-yellow-500" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Last Updated</p>

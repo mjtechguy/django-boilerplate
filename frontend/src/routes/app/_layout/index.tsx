@@ -139,15 +139,15 @@ function QuickStatCard({
   description,
 }: QuickStatCardProps) {
   const statusColors = {
-    success: "text-emerald-600",
-    warning: "text-amber-600",
-    info: "text-blue-600",
+    success: "text-green-600 dark:text-green-500",
+    warning: "text-yellow-600 dark:text-yellow-500",
+    info: "text-primary",
   };
 
   const bgColors = {
-    success: "bg-emerald-500/10",
-    warning: "bg-amber-500/10",
-    info: "bg-blue-500/10",
+    success: "bg-green-500/10",
+    warning: "bg-yellow-500/10",
+    info: "bg-primary/10",
   };
 
   return (
@@ -206,12 +206,12 @@ function ActivityItem({ title, description, time, status }: ActivityItemProps) {
     <div className="flex items-start gap-3">
       <div
         className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
-          status === "success" ? "bg-emerald-500/10" : "bg-blue-500/10"
+          status === "success" ? "bg-green-500/10" : "bg-primary/10"
         }`}
       >
         <CheckCircle2
           className={`h-4 w-4 ${
-            status === "success" ? "text-emerald-600" : "text-blue-600"
+            status === "success" ? "text-green-600 dark:text-green-500" : "text-primary"
           }`}
         />
       </div>

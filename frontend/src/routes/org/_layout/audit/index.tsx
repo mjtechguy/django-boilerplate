@@ -218,7 +218,7 @@ function AuditLogRow({ log }: AuditLogRowProps) {
           variant={log.result === "success" ? "default" : "destructive"}
           className={
             log.result === "success"
-              ? "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20"
+              ? "bg-green-500/10 text-green-600 dark:text-green-500 hover:bg-green-500/20"
               : ""
           }
         >

@@ -178,7 +178,7 @@ function StatCard({
           </div>
         </div>
         {trend && (
-          <div className="mt-2 flex items-center gap-1 text-sm text-emerald-600">
+          <div className="mt-2 flex items-center gap-1 text-sm text-green-600 dark:text-green-500">
             <TrendingUp className="h-3 w-3" />
             {trend} from last month
           </div>
@@ -195,9 +195,9 @@ interface HealthItemProps {
 
 function HealthItem({ name, status }: HealthItemProps) {
   const statusColors = {
-    healthy: "bg-emerald-500",
-    degraded: "bg-amber-500",
-    unhealthy: "bg-red-500",
+    healthy: "bg-green-500",
+    degraded: "bg-yellow-500",
+    unhealthy: "bg-destructive",
   };
 
   return (

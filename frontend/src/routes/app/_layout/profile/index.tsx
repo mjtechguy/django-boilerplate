@@ -58,7 +58,7 @@ function ProfilePage() {
               <p className="text-muted-foreground">{user?.email}</p>
               <div className="flex gap-2 mt-2">
                 <Badge variant="secondary">Member</Badge>
-                <Badge variant="outline" className="border-emerald-500 text-emerald-600">
+                <Badge variant="outline" className="border-green-500 text-green-600 dark:text-green-500">
                   Email verified
                 </Badge>
               </div>

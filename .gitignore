@@ -44,3 +44,12 @@ node_modules/
 
 # Local dev tools (not committed)
 .devtools/
+
+# UI templates
+ui/
+
+# pnpm store
+frontend/.pnpm-store/
+
+# Celery beat schedule files
+backend/celerybeat-schedule*

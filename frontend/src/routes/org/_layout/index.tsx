@@ -160,7 +160,7 @@ function StatCard({
               <Skeleton className="mt-1 h-8 w-20" />
             ) : (
               <p
-                className={`text-2xl font-bold ${variant === "success" ? "text-emerald-600" : ""}`}
+                className={`text-2xl font-bold ${variant === "success" ? "text-green-600 dark:text-green-500" : ""}`}
               >
                 {formattedValue}
               </p>
@@ -171,7 +171,7 @@ function StatCard({
           </div>
         </div>
         {trend && (
-          <div className="mt-2 flex items-center gap-1 text-sm text-emerald-600">
+          <div className="mt-2 flex items-center gap-1 text-sm text-green-600 dark:text-green-500">
             <TrendingUp className="h-3 w-3" />
             {trend} this month
           </div>
@@ -190,7 +190,7 @@ interface ActivityItemProps {
 function ActivityItem({ action, description, time }: ActivityItemProps) {
   return (
     <div className="flex items-start gap-3">
-      <div className="h-2 w-2 mt-2 rounded-full bg-emerald-500 shrink-0" />
+      <div className="h-2 w-2 mt-2 rounded-full bg-green-500 shrink-0" />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium">{action}</p>
         <p className="text-sm text-muted-foreground truncate">{description}</p>
