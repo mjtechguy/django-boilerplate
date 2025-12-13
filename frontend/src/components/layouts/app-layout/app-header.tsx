@@ -1,6 +1,5 @@
 import { Link, useMatchRoute } from "@tanstack/react-router";
-import { Bell, Moon, Sun, Menu, User, LogOut, Settings } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Bell, Menu, User, LogOut, Settings } from "lucide-react";
 import { useAuth, useUser } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -14,6 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ThemeToggle } from "@/components/shared/theme-toggle";
 
 interface NavItem {
   title: string;
@@ -26,25 +26,9 @@ const navItems: NavItem[] = [
 ];
 
 export function AppHeader() {
-  const [theme, setTheme] = useState<"light" | "dark">("light");
   const { logout } = useAuth();
   const user = useUser();
   const matchRoute = useMatchRoute();
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const initialTheme = savedTheme || (prefersDark ? "dark" : "light");
-    setTheme(initialTheme);
-    document.documentElement.classList.toggle("dark", initialTheme === "dark");
-  }, []);
-
-  const toggleTheme = () => {
-    const newTheme = theme === "light" ? "dark" : "light";
-    setTheme(newTheme);
-    localStorage.setItem("theme", newTheme);
-    document.documentElement.classList.toggle("dark", newTheme === "dark");
-  };
 
   const initials = user?.name
     ? user.name
@@ -93,18 +77,7 @@ export function AppHeader() {
         {/* Actions */}
         <div className="flex items-center gap-2">
           {/* Theme toggle */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleTheme}
-            className="h-9 w-9"
-          >
-            {theme === "light" ? (
-              <Moon className="h-4 w-4" />
-            ) : (
-              <Sun className="h-4 w-4" />
-            )}
-          </Button>
+          <ThemeToggle />
 
           {/* Notifications */}
           <DropdownMenu>

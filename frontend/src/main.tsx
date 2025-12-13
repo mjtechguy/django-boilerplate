@@ -5,6 +5,8 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { WebSocketProvider } from "@/lib/websocket";
+import { ThemeProvider } from "@/components/providers/theme-provider";
+import { DynamicTheme } from "@/components/providers/dynamic-theme";
 import { queryClient } from "@/lib/api";
 import { routeTree } from "./routeTree.gen";
 import "./index.css";
@@ -38,12 +40,16 @@ function InnerApp() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <InnerApp />
-      </AuthProvider>
-      {import.meta.env.DEV && <ReactQueryDevtools buttonPosition="bottom-left" />}
-    </QueryClientProvider>
+    <ThemeProvider defaultTheme="system" storageKey="theme">
+      <QueryClientProvider client={queryClient}>
+        <DynamicTheme>
+          <AuthProvider>
+            <InnerApp />
+          </AuthProvider>
+        </DynamicTheme>
+        {import.meta.env.DEV && <ReactQueryDevtools buttonPosition="bottom-left" />}
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }
 

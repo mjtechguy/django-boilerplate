@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { confirmPasswordReset } from "@/lib/api/auth";
+import { ThemeToggle } from "@/components/shared/theme-toggle";
 
 const searchSchema = z.object({
   token: z.string().optional(),
@@ -72,29 +73,34 @@ function ResetPasswordPage() {
   // No token provided
   if (!token) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0a0a0f]">
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-teal-500/5" />
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5" />
+
+        {/* Theme Toggle */}
+        <div className="absolute top-4 right-4 z-10">
+          <ThemeToggle />
+        </div>
 
         <div className="relative w-full max-w-md p-8">
           <Link to="/" className="flex items-center justify-center gap-2 mb-8">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+            <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center shadow-lg shadow-primary/25">
               <Shield className="w-5 h-5 text-white" />
             </div>
-            <span className="text-white font-semibold text-xl">Platform</span>
+            <span className="text-foreground font-semibold text-xl">Platform</span>
           </Link>
 
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 text-center">
-            <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-red-500/10 flex items-center justify-center">
-              <XCircle className="w-8 h-8 text-red-400" />
+          <div className="bg-card/50 backdrop-blur-xl border border-border rounded-2xl p-8 text-center">
+            <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-destructive/10 flex items-center justify-center">
+              <XCircle className="w-8 h-8 text-destructive" />
             </div>
 
-            <h1 className="text-2xl font-bold text-white mb-2">Invalid Link</h1>
-            <p className="text-slate-400 mb-6">
+            <h1 className="text-2xl font-bold text-foreground mb-2">Invalid Link</h1>
+            <p className="text-muted-foreground mb-6">
               This password reset link is invalid or has expired.
             </p>
 
             <Link to="/forgot-password">
-              <Button className="w-full h-11 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-semibold">
+              <Button className="w-full h-11">
                 Request New Link
               </Button>
             </Link>
@@ -107,29 +113,34 @@ function ResetPasswordPage() {
   // Success state
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0a0a0f]">
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-teal-500/5" />
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5" />
+
+        {/* Theme Toggle */}
+        <div className="absolute top-4 right-4 z-10">
+          <ThemeToggle />
+        </div>
 
         <div className="relative w-full max-w-md p-8">
           <Link to="/" className="flex items-center justify-center gap-2 mb-8">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+            <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center shadow-lg shadow-primary/25">
               <Shield className="w-5 h-5 text-white" />
             </div>
-            <span className="text-white font-semibold text-xl">Platform</span>
+            <span className="text-foreground font-semibold text-xl">Platform</span>
           </Link>
 
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 text-center">
-            <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-emerald-500/10 flex items-center justify-center">
-              <CheckCircle className="w-8 h-8 text-emerald-400" />
+          <div className="bg-card/50 backdrop-blur-xl border border-border rounded-2xl p-8 text-center">
+            <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-primary/10 flex items-center justify-center">
+              <CheckCircle className="w-8 h-8 text-primary" />
             </div>
 
-            <h1 className="text-2xl font-bold text-white mb-2">Password Reset</h1>
-            <p className="text-slate-400 mb-6">
+            <h1 className="text-2xl font-bold text-foreground mb-2">Password Reset</h1>
+            <p className="text-muted-foreground mb-6">
               Your password has been successfully reset. You can now sign in with your new password.
             </p>
 
             <Link to="/login">
-              <Button className="w-full h-11 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-semibold">
+              <Button className="w-full h-11">
                 Sign In
               </Button>
             </Link>
@@ -140,48 +151,53 @@ function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0a0a0f]">
-      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-teal-500/5" />
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5" />
+
+      {/* Theme Toggle */}
+      <div className="absolute top-4 right-4 z-10">
+        <ThemeToggle />
+      </div>
 
       <div className="relative w-full max-w-md p-8">
         <Link to="/" className="flex items-center justify-center gap-2 mb-8">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+          <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center shadow-lg shadow-primary/25">
             <Shield className="w-5 h-5 text-white" />
           </div>
-          <span className="text-white font-semibold text-xl">Platform</span>
+          <span className="text-foreground font-semibold text-xl">Platform</span>
         </Link>
 
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8">
+        <div className="bg-card/50 backdrop-blur-xl border border-border rounded-2xl p-8">
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-white mb-2">Reset your password</h1>
-            <p className="text-slate-400">Enter your new password below.</p>
+            <h1 className="text-2xl font-bold text-foreground mb-2">Reset your password</h1>
+            <p className="text-muted-foreground">Enter your new password below.</p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {error && (
-              <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+              <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
                 {error}
               </div>
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-slate-300">
+              <Label htmlFor="password">
                 New Password
               </Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter new password"
                   autoComplete="new-password"
-                  className="pl-10 pr-10 bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-emerald-500/50 focus:ring-emerald-500/20"
+                  className="pl-10 pr-10"
                   {...register("password")}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {showPassword ? (
                     <EyeOff className="w-5 h-5" />
@@ -191,28 +207,28 @@ function ResetPasswordPage() {
                 </button>
               </div>
               {errors.password && (
-                <p className="text-sm text-red-400">{errors.password.message}</p>
+                <p className="text-sm text-destructive">{errors.password.message}</p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password_confirm" className="text-slate-300">
+              <Label htmlFor="password_confirm">
                 Confirm New Password
               </Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
                   id="password_confirm"
                   type={showConfirmPassword ? "text" : "password"}
                   placeholder="Confirm new password"
                   autoComplete="new-password"
-                  className="pl-10 pr-10 bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-emerald-500/50 focus:ring-emerald-500/20"
+                  className="pl-10 pr-10"
                   {...register("password_confirm")}
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {showConfirmPassword ? (
                     <EyeOff className="w-5 h-5" />
@@ -222,14 +238,14 @@ function ResetPasswordPage() {
                 </button>
               </div>
               {errors.password_confirm && (
-                <p className="text-sm text-red-400">{errors.password_confirm.message}</p>
+                <p className="text-sm text-destructive">{errors.password_confirm.message}</p>
               )}
             </div>
 
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full h-11 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-semibold shadow-lg shadow-emerald-500/25 transition-all duration-300"
+              className="w-full h-11"
             >
               {isSubmitting ? (
                 <>

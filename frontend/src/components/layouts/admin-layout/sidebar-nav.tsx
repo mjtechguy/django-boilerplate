@@ -4,6 +4,7 @@ import {
   Building2,
   Users,
   Users2,
+  Network,
   Settings,
   Shield,
   FileText,
@@ -28,6 +29,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { title: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { title: "Organizations", href: "/admin/organizations", icon: Building2 },
+  { title: "Divisions", href: "/admin/divisions", icon: Network },
   { title: "Teams", href: "/admin/teams", icon: Users2 },
   { title: "Users", href: "/admin/users", icon: Users },
   { title: "Audit Logs", href: "/admin/audit", icon: FileText },
@@ -56,17 +58,17 @@ export function SidebarNav() {
               to={item.href}
               className={cn(
                 "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
-                "hover:bg-white/10",
+                "hover:bg-sidebar-accent",
                 isActive
-                  ? "bg-white/15 text-white shadow-sm"
-                  : "text-slate-300 hover:text-white",
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-muted-foreground hover:text-foreground",
                 isCollapsed && "justify-center px-2"
               )}
             >
               <Icon
                 className={cn(
                   "h-5 w-5 shrink-0 transition-colors",
-                  isActive ? "text-amber-400" : "text-slate-400 group-hover:text-slate-200"
+                  isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
                 )}
               />
               {!isCollapsed && <span>{item.title}</span>}

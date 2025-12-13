@@ -37,12 +37,12 @@ export function SidebarUser() {
       <button
         className={cn(
           "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-all duration-200",
-          "hover:bg-white/10 text-slate-200",
+          "hover:bg-sidebar-accent text-sidebar-foreground",
           isCollapsed && "justify-center px-2"
         )}
       >
-        <Avatar className="h-8 w-8 shrink-0 border border-white/20">
-          <AvatarFallback className="bg-gradient-to-br from-amber-500 to-orange-600 text-white text-xs font-semibold">
+        <Avatar className="h-8 w-8 shrink-0 border border-sidebar-border">
+          <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
             {initials}
           </AvatarFallback>
         </Avatar>
@@ -50,9 +50,9 @@ export function SidebarUser() {
           <>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate">{user?.name}</p>
-              <p className="text-xs text-slate-400 truncate">{user?.email}</p>
+              <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
             </div>
-            <ChevronDown className="h-4 w-4 text-slate-400" />
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
           </>
         )}
       </button>
@@ -60,7 +60,7 @@ export function SidebarUser() {
   );
 
   return (
-    <div className="border-t border-white/10 p-3">
+    <div className="border-t border-sidebar-border p-3">
       <DropdownMenu>
         {isCollapsed ? (
           <TooltipProvider delayDuration={0}>

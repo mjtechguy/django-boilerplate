@@ -101,7 +101,7 @@ function TeamCard({ team }: TeamCardProps) {
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
               <UsersRound className="h-5 w-5 text-white" />
             </div>
             <div>

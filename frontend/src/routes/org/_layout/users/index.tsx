@@ -151,7 +151,7 @@ function UserRow({ user }: UserRowProps) {
       <TableCell>
         <div className="flex items-center gap-3">
           <Avatar className="h-9 w-9">
-            <AvatarFallback className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white text-xs">
+            <AvatarFallback className="bg-primary text-white text-xs">
               {initials}
             </AvatarFallback>
           </Avatar>
@@ -186,7 +186,7 @@ function UserRow({ user }: UserRowProps) {
           variant={user.status === "active" ? "default" : "secondary"}
           className={
             user.status === "active"
-              ? "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20"
+              ? "bg-green-500/10 text-green-600 dark:text-green-500 hover:bg-green-500/20"
               : ""
           }
         >

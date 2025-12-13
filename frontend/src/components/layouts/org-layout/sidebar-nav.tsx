@@ -7,6 +7,7 @@ import {
   CreditCard,
   FileText,
   Webhook,
+  Building,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -26,6 +27,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { title: "Dashboard", href: "/org", icon: LayoutDashboard },
+  { title: "Divisions", href: "/org/divisions", icon: Building },
   { title: "Teams", href: "/org/teams", icon: UsersRound },
   { title: "Users", href: "/org/users", icon: Users },
   { title: "Billing", href: "/org/billing", icon: CreditCard },
@@ -50,17 +52,17 @@ export function OrgSidebarNav() {
               to={item.href}
               className={cn(
                 "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
-                "hover:bg-white/10",
+                "hover:bg-sidebar-accent",
                 isActive
-                  ? "bg-white/15 text-white shadow-sm"
-                  : "text-slate-300 hover:text-white",
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-muted-foreground hover:text-foreground",
                 isCollapsed && "justify-center px-2"
               )}
             >
               <Icon
                 className={cn(
                   "h-5 w-5 shrink-0 transition-colors",
-                  isActive ? "text-emerald-400" : "text-slate-400 group-hover:text-slate-200"
+                  isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
                 )}
               />
               {!isCollapsed && <span>{item.title}</span>}

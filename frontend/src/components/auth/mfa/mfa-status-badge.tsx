@@ -12,7 +12,7 @@ export function MfaStatusBadge({
 }: MfaStatusBadgeProps) {
   if (enabled) {
     return (
-      <Badge variant={variant} className="border-emerald-500 text-emerald-600">
+      <Badge variant={variant} className="border-primary text-primary">
         <Shield className="mr-1 h-3 w-3" />
         MFA Enabled
       </Badge>

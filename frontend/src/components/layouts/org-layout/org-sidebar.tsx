@@ -20,8 +20,8 @@ export function OrgSidebar() {
       style={{ width: isCollapsed ? undefined : width }}
       className={cn(
         "relative flex h-screen flex-col",
-        "bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950",
-        "border-r border-white/5",
+        "bg-sidebar text-sidebar-foreground",
+        "border-r border-sidebar-border",
         "transition-[width] duration-300 ease-in-out",
         isCollapsed && "w-16"
       )}
@@ -29,18 +29,18 @@ export function OrgSidebar() {
       {/* Logo */}
       <div
         className={cn(
-          "flex h-16 items-center border-b border-white/10 px-4",
+          "flex h-16 items-center border-b border-sidebar-border px-4",
           isCollapsed && "justify-center px-2"
         )}
       >
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg shadow-emerald-500/20">
-            <Building2 className="h-5 w-5 text-white" />
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <Building2 className="h-5 w-5" />
           </div>
           {!isCollapsed && (
             <div className="flex flex-col">
-              <span className="text-sm font-semibold text-white">Org Admin</span>
-              <span className="text-[10px] text-slate-400 uppercase tracking-wider">
+              <span className="text-sm font-semibold">Org Admin</span>
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
                 Management
               </span>
             </div>
@@ -63,7 +63,7 @@ export function OrgSidebar() {
                 variant="outline"
                 size="icon"
                 onClick={toggle}
-                className="h-6 w-6 rounded-full border-slate-700 bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white shadow-lg"
+                className="h-6 w-6 rounded-full border-border bg-background text-muted-foreground hover:bg-accent hover:text-foreground shadow-lg"
               >
                 {isCollapsed ? (
                   <PanelLeft className="h-3 w-3" />

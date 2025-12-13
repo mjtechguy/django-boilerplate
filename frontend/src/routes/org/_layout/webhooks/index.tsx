@@ -138,7 +138,7 @@ function WebhookRow({ webhook }: WebhookRowProps) {
     <TableRow>
       <TableCell>
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
             <Webhook className="h-5 w-5 text-white" />
           </div>
           <div>
@@ -169,7 +169,7 @@ function WebhookRow({ webhook }: WebhookRowProps) {
           variant={webhook.status === "active" ? "default" : "secondary"}
           className={
             webhook.status === "active"
-              ? "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20"
+              ? "bg-green-500/10 text-green-600 dark:text-green-500 hover:bg-green-500/20"
               : ""
           }
         >
@@ -187,8 +187,8 @@ function WebhookRow({ webhook }: WebhookRowProps) {
             variant="outline"
             className={
               webhook.lastDelivery.status === "success"
-                ? "border-emerald-500 text-emerald-600"
-                : "border-red-500 text-red-600"
+                ? "border-green-500 text-green-600 dark:text-green-500"
+                : "border-destructive text-destructive"
             }
           >
             {webhook.lastDelivery.status === "success" ? (

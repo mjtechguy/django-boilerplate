@@ -25,7 +25,7 @@ function RootComponent() {
             title: "text-foreground",
             description: "text-muted-foreground",
             error: "bg-destructive border-destructive text-destructive-foreground",
-            success: "bg-background border-emerald-500",
+            success: "bg-background border-primary",
           },
         }}
       />

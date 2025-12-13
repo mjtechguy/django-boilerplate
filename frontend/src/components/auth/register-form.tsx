@@ -61,7 +61,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       {error && (
-        <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+        <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
           {error}
         </div>
       )}
@@ -69,24 +69,24 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
       {/* Name fields */}
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="first_name" className="text-slate-300">
+          <Label htmlFor="first_name">
             First name
           </Label>
           <div className="relative">
-            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <Input
               id="first_name"
               type="text"
               placeholder="John"
               autoComplete="given-name"
-              className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-emerald-500/50 focus:ring-emerald-500/20"
+              className="pl-10"
               {...register("first_name")}
             />
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="last_name" className="text-slate-300">
+          <Label htmlFor="last_name">
             Last name
           </Label>
           <Input
@@ -94,7 +94,6 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
             type="text"
             placeholder="Doe"
             autoComplete="family-name"
-            className="bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-emerald-500/50 focus:ring-emerald-500/20"
             {...register("last_name")}
           />
         </div>
@@ -102,44 +101,44 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
 
       {/* Email */}
       <div className="space-y-2">
-        <Label htmlFor="email" className="text-slate-300">
+        <Label htmlFor="email">
           Email
         </Label>
         <div className="relative">
-          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
           <Input
             id="email"
             type="email"
             placeholder="you@example.com"
             autoComplete="email"
-            className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-emerald-500/50 focus:ring-emerald-500/20"
+            className="pl-10"
             {...register("email")}
           />
         </div>
         {errors.email && (
-          <p className="text-sm text-red-400">{errors.email.message}</p>
+          <p className="text-sm text-destructive">{errors.email.message}</p>
         )}
       </div>
 
       {/* Password */}
       <div className="space-y-2">
-        <Label htmlFor="password" className="text-slate-300">
+        <Label htmlFor="password">
           Password
         </Label>
         <div className="relative">
-          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
           <Input
             id="password"
             type={showPassword ? "text" : "password"}
             placeholder="Create a strong password"
             autoComplete="new-password"
-            className="pl-10 pr-10 bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-emerald-500/50 focus:ring-emerald-500/20"
+            className="pl-10 pr-10"
             {...register("password")}
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
           >
             {showPassword ? (
               <EyeOff className="w-5 h-5" />
@@ -149,29 +148,29 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           </button>
         </div>
         {errors.password && (
-          <p className="text-sm text-red-400">{errors.password.message}</p>
+          <p className="text-sm text-destructive">{errors.password.message}</p>
         )}
       </div>
 
       {/* Confirm Password */}
       <div className="space-y-2">
-        <Label htmlFor="password_confirm" className="text-slate-300">
+        <Label htmlFor="password_confirm">
           Confirm password
         </Label>
         <div className="relative">
-          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
           <Input
             id="password_confirm"
             type={showConfirmPassword ? "text" : "password"}
             placeholder="Confirm your password"
             autoComplete="new-password"
-            className="pl-10 pr-10 bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-emerald-500/50 focus:ring-emerald-500/20"
+            className="pl-10 pr-10"
             {...register("password_confirm")}
           />
           <button
             type="button"
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
           >
             {showConfirmPassword ? (
               <EyeOff className="w-5 h-5" />
@@ -181,14 +180,14 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           </button>
         </div>
         {errors.password_confirm && (
-          <p className="text-sm text-red-400">{errors.password_confirm.message}</p>
+          <p className="text-sm text-destructive">{errors.password_confirm.message}</p>
         )}
       </div>
 
       <Button
         type="submit"
         disabled={isSubmitting}
-        className="w-full h-11 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-semibold shadow-lg shadow-emerald-500/25 transition-all duration-300"
+        className="w-full h-11"
       >
         {isSubmitting ? (
           <>
