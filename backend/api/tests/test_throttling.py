@@ -10,6 +10,8 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 
 from api.models import Org
+from api.throttling import OrgRateThrottle
+from api.views import AuthPingView
 
 pytestmark = pytest.mark.django_db
 
@@ -26,6 +28,19 @@ def clear_throttle_cache():
     cache.clear()
     yield
     cache.clear()
+
+
+@pytest.fixture
+def enable_throttling():
+    """Enable OrgRateThrottle on AuthPingView for tests.
+
+    DRF caches settings at import time, so override_settings doesn't work.
+    Instead, we directly patch the throttle_classes on the view.
+    """
+    original_classes = AuthPingView.throttle_classes
+    AuthPingView.throttle_classes = [OrgRateThrottle]
+    yield
+    AuthPingView.throttle_classes = original_classes
 
 
 @pytest.fixture
@@ -108,7 +123,7 @@ def custom_rate_org():
     )
 
 
-def test_free_tier_rate_limit(client, mock_auth, free_org, clear_throttle_cache):
+def test_free_tier_rate_limit(client, mock_auth, free_org, clear_throttle_cache, enable_throttling):
     """Test that free tier has 100 requests/hour limit."""
     token = f"token-{free_org.id}"
 
@@ -129,7 +144,7 @@ def test_free_tier_rate_limit(client, mock_auth, free_org, clear_throttle_cache)
     assert resp.status_code == 429, "Expected throttling after 100 requests"
 
 
-def test_starter_tier_rate_limit(client, mock_auth, starter_org, clear_throttle_cache):
+def test_starter_tier_rate_limit(client, mock_auth, starter_org, clear_throttle_cache, enable_throttling):
     """Test that starter tier has 1000 requests/hour limit."""
     token = f"token-{starter_org.id}"
 
@@ -143,7 +158,7 @@ def test_starter_tier_rate_limit(client, mock_auth, starter_org, clear_throttle_
         assert resp.status_code == 200, f"Request {i+1} failed"
 
 
-def test_pro_tier_rate_limit(client, mock_auth, pro_org, clear_throttle_cache):
+def test_pro_tier_rate_limit(client, mock_auth, pro_org, clear_throttle_cache, enable_throttling):
     """Test that pro tier has 10000 requests/hour limit."""
     token = f"token-{pro_org.id}"
 
@@ -157,7 +172,7 @@ def test_pro_tier_rate_limit(client, mock_auth, pro_org, clear_throttle_cache):
         assert resp.status_code == 200, f"Request {i+1} failed"
 
 
-def test_enterprise_tier_unlimited(client, mock_auth, enterprise_org, clear_throttle_cache):
+def test_enterprise_tier_unlimited(client, mock_auth, enterprise_org, clear_throttle_cache, enable_throttling):
     """Test that enterprise tier has unlimited requests."""
     token = f"token-{enterprise_org.id}"
 
@@ -172,7 +187,7 @@ def test_enterprise_tier_unlimited(client, mock_auth, enterprise_org, clear_thro
 
 
 def test_custom_rate_limit_in_feature_flags(
-    client, mock_auth, custom_rate_org, clear_throttle_cache
+    client, mock_auth, custom_rate_org, clear_throttle_cache, enable_throttling
 ):
     """Test that custom rate limit in feature_flags overrides tier default."""
     token = f"token-{custom_rate_org.id}"
@@ -194,7 +209,7 @@ def test_custom_rate_limit_in_feature_flags(
 
 
 def test_different_orgs_have_independent_limits(
-    client, mock_auth, free_org, starter_org, clear_throttle_cache
+    client, mock_auth, free_org, starter_org, clear_throttle_cache, enable_throttling
 ):
     """Test that different organizations have independent rate limits."""
     free_token = f"token-{free_org.id}"
@@ -232,7 +247,7 @@ def test_different_orgs_have_independent_limits(
     assert resp.status_code == 429
 
 
-def test_no_org_id_skips_org_throttling(client, mock_auth, clear_throttle_cache):
+def test_no_org_id_skips_org_throttling(client, mock_auth, clear_throttle_cache, enable_throttling):
     """Test that requests without org_id skip org-level throttling."""
     # Use a token that doesn't contain org_id
     token = "token-without-org"

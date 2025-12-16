@@ -1,5 +1,8 @@
 /**
  * WebSocket client with automatic reconnection and message handling.
+ *
+ * Security: Uses subprotocol-based authentication instead of query string
+ * to prevent token exposure in logs and browser history.
  */
 
 export type WebSocketStatus = "connecting" | "connected" | "disconnected" | "error";
@@ -18,6 +21,9 @@ export interface WSClientOptions {
   maxReconnectAttempts?: number;
   pingInterval?: number;
 }
+
+// Subprotocol prefix for token-based authentication
+const AUTH_SUBPROTOCOL_PREFIX = "access_token.";
 
 export class WSClient {
   private ws: WebSocket | null = null;
@@ -49,10 +55,20 @@ export class WSClient {
     this.onStatusChange?.(status);
   }
 
-  private buildUrl(): string {
-    // Add token to query string for authentication
-    const separator = this.url.includes("?") ? "&" : "?";
-    return `${this.url}${separator}token=${encodeURIComponent(this.token)}`;
+  /**
+   * Build subprotocol for token authentication.
+   * This is more secure than query string as it won't appear in:
+   * - Server access logs
+   * - Browser history
+   * - Referrer headers
+   */
+  private getAuthSubprotocol(): string {
+    // Encode token in subprotocol (base64url to avoid special chars)
+    const base64Token = btoa(this.token)
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=/g, "");
+    return `${AUTH_SUBPROTOCOL_PREFIX}${base64Token}`;
   }
 
   connect(): void {
@@ -64,7 +80,8 @@ export class WSClient {
     this.setStatus("connecting");
 
     try {
-      this.ws = new WebSocket(this.buildUrl());
+      // Use subprotocol for authentication instead of query string
+      this.ws = new WebSocket(this.url, [this.getAuthSubprotocol()]);
 
       this.ws.onopen = () => {
         this.setStatus("connected");

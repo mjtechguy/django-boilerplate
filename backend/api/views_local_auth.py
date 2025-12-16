@@ -282,7 +282,8 @@ class TokenRefreshView(APIView):
     Token refresh endpoint.
 
     POST /api/v1/auth/refresh
-    Exchanges a valid refresh token for a new access token.
+    Exchanges a valid refresh token for new access and refresh tokens.
+    Implements token rotation with reuse detection.
     """
 
     permission_classes = [AllowAny]
@@ -291,13 +292,24 @@ class TokenRefreshView(APIView):
         serializer = TokenRefreshSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        refresh_token = serializer.validated_data["refresh_token"]
+        old_refresh_token = serializer.validated_data["refresh_token"]
 
         # Validate refresh token
-        token_obj = RefreshToken.validate_token(refresh_token)
+        token_obj = RefreshToken.validate_token(old_refresh_token)
         if not token_obj:
             return Response(
                 {"error": "Invalid or expired refresh token"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        # Check for token reuse (already replaced)
+        if token_obj.replaced_by is not None:
+            # Token reuse detected! Revoke entire family for security
+            RefreshToken.objects.filter(family_id=token_obj.family_id).update(
+                revoked_at=timezone.now()
+            )
+            return Response(
+                {"error": "Token reuse detected. All sessions revoked for security."},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
@@ -316,17 +328,44 @@ class TokenRefreshView(APIView):
         if hasattr(user, "local_profile"):
             roles = user.local_profile.roles
 
-        # Generate new access token
+        # Generate new tokens (rotation)
         access_token = generate_access_token(user, roles=roles)
+        new_refresh_token_str = generate_refresh_token(user)
         access_ttl = getattr(settings, "LOCAL_AUTH_ACCESS_TOKEN_TTL", 3600)
+        refresh_ttl = getattr(settings, "LOCAL_AUTH_REFRESH_TOKEN_TTL", 604800)
+
+        # Create new refresh token in same family with incremented generation
+        import hashlib
+
+        new_token_obj = RefreshToken.objects.create(
+            user=user,
+            token_hash=hashlib.sha256(new_refresh_token_str.encode()).hexdigest(),
+            expires_at=timezone.now() + timezone.timedelta(seconds=refresh_ttl),
+            family_id=token_obj.family_id,
+            generation=token_obj.generation + 1,
+            user_agent=request.META.get("HTTP_USER_AGENT", "")[:255],
+            ip_address=self._get_client_ip(request),
+        )
+
+        # Mark old token as replaced (not revoked - needed for reuse detection)
+        token_obj.replaced_by = new_token_obj
+        token_obj.save(update_fields=["replaced_by"])
 
         return Response(
             {
                 "access_token": access_token,
+                "refresh_token": new_refresh_token_str,
                 "token_type": "Bearer",
                 "expires_in": access_ttl,
             }
         )
+
+    def _get_client_ip(self, request) -> str | None:
+        """Extract client IP from request headers."""
+        x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
+        if x_forwarded_for:
+            return x_forwarded_for.split(",")[0].strip()
+        return request.META.get("REMOTE_ADDR")
 
 
 class CurrentUserView(APIView):

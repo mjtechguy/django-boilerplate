@@ -20,6 +20,7 @@ def test_settings_and_patches():
     caches = {
         "default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"},
         "idempotency": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"},
+        "cerbos": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"},
     }
     # Test encryption key - only for tests!
     test_encryption_key = "0YWTBYHQnZek-VOlZPk-a2j8nHm0WqkhHpPHH9k6oVQ="

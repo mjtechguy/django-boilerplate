@@ -72,26 +72,34 @@ def test_cerbos_decision_cache(monkeypatch):
             calls["count"] += 1
             return SimpleNamespace(results=[SimpleNamespace(actions={"read": Effect.ALLOW})])
 
+    # Save original function to restore LRU cache behavior after test
+    original_get_client = cerbos_client.get_client
     cerbos_client.get_client.cache_clear()
     monkeypatch.setattr("api.cerbos_client.get_client", lambda: FakeClient())
 
-    principal_id = "u1"
-    roles = {"org_admin"}
-    principal_attrs = {"org_id": "org-1"}
-    resource_attrs = {"org_id": "org-1"}
-    # First call hits fake client
-    allowed1 = cerbos_client.check_action(
-        principal_id, roles, principal_attrs, "sample_resource", "1", resource_attrs, "read"
-    )
-    allowed2 = cerbos_client.check_action(
-        principal_id, roles, principal_attrs, "sample_resource", "1", resource_attrs, "read"
-    )
-    assert allowed1 is True and allowed2 is True
-    assert calls["count"] == 1  # cached
+    try:
+        principal_id = "u1"
+        roles = {"org_admin"}
+        principal_attrs = {"org_id": "org-1"}
+        resource_attrs = {"org_id": "org-1"}
+        # First call hits fake client
+        allowed1 = cerbos_client.check_action(
+            principal_id, roles, principal_attrs, "sample_resource", "1", resource_attrs, "read"
+        )
+        allowed2 = cerbos_client.check_action(
+            principal_id, roles, principal_attrs, "sample_resource", "1", resource_attrs, "read"
+        )
+        assert allowed1 is True and allowed2 is True
+        assert calls["count"] == 1  # cached
 
-    cerbos_client.invalidate_decision_cache()
-    allowed3 = cerbos_client.check_action(
-        principal_id, roles, principal_attrs, "sample_resource", "1", resource_attrs, "read"
-    )
-    assert allowed3 is True
-    assert calls["count"] == 2
+        cerbos_client.invalidate_decision_cache()
+        allowed3 = cerbos_client.check_action(
+            principal_id, roles, principal_attrs, "sample_resource", "1", resource_attrs, "read"
+        )
+        assert allowed3 is True
+        assert calls["count"] == 2
+    finally:
+        # Cleanup: clear decision cache and restore get_client for subsequent tests
+        cerbos_client.invalidate_decision_cache()
+        # Clear the LRU cache on the original function
+        original_get_client.cache_clear()

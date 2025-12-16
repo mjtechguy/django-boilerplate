@@ -5,6 +5,7 @@ This module provides a LocalUserProfile model that stores local auth
 credentials alongside the Django User model, using Argon2 for password hashing.
 """
 
+import hashlib
 import secrets
 import uuid
 
@@ -119,15 +120,17 @@ class LocalUserProfile(TimeStampedModel):
         return check_password(raw_password, self.password_hash)
 
     def generate_email_verification_token(self) -> str:
-        """Generate and store a new email verification token."""
-        self.email_verification_token = generate_token()
+        """Generate and store a hashed email verification token."""
+        token = generate_token()
+        # Store the hash, return the plaintext for the email
+        self.email_verification_token = hashlib.sha256(token.encode()).hexdigest()
         self.email_verification_sent_at = timezone.now()
         self.save(update_fields=["email_verification_token", "email_verification_sent_at"])
-        return self.email_verification_token
+        return token
 
     def verify_email(self, token: str) -> bool:
         """
-        Verify email with the provided token.
+        Verify email with the provided token (compares hash).
 
         Returns True if verification succeeded, False otherwise.
         """
@@ -141,7 +144,9 @@ class LocalUserProfile(TimeStampedModel):
             if token_age.total_seconds() > ttl:
                 return False
 
-        if secrets.compare_digest(self.email_verification_token, token):
+        # Compare hashes using constant-time comparison
+        token_hash = hashlib.sha256(token.encode()).hexdigest()
+        if secrets.compare_digest(self.email_verification_token, token_hash):
             self.email_verified = True
             self.email_verification_token = ""
             self.email_verification_sent_at = None
@@ -154,15 +159,17 @@ class LocalUserProfile(TimeStampedModel):
         return False
 
     def generate_password_reset_token(self) -> str:
-        """Generate and store a new password reset token."""
-        self.password_reset_token = generate_token()
+        """Generate and store a hashed password reset token."""
+        token = generate_token()
+        # Store the hash, return the plaintext for the email
+        self.password_reset_token = hashlib.sha256(token.encode()).hexdigest()
         self.password_reset_sent_at = timezone.now()
         self.save(update_fields=["password_reset_token", "password_reset_sent_at"])
-        return self.password_reset_token
+        return token
 
     def verify_password_reset_token(self, token: str) -> bool:
         """
-        Verify a password reset token.
+        Verify a password reset token (compares hash).
 
         Returns True if the token is valid and not expired, False otherwise.
         """
@@ -176,7 +183,9 @@ class LocalUserProfile(TimeStampedModel):
             if token_age.total_seconds() > ttl:
                 return False
 
-        return secrets.compare_digest(self.password_reset_token, token)
+        # Compare hashes using constant-time comparison
+        token_hash = hashlib.sha256(token.encode()).hexdigest()
+        return secrets.compare_digest(self.password_reset_token, token_hash)
 
     def clear_password_reset_token(self) -> None:
         """Clear the password reset token after use."""
@@ -218,6 +227,7 @@ class RefreshToken(TimeStampedModel):
     Store refresh tokens for local authentication.
 
     Refresh tokens are stored hashed and can be revoked.
+    Implements token rotation with reuse detection via family_id.
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -232,6 +242,17 @@ class RefreshToken(TimeStampedModel):
     user_agent = models.CharField(max_length=255, blank=True)
     ip_address = models.GenericIPAddressField(null=True, blank=True)
 
+    # Token rotation fields for reuse detection
+    family_id = models.UUIDField(default=uuid.uuid4, db_index=True)
+    generation = models.IntegerField(default=0)
+    replaced_by = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="replaces",
+    )
+
     class Meta:
         verbose_name = "Refresh Token"
         verbose_name_plural = "Refresh Tokens"
@@ -239,6 +260,7 @@ class RefreshToken(TimeStampedModel):
             models.Index(fields=["token_hash"]),
             models.Index(fields=["user", "revoked_at"]),
             models.Index(fields=["expires_at"]),
+            models.Index(fields=["family_id"]),
         ]
 
     def __str__(self) -> str:

@@ -1,20 +1,35 @@
 """
 HMAC signature-based authentication using S3-style access keys.
 
-Authentication header format:
+Authentication header format (legacy - still supported):
 Authorization: AKSK AccessKeyId=<id>, Timestamp=<unix_timestamp>, Signature=<hmac>
 
-Signature is computed as:
+Enhanced header format (recommended):
+Authorization: AKSK AccessKeyId=<id>, Timestamp=<unix_timestamp>, Nonce=<uuid>, Signature=<hmac>
+
+Legacy signature is computed as:
 HMAC-SHA256(secret_access_key, timestamp + method + path)
+
+Enhanced signature includes:
+HMAC-SHA256(secret_access_key, timestamp + nonce + method + host + path + query + body_hash)
+
+Security notes:
+- Enhanced signature prevents request tampering and replay attacks
+- Nonce tracking prevents replay within timestamp window
+- Both formats supported for backward compatibility
 """
 
 import hashlib
 import hmac
 import re
 import time
+import uuid
+from urllib.parse import parse_qsl, urlencode
 
 import structlog
+from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.cache import caches
 from rest_framework import exceptions
 from rest_framework.authentication import BaseAuthentication
 
@@ -23,8 +38,11 @@ from api.models_access_keys import AccessKeyPair
 logger = structlog.get_logger(__name__)
 User = get_user_model()
 
-# Signature timestamp must be within 5 minutes
-TIMESTAMP_TOLERANCE_SECONDS = 300
+# Signature timestamp must be within 5 minutes (configurable)
+TIMESTAMP_TOLERANCE_SECONDS = getattr(settings, "AKSK_TIMESTAMP_TOLERANCE_SECONDS", 300)
+
+# Nonce cache for replay protection
+NONCE_CACHE_PREFIX = "aksk:nonce:"
 
 
 class AccessKeyAuthentication(BaseAuthentication):
@@ -74,6 +92,7 @@ class AccessKeyAuthentication(BaseAuthentication):
 
         credentials = {k.strip(): v.strip() for k, v in matches}
 
+        # Required fields - Nonce is optional for backward compatibility
         required_fields = ["AccessKeyId", "Timestamp", "Signature"]
         for field in required_fields:
             if field not in credentials:
@@ -86,6 +105,7 @@ class AccessKeyAuthentication(BaseAuthentication):
         access_key_id = credentials["AccessKeyId"]
         timestamp = credentials["Timestamp"]
         signature = credentials["Signature"]
+        nonce = credentials.get("Nonce")  # Optional for backward compatibility
 
         # Validate timestamp
         try:
@@ -106,14 +126,37 @@ class AccessKeyAuthentication(BaseAuthentication):
         except AccessKeyPair.DoesNotExist:
             raise exceptions.AuthenticationFailed("Invalid access key")
 
+        # Check for replay attack if nonce provided
+        if nonce:
+            if not self._verify_nonce(access_key_id, nonce):
+                logger.warning(
+                    "access_key_replay_detected",
+                    access_key_id=access_key_id,
+                    nonce=nonce,
+                )
+                raise exceptions.AuthenticationFailed("Request replay detected")
+
         # Verify the HMAC signature
-        # Secret is stored encrypted, so we can decrypt and use it
-        expected_signature = compute_signature(
-            secret=access_key.secret_access_key,  # Decrypted automatically
-            timestamp=timestamp,
-            method=request.method,
-            path=request.path,
-        )
+        # Use enhanced signature if nonce is provided, otherwise use legacy
+        if nonce:
+            expected_signature = compute_signature_enhanced(
+                secret=access_key.secret_access_key,
+                timestamp=timestamp,
+                nonce=nonce,
+                method=request.method,
+                host=request.get_host(),
+                path=request.path,
+                query_params=dict(request.GET),
+                body=request.body if request.body else None,
+            )
+        else:
+            # Legacy signature for backward compatibility
+            expected_signature = compute_signature(
+                secret=access_key.secret_access_key,
+                timestamp=timestamp,
+                method=request.method,
+                path=request.path,
+            )
 
         if not hmac.compare_digest(expected_signature, signature):
             logger.warning(
@@ -124,6 +167,19 @@ class AccessKeyAuthentication(BaseAuthentication):
 
         return access_key
 
+    def _verify_nonce(self, access_key_id: str, nonce: str) -> bool:
+        """
+        Verify nonce has not been used before (replay protection).
+
+        Returns True if nonce is valid (not seen before), False if replayed.
+        """
+        cache = caches["idempotency"]
+        cache_key = f"{NONCE_CACHE_PREFIX}{access_key_id}:{nonce}"
+
+        # Try to set the nonce with TTL matching timestamp tolerance
+        # add() returns True only if key didn't exist
+        return cache.add(cache_key, "1", timeout=TIMESTAMP_TOLERANCE_SECONDS)
+
     def authenticate_header(self, request):
         """Return the authenticate header for 401 responses."""
         return self.keyword
@@ -131,7 +187,7 @@ class AccessKeyAuthentication(BaseAuthentication):
 
 def compute_signature(secret: str, timestamp: str, method: str, path: str) -> str:
     """
-    Compute HMAC-SHA256 signature for request.
+    Compute HMAC-SHA256 signature for request (legacy format).
 
     Args:
         secret: The secret access key
@@ -141,6 +197,10 @@ def compute_signature(secret: str, timestamp: str, method: str, path: str) -> st
 
     Returns:
         Hex-encoded HMAC signature
+
+    Note:
+        This is the legacy signature format for backward compatibility.
+        New clients should use compute_signature_enhanced() with nonce.
     """
     message = f"{timestamp}{method.upper()}{path}"
     signature = hmac.new(
@@ -149,6 +209,78 @@ def compute_signature(secret: str, timestamp: str, method: str, path: str) -> st
         hashlib.sha256,
     ).hexdigest()
     return signature
+
+
+def compute_signature_enhanced(
+    secret: str,
+    timestamp: str,
+    nonce: str,
+    method: str,
+    host: str,
+    path: str,
+    query_params: dict | None = None,
+    body: bytes | None = None,
+) -> str:
+    """
+    Compute enhanced HMAC-SHA256 signature for request.
+
+    This enhanced signature includes additional components to prevent
+    request tampering and host confusion attacks.
+
+    Args:
+        secret: The secret access key
+        timestamp: Unix timestamp as string
+        nonce: Unique nonce for replay protection (UUID recommended)
+        method: HTTP method (GET, POST, etc.)
+        host: Request host header
+        path: Request path
+        query_params: Query parameters as dict (optional)
+        body: Request body as bytes (optional)
+
+    Returns:
+        Hex-encoded HMAC signature
+
+    Security features:
+        - Nonce prevents replay attacks within timestamp window
+        - Host inclusion prevents host header manipulation
+        - Query params prevent parameter tampering
+        - Body hash ensures payload integrity
+    """
+    # Canonicalize query parameters (sorted alphabetically)
+    canonical_query = ""
+    if query_params:
+        sorted_params = sorted(query_params.items())
+        canonical_query = urlencode(sorted_params)
+
+    # Compute body hash (SHA256 of body or empty string)
+    if body:
+        body_hash = hashlib.sha256(body).hexdigest()
+    else:
+        body_hash = hashlib.sha256(b"").hexdigest()
+
+    # Build canonical request string
+    components = [
+        timestamp,
+        nonce,
+        method.upper(),
+        host.lower(),
+        path,
+        canonical_query,
+        body_hash,
+    ]
+    message = "\n".join(components)
+
+    signature = hmac.new(
+        secret.encode("utf-8"),
+        message.encode("utf-8"),
+        hashlib.sha256,
+    ).hexdigest()
+    return signature
+
+
+def generate_nonce() -> str:
+    """Generate a unique nonce for AKSK requests."""
+    return str(uuid.uuid4())
 
 
 def verify_signature(

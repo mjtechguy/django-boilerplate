@@ -36,7 +36,7 @@ def client():
 
 @pytest.fixture
 def mock_platform_admin_auth(monkeypatch):
-    """Patch KeycloakJWTAuthentication to return platform_admin user."""
+    """Patch KeycloakJWTAuthentication to return platform_admin user with MFA."""
 
     def _mock_validate(self, token):
         return {
@@ -44,6 +44,25 @@ def mock_platform_admin_auth(monkeypatch):
             "email": "admin@example.com",
             "realm_roles": ["platform_admin"],
             "client_roles": [],
+            "acr": "urn:keycloak:acr:mfa",  # MFA required for impersonation
+            "amr": ["otp"],
+        }
+
+    monkeypatch.setattr("api.auth.KeycloakJWTAuthentication._validate_token", _mock_validate)
+    return _mock_validate
+
+
+@pytest.fixture
+def mock_platform_admin_auth_no_mfa(monkeypatch):
+    """Patch KeycloakJWTAuthentication to return platform_admin user WITHOUT MFA."""
+
+    def _mock_validate(self, token):
+        return {
+            "sub": "admin-123",
+            "email": "admin@example.com",
+            "realm_roles": ["platform_admin"],
+            "client_roles": [],
+            # No MFA claims
         }
 
     monkeypatch.setattr("api.auth.KeycloakJWTAuthentication._validate_token", _mock_validate)
@@ -69,23 +88,35 @@ def mock_regular_user_auth(monkeypatch):
 class TestImpersonationHelpers:
     """Tests for impersonation helper functions."""
 
-    def test_can_impersonate_with_platform_admin_realm_role(self):
-        """Test that platform_admin realm role allows impersonation."""
+    def test_can_impersonate_with_platform_admin_realm_role_and_mfa(self):
+        """Test that platform_admin realm role WITH MFA allows impersonation."""
         claims = {
             "sub": "admin-123",
             "realm_roles": ["platform_admin"],
             "client_roles": [],
+            "acr": "urn:keycloak:acr:mfa",
         }
         assert can_impersonate(claims) is True
 
-    def test_can_impersonate_with_platform_admin_client_role(self):
-        """Test that platform_admin client role allows impersonation."""
+    def test_can_impersonate_with_platform_admin_client_role_and_mfa(self):
+        """Test that platform_admin client role WITH MFA allows impersonation."""
         claims = {
             "sub": "admin-123",
             "realm_roles": [],
             "client_roles": ["platform_admin"],
+            "amr": ["otp"],
         }
         assert can_impersonate(claims) is True
+
+    def test_cannot_impersonate_without_mfa(self):
+        """Test that platform_admin WITHOUT MFA cannot impersonate."""
+        claims = {
+            "sub": "admin-123",
+            "realm_roles": ["platform_admin"],
+            "client_roles": [],
+            # No MFA claims
+        }
+        assert can_impersonate(claims) is False
 
     def test_cannot_impersonate_without_platform_admin(self):
         """Test that users without platform_admin cannot impersonate."""
@@ -93,22 +124,27 @@ class TestImpersonationHelpers:
             "sub": "user-456",
             "realm_roles": ["user"],
             "client_roles": ["org_admin"],
+            "acr": "urn:keycloak:acr:mfa",  # Has MFA but not admin
         }
         assert can_impersonate(claims) is False
 
-    def test_get_impersonated_user_creates_new_user(self):
-        """Test that get_impersonated_user creates a new user if needed."""
-        user = get_impersonated_user("new-user-123")
-        assert user is not None
-        assert user.username == "new-user-123"
+    def test_get_impersonated_user_does_not_create_new_user(self):
+        """Test that get_impersonated_user does NOT create new users (security)."""
+        user = get_impersonated_user("nonexistent-user-123")
+        # Should return None, not create a user
+        assert user is None
 
-    def test_get_impersonated_user_returns_existing_user(self):
+    def test_get_impersonated_user_returns_existing_user(self, django_user_model):
         """Test that get_impersonated_user returns existing user."""
-        # Create user first
-        user1 = get_impersonated_user("existing-user-123")
-        # Get same user
-        user2 = get_impersonated_user("existing-user-123")
-        assert user1.id == user2.id
+        # Create user first using Django model
+        created_user = django_user_model.objects.create_user(
+            username="existing-user-123",
+            email="existing@example.com",
+        )
+        # Get same user via impersonation function
+        user = get_impersonated_user("existing-user-123")
+        assert user is not None
+        assert user.id == created_user.id
 
     def test_log_impersonation_creates_log_entry(self):
         """Test that log_impersonation creates a log entry."""
@@ -161,8 +197,14 @@ class TestImpersonationAuthentication:
     def test_platform_admin_can_impersonate(
         self, client, mock_platform_admin_auth, settings, django_user_model
     ):
-        """Test that platform_admin can impersonate users."""
+        """Test that platform_admin with MFA can impersonate existing users."""
         settings.IMPERSONATION_ENABLED = True
+
+        # Create the target user first (impersonation no longer creates users)
+        django_user_model.objects.create_user(
+            username="target-user-123",
+            email="target@example.com",
+        )
 
         resp = client.get(
             reverse("api-ping"),
@@ -190,9 +232,17 @@ class TestImpersonationAuthentication:
         assert resp.status_code == 401
         assert "permission" in resp.json()["detail"].lower()
 
-    def test_impersonation_creates_log_entry(self, client, mock_platform_admin_auth, settings):
+    def test_impersonation_creates_log_entry(
+        self, client, mock_platform_admin_auth, settings, django_user_model
+    ):
         """Test that impersonation creates a log entry."""
         settings.IMPERSONATION_ENABLED = True
+
+        # Create the target user first (impersonation no longer creates users)
+        django_user_model.objects.create_user(
+            username="target-user-123",
+            email="target@example.com",
+        )
 
         # Clear existing logs
         ImpersonationLog.objects.all().delete()
@@ -412,10 +462,16 @@ class TestImpersonationMetadata:
     """Tests for impersonation metadata on request object."""
 
     def test_impersonation_metadata_set_when_impersonating(
-        self, client, mock_platform_admin_auth, settings
+        self, client, mock_platform_admin_auth, settings, django_user_model
     ):
         """Test that impersonation metadata is set on request when impersonating."""
         settings.IMPERSONATION_ENABLED = True
+
+        # Create the target user first (impersonation no longer creates users)
+        django_user_model.objects.create_user(
+            username="target-user-123",
+            email="target@example.com",
+        )
 
         # We can't directly access request object in tests, but we can verify
         # the behavior through the authentication flow

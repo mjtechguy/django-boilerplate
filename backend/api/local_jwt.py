@@ -228,12 +228,15 @@ def verify_token(token: str) -> dict[str, Any]:
         jwt = JsonWebToken(["RS256"])
         key = _get_verification_key()
         issuer = getattr(settings, "LOCAL_AUTH_ISSUER", "local")
+        # Audience should match what was used in token generation (KEYCLOAK_AUDIENCE)
+        expected_audience = getattr(settings, "KEYCLOAK_AUDIENCE", "api")
 
         claims = jwt.decode(
             token,
             key=key,
             claims_options={
                 "iss": {"essential": True, "value": issuer},
+                "aud": {"essential": True, "value": expected_audience},
             },
         )
         claims.validate()

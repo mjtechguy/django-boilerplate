@@ -5,10 +5,12 @@ from api import consumers
 
 websocket_urlpatterns = [
     # User-specific notifications
-    # ws://localhost:8000/ws/notifications/?token=<jwt>
+    # Auth: Subprotocol (recommended) or query param (legacy)
+    # ws://localhost:8000/ws/notifications/
     re_path(r"ws/notifications/$", consumers.NotificationConsumer.as_asgi()),
 
     # Organization-wide events
-    # ws://localhost:8000/ws/events/<org_id>/?token=<jwt>
+    # Auth: Subprotocol (recommended) or query param (legacy)
+    # ws://localhost:8000/ws/events/<org_id>/
     re_path(r"ws/events/(?P<org_id>[^/]+)/$", consumers.OrganizationEventsConsumer.as_asgi()),
 ]

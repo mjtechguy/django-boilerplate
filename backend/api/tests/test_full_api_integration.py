@@ -51,9 +51,11 @@ def mock_cerbos():
     mock_client = MagicMock()
     mock_client.check_resources.return_value = mock_response
 
+    # Patch both the source and the imported reference in permissions module
     with patch("api.cerbos_client.get_client", return_value=mock_client):
         with patch("api.cerbos_client.check_action", return_value=True):
-            yield mock_client
+            with patch("api.permissions.check_action", return_value=True):
+                yield mock_client
 
 
 # =============================================================================
@@ -827,9 +829,9 @@ class TestFullIntegration:
         response = client.get(f"/api/v1/orgs/{acme_id}/license")
         assert response.status_code == 200
 
-        # 7. Can manage own org's webhooks
+        # 7. Cannot manage webhooks (platform_admin only)
         response = client.get("/api/v1/webhooks")
-        assert response.status_code == 200
+        assert response.status_code == 403
 
     def test_complete_user_journey_regular_user(
         self, seed_users, seed_organizations, monkeypatch

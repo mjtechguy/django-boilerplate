@@ -25,6 +25,10 @@ class OrgRateThrottle(BaseThrottle):
     3. Default 100/hour if org not found
 
     Unlimited (-1) means no throttling for that org.
+
+    SECURITY NOTE: org_id is extracted only from trusted sources (JWT claims,
+    verified membership) to prevent rate limit bypass attacks. Query parameters
+    are NOT trusted for org_id.
     """
 
     cache = caches["idempotency"]
@@ -122,33 +126,60 @@ class OrgRateThrottle(BaseThrottle):
 
     def get_org_id(self, request):
         """
-        Extract org_id from the request.
+        Extract org_id from the request using ONLY trusted sources.
 
-        Tries multiple sources in order:
-        1. token_claims['org_id'] - from JWT
-        2. Query parameter 'org_id'
-        3. First membership's org_id
+        SECURITY: Only uses authenticated sources (token claims, verified membership).
+        Does NOT accept org_id from query parameters or request body to prevent
+        rate limit bypass attacks.
 
         Returns:
             str: Organization ID or None
         """
-        # Try token claims first (most reliable)
+        # 1. Try token claims first (most reliable - from verified JWT)
         if hasattr(request, "token_claims"):
             org_id = request.token_claims.get("org_id")
             if org_id:
                 return str(org_id)
 
-        # Try query parameter (common in admin endpoints)
-        org_id = request.query_params.get("org_id") if hasattr(request, "query_params") else None
-        if org_id:
-            return str(org_id)
+        # 2. Try to extract org_id from URL path (e.g., /api/v1/orgs/{uuid}/...)
+        # and verify user has membership in that org
+        url_org_id = self._extract_org_from_url(request)
+        if url_org_id and hasattr(request, "user") and request.user.is_authenticated:
+            # Verify user is actually a member of this org before using it for throttling
+            if request.user.memberships.filter(org_id=url_org_id).exists():
+                return str(url_org_id)
 
-        # Try user's first membership as fallback
+        # 3. Fall back to user's primary membership
         if hasattr(request, "user") and request.user.is_authenticated:
             membership = request.user.memberships.select_related("org").first()
             if membership:
                 return str(membership.org_id)
 
+        # No org context available
+        return None
+
+    def _extract_org_from_url(self, request) -> str | None:
+        """
+        Extract org_id from URL path if present.
+
+        Matches patterns like:
+        - /api/v1/orgs/{uuid}/...
+        - /api/v1/organizations/{uuid}/...
+
+        Returns:
+            str: UUID string if found in URL, None otherwise
+        """
+        import re
+
+        # Match UUID in org-related URL patterns
+        patterns = [
+            r"/orgs?/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/",
+            r"/organizations?/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/",
+        ]
+        for pattern in patterns:
+            match = re.search(pattern, request.path, re.IGNORECASE)
+            if match:
+                return match.group(1)
         return None
 
 
@@ -199,7 +230,9 @@ def get_org_rate_limit_status(org_id):
     # Calculate reset time
     reset_at = None
     if history:
-        oldest_in_window = min(ts for ts in history if ts > now - duration) if current_count > 0 else None
+        oldest_in_window = (
+            min(ts for ts in history if ts > now - duration) if current_count > 0 else None
+        )
         if oldest_in_window:
             reset_at = oldest_in_window + duration
 

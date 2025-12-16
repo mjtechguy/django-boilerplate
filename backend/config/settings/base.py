@@ -119,6 +119,13 @@ CACHES = {
         "LOCATION": f"redis://{os.getenv('REDIS_HOST', 'redis')}:{os.getenv('REDIS_PORT', '6379')}/{os.getenv('REDIS_DB_RATELIMIT', '1')}",
         "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
     },
+    # Isolated cache for Cerbos authorization decisions (security-sensitive)
+    "cerbos": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": f"redis://{os.getenv('REDIS_HOST', 'redis')}:{os.getenv('REDIS_PORT', '6379')}/{os.getenv('REDIS_DB_CERBOS', '3')}",
+        "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
+        "KEY_PREFIX": "cerbos",
+    },
 }
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -297,6 +304,10 @@ MFA_ACR_VALUES = [
 # Cerbos
 CERBOS_URL = os.getenv("CERBOS_URL", "http://cerbos:3592")
 CERBOS_DECISION_CACHE_TTL = int(os.getenv("CERBOS_DECISION_CACHE_TTL", "30"))
+
+# Cerbos TLS settings - MUST be true in production
+CERBOS_TLS_VERIFY = os.getenv("CERBOS_TLS_VERIFY", "false").lower() == "true"
+CERBOS_CA_BUNDLE = os.getenv("CERBOS_CA_BUNDLE", "")
 
 # Celery
 CELERY_BROKER_URL = f"amqp://{os.getenv('RABBITMQ_USER', 'guest')}:{os.getenv('RABBITMQ_PASSWORD', 'guest')}@{os.getenv('RABBITMQ_HOST', 'rabbitmq')}:{os.getenv('RABBITMQ_PORT', '5672')}//"
