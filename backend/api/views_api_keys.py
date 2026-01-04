@@ -41,13 +41,32 @@ class UserAPIKeyListView(generics.ListAPIView):
             for key in api_keys
         ]
 
+        # Get quota information
+        max_keys = get_user_api_key_quota(request.user)
+        active_keys_count = UserAPIKey.objects.filter(
+            user=request.user,
+            revoked=False
+        ).count()
+
         logger.info(
             "api_keys_listed",
             user_id=request.user.id,
             count=len(keys_data),
+            active_keys=active_keys_count,
+            max_keys=max_keys,
         )
 
-        return Response({"api_keys": keys_data}, status=status.HTTP_200_OK)
+        return Response(
+            {
+                "api_keys": keys_data,
+                "quota": {
+                    "active_keys": active_keys_count,
+                    "max_keys": max_keys,
+                    "remaining": max_keys - active_keys_count if max_keys != -1 else -1,
+                },
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 class UserAPIKeyCreateView(APIView):

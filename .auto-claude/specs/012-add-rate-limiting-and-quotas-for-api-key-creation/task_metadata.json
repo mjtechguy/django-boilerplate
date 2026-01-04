@@ -1,0 +1,10 @@
+{
+  "sourceType": "ideation",
+  "ideationType": "security_hardening",
+  "ideaId": "sec-003",
+  "rationale": "Unbounded resource creation can lead to denial of service through resource exhaustion. Additionally, having unlimited API keys per user makes it difficult to identify compromised keys, increases the attack surface, and creates management overhead. Most SaaS applications limit API keys to a reasonable number (e.g., 10-50 per user).",
+  "category": "security",
+  "securitySeverity": "medium",
+  "impact": "medium",
+  "priority": "medium"
+}
