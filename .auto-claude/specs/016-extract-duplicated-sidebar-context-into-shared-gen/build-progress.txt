@@ -21,7 +21,7 @@ Create a `createSidebarContext` factory function in the shared components direct
 
 ### Phase 2: Migrate Admin Layout to Shared Context
 - [x] 2.1 Update admin-layout sidebar-context.tsx to use shared factory ✓
-- [ ] 2.2 Verify admin layout components still work
+- [x] 2.2 Verify admin layout components still work ✓
 
 ### Phase 3: Migrate Org Layout to Shared Context
 - [ ] 3.1 Update org-layout sidebar-context.tsx to use shared factory
@@ -97,4 +97,17 @@ Factory pattern allows each layout to have isolated React context while sharing 
 - Verified all consumer imports remain unchanged (admin-sidebar.tsx, sidebar-nav.tsx, sidebar-resize-handle.tsx, sidebar-user.tsx, index.tsx)
 - Committed: 3f0ddce
 
-**Ready for subtask 2.2.**
+**Subtask 2.2: Verify admin layout components still work ✓**
+- Fixed `frontend/src/components/layouts/admin-layout/index.tsx` to remove `storageKey` prop from `SidebarProvider`
+- The storage key is now baked into the Provider when created by the factory
+- Verified all admin layout consumer components work correctly:
+  - admin-sidebar.tsx: imports and uses useSidebarContext ✓
+  - sidebar-nav.tsx: imports and uses useSidebarContext ✓
+  - sidebar-resize-handle.tsx: imports and uses useSidebarContext ✓
+  - sidebar-user.tsx: imports and uses useSidebarContext ✓
+  - index.tsx: imports and uses SidebarProvider (without storageKey prop) ✓
+- All import paths remain unchanged and backward-compatible
+- No TypeScript errors in any admin-layout components
+- Committed: 4a247cf
+
+**Phase 2 Complete! Ready for Phase 3: Migrate Org Layout to Shared Context.**
