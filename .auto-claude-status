@@ -1,0 +1,25 @@
+{
+  "active": true,
+  "spec": "014-add-account-lockout-notifications-via-email-and-ad",
+  "state": "building",
+  "subtasks": {
+    "completed": 11,
+    "total": 15,
+    "in_progress": 1,
+    "failed": 0
+  },
+  "phase": {
+    "current": "Testing",
+    "id": null,
+    "total": 4
+  },
+  "workers": {
+    "active": 0,
+    "max": 1
+  },
+  "session": {
+    "number": 13,
+    "started_at": "2026-01-04T14:06:51.633881"
+  },
+  "last_update": "2026-01-04T14:42:19.126323"
+}

@@ -1,0 +1,34 @@
+{
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true
+  },
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "Read(./**)",
+      "Write(./**)",
+      "Edit(./**)",
+      "Glob(./**)",
+      "Grep(./**)",
+      "Read(/Users/mj/mjcode/ai-products/django-boilerplate/.worktrees/014-add-account-lockout-notifications-via-email-and-ad/**)",
+      "Write(/Users/mj/mjcode/ai-products/django-boilerplate/.worktrees/014-add-account-lockout-notifications-via-email-and-ad/**)",
+      "Edit(/Users/mj/mjcode/ai-products/django-boilerplate/.worktrees/014-add-account-lockout-notifications-via-email-and-ad/**)",
+      "Glob(/Users/mj/mjcode/ai-products/django-boilerplate/.worktrees/014-add-account-lockout-notifications-via-email-and-ad/**)",
+      "Grep(/Users/mj/mjcode/ai-products/django-boilerplate/.worktrees/014-add-account-lockout-notifications-via-email-and-ad/**)",
+      "Read(/Users/mj/mjcode/ai-products/django-boilerplate/.worktrees/014-add-account-lockout-notifications-via-email-and-ad/.auto-claude/specs/014-add-account-lockout-notifications-via-email-and-ad/**)",
+      "Write(/Users/mj/mjcode/ai-products/django-boilerplate/.worktrees/014-add-account-lockout-notifications-via-email-and-ad/.auto-claude/specs/014-add-account-lockout-notifications-via-email-and-ad/**)",
+      "Edit(/Users/mj/mjcode/ai-products/django-boilerplate/.worktrees/014-add-account-lockout-notifications-via-email-and-ad/.auto-claude/specs/014-add-account-lockout-notifications-via-email-and-ad/**)",
+      "Bash(*)",
+      "WebFetch(*)",
+      "WebSearch(*)",
+      "mcp__context7__resolve-library-id(*)",
+      "mcp__context7__get-library-docs(*)",
+      "mcp__graphiti-memory__search_nodes(*)",
+      "mcp__graphiti-memory__search_facts(*)",
+      "mcp__graphiti-memory__add_episode(*)",
+      "mcp__graphiti-memory__get_episodes(*)",
+      "mcp__graphiti-memory__get_entity_edge(*)"
+    ]
+  }
+}

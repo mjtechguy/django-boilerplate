@@ -1,0 +1,10 @@
+{
+  "sourceType": "ideation",
+  "ideationType": "security_hardening",
+  "ideaId": "sec-005",
+  "rationale": "Account lockout notifications serve two purposes: (1) They alert legitimate users that their account may be compromised, prompting password changes and investigation, and (2) They provide transparency about security events. Without notifications, attackers can probe accounts undetected. Additionally, mass lockout events indicate credential stuffing attacks requiring immediate response.",
+  "category": "security",
+  "securitySeverity": "medium",
+  "impact": "medium",
+  "priority": "medium"
+}

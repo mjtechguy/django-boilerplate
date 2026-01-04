@@ -1,0 +1,25 @@
+{
+  "discovered_files": {
+    "backend/api/email.py": {
+      "description": "Email infrastructure with send_email() and send_email_async() functions. Uses EmailLog model for tracking, Celery for async delivery, and templates from backend/templates/email/",
+      "category": "infrastructure",
+      "discovered_at": "2026-01-04T19:10:41.048903+00:00"
+    },
+    "backend/api/views_alerts.py": {
+      "description": "AlertListView already checks for account_locked action in audit logs. Existing pattern for admin alerting that aggregates from multiple sources (audit, system, webhooks)",
+      "category": "patterns",
+      "discovered_at": "2026-01-04T19:10:41.063928+00:00"
+    },
+    "backend/config/settings/base.py": {
+      "description": "django-axes configured with AXES_FAILURE_LIMIT=5, AXES_COOLOFF_TIME=1 hour, AxesStandaloneBackend for auth, AXES_ENABLE_ACCESS_FAILURE_LOG=True",
+      "category": "configuration",
+      "discovered_at": "2026-01-04T19:10:41.077596+00:00"
+    },
+    "backend/api/lockout_tracking.py": {
+      "description": "Redis-based lockout tracking utilities using sorted sets for time-windowed event counting. Provides increment_lockout_count(), get_lockout_count(), get_affected_accounts(), and get_ip_summary() functions. Uses cache.client.get_client() to access raw Redis client for sorted set operations (zadd, zcard, zrangebyscore, zremrangebyscore). Stores event details in Redis hashes with automatic expiry.",
+      "category": "security",
+      "discovered_at": "2026-01-04T19:29:34.910161+00:00"
+    }
+  },
+  "last_updated": "2026-01-04T19:29:34.910169+00:00"
+}
