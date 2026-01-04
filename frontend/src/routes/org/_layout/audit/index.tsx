@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { FileText, Download, Filter, Search, Clock } from "lucide-react";
+import { format } from "date-fns";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,107 +21,53 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useAuditLogs, type AuditLog, getAuditExportUrl } from "@/lib/api/audit";
+import { EmptyState } from "@/components/shared/empty-state";
 
 export const Route = createFileRoute("/org/_layout/audit/")({
   component: OrgAuditPage,
 });
 
-// Mock data - replace with API calls
-const auditLogs = [
-  {
-    id: "1",
-    timestamp: "2024-12-07 14:32:15",
-    actor: "alice@example.com",
-    action: "user.invite",
-    resource: "john.doe@example.com",
-    result: "success",
-  },
-  {
-    id: "2",
-    timestamp: "2024-12-07 13:45:02",
-    actor: "bob@example.com",
-    action: "team.create",
-    resource: "Marketing",
-    result: "success",
-  },
-  {
-    id: "3",
-    timestamp: "2024-12-07 12:18:44",
-    actor: "alice@example.com",
-    action: "webhook.create",
-    resource: "Slack Integration",
-    result: "success",
-  },
-  {
-    id: "4",
-    timestamp: "2024-12-07 11:05:31",
-    actor: "carol@example.com",
-    action: "user.update",
-    resource: "david@example.com",
-    result: "success",
-  },
-  {
-    id: "5",
-    timestamp: "2024-12-07 10:22:18",
-    actor: "alice@example.com",
-    action: "settings.update",
-    resource: "organization_name",
-    result: "success",
-  },
-  {
-    id: "6",
-    timestamp: "2024-12-06 16:45:00",
-    actor: "bob@example.com",
-    action: "user.remove",
-    resource: "inactive@example.com",
-    result: "success",
-  },
-  {
-    id: "7",
-    timestamp: "2024-12-06 15:12:33",
-    actor: "unknown",
-    action: "auth.login_failed",
-    resource: "alice@example.com",
-    result: "failure",
-  },
-];
-
-const actionLabels: Record<string, string> = {
-  "user.invite": "User Invited",
-  "user.update": "User Updated",
-  "user.remove": "User Removed",
-  "team.create": "Team Created",
-  "team.update": "Team Updated",
-  "team.delete": "Team Deleted",
-  "webhook.create": "Webhook Created",
-  "webhook.update": "Webhook Updated",
-  "settings.update": "Settings Updated",
-  "auth.login_failed": "Login Failed",
+const actionColors: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+  CREATE: "default",
+  UPDATE: "secondary",
+  DELETE: "destructive",
+  READ: "outline",
+  LOGIN: "default",
+  LOGOUT: "secondary",
 };
 
 function OrgAuditPage() {
+  const { data, isLoading } = useAuditLogs();
+
+  const handleExport = () => {
+    window.open(getAuditExportUrl(), "_blank");
+  };
+
+  const auditLogs = data?.results ?? [];
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Audit Logs"
         description="Track all activity within your organization"
         actions={
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleExport}>
             <Download className="mr-2 h-4 w-4" />
             Export Logs
           </Button>
         }
       />
 
-      {/* Filters */}
+      {/* Filters - will be wired up in subtask 4.2 */}
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-wrap gap-4">
             <div className="relative flex-1 min-w-[200px]">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input placeholder="Search by actor or resource..." className="pl-9" />
+              <Input placeholder="Search by actor or resource..." className="pl-9" disabled />
             </div>
-            <Select defaultValue="all">
+            <Select defaultValue="all" disabled>
               <SelectTrigger className="w-[160px]">
                 <Filter className="mr-2 h-4 w-4" />
                 <SelectValue placeholder="Action type" />
@@ -134,7 +81,7 @@ function OrgAuditPage() {
                 <SelectItem value="auth">Authentication</SelectItem>
               </SelectContent>
             </Select>
-            <Select defaultValue="7d">
+            <Select defaultValue="7d" disabled>
               <SelectTrigger className="w-[140px]">
                 <Clock className="mr-2 h-4 w-4" />
                 <SelectValue placeholder="Time range" />
@@ -151,79 +98,89 @@ function OrgAuditPage() {
       </Card>
 
       {/* Audit Log Table */}
-      <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Timestamp</TableHead>
-                <TableHead>Actor</TableHead>
-                <TableHead>Action</TableHead>
-                <TableHead>Resource</TableHead>
-                <TableHead>Result</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {auditLogs.map((log) => (
-                <AuditLogRow key={log.id} log={log} />
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      {!isLoading && auditLogs.length === 0 ? (
+        <EmptyState
+          icon={<FileText className="h-6 w-6 text-muted-foreground" />}
+          title="No audit logs yet"
+          description="Audit logs will appear here as organization activity occurs."
+        />
+      ) : (
+        <Card>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Timestamp</TableHead>
+                  <TableHead>Actor</TableHead>
+                  <TableHead>Action</TableHead>
+                  <TableHead>Resource</TableHead>
+                  <TableHead>IP Address</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                      Loading audit logs...
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  auditLogs.map((log) => (
+                    <AuditLogRow key={log.id} log={log} />
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Pagination would go here */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          Showing 7 of 1,234 entries
-        </p>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" disabled>
-            Previous
-          </Button>
-          <Button variant="outline" size="sm">
-            Next
-          </Button>
+      {/* Pagination */}
+      {!isLoading && auditLogs.length > 0 && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            Showing {auditLogs.length} {data?.count ? `of ${data.count}` : ""} entries
+          </p>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" disabled={!data?.previous}>
+              Previous
+            </Button>
+            <Button variant="outline" size="sm" disabled={!data?.next}>
+              Next
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
 
 interface AuditLogRowProps {
-  log: {
-    id: string;
-    timestamp: string;
-    actor: string;
-    action: string;
-    resource: string;
-    result: string;
-  };
+  log: AuditLog;
 }
 
 function AuditLogRow({ log }: AuditLogRowProps) {
   return (
     <TableRow>
-      <TableCell className="font-mono text-sm">{log.timestamp}</TableCell>
-      <TableCell>{log.actor}</TableCell>
+      <TableCell className="font-mono text-sm">
+        {format(new Date(log.timestamp), "MMM d, yyyy HH:mm:ss")}
+      </TableCell>
+      <TableCell>{log.actor_email ?? log.actor_id}</TableCell>
       <TableCell>
-        <Badge variant="outline" className="font-normal">
-          <FileText className="mr-1 h-3 w-3" />
-          {actionLabels[log.action] || log.action}
+        <Badge variant={actionColors[log.action] ?? "outline"}>
+          {log.action}
         </Badge>
       </TableCell>
-      <TableCell className="text-muted-foreground">{log.resource}</TableCell>
-      <TableCell>
-        <Badge
-          variant={log.result === "success" ? "default" : "destructive"}
-          className={
-            log.result === "success"
-              ? "bg-green-500/10 text-green-600 dark:text-green-500 hover:bg-green-500/20"
-              : ""
-          }
-        >
-          {log.result}
-        </Badge>
+      <TableCell className="text-sm">
+        <span className="font-medium">{log.resource_type}</span>
+        {log.resource_id && (
+          <span className="text-muted-foreground ml-1">
+            ({log.resource_id.slice(0, 8)}...)
+          </span>
+        )}
+      </TableCell>
+      <TableCell className="text-sm text-muted-foreground">
+        {log.ip_address ?? "-"}
       </TableCell>
     </TableRow>
   );
