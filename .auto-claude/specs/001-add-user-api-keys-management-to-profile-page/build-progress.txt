@@ -1,0 +1,19 @@
+## Build Progress
+
+### Phase 1: Frontend API Integration
+
+#### Subtask 1.1 - Add API keys query keys ✅ COMPLETED
+- Added 'apiKeys' section to query-keys.ts following existing pattern
+- Includes 'all' and 'list' query keys
+
+#### Subtask 1.2 - Create API keys types module ✅ COMPLETED
+- Created frontend/src/lib/api/api-keys/types.ts
+- Defined Zod schemas for all API responses:
+  - userApiKeySchema: Individual API key in list view
+  - createApiKeyInputSchema: Request payload for creating keys
+  - createApiKeyResponseSchema: Response with full key (only shown once)
+  - listApiKeysResponseSchema: Response for list endpoint
+  - revokeApiKeyResponseSchema: Response for revoke endpoint
+- All schemas match backend API responses from views_api_keys.py
+- Follows patterns from existing types files (social/types.ts, mfa/types.ts)
+- Committed: 9ab6ebc

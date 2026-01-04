@@ -6,7 +6,9 @@
   "status": "in_progress",
   "planStatus": "approved",
   "workflow_type": "development",
-  "services_involved": ["frontend"],
+  "services_involved": [
+    "frontend"
+  ],
   "spec_file": "spec.md",
   "phases": [
     {
@@ -19,26 +21,34 @@
           "id": "1.1",
           "title": "Add API keys query keys to query-keys.ts",
           "description": "Add 'apiKeys' section to the query keys configuration in frontend/src/lib/api/query-keys.ts following the existing pattern for other resources.",
-          "status": "pending",
-          "files": ["frontend/src/lib/api/query-keys.ts"],
+          "status": "completed",
+          "files": [
+            "frontend/src/lib/api/query-keys.ts"
+          ],
           "estimated_minutes": 5,
-          "notes": ""
+          "notes": "Added 'apiKeys' section to query-keys.ts following the existing pattern with 'all' and 'list' query keys",
+          "updated_at": "2026-01-04T18:22:20.255081+00:00"
         },
         {
           "id": "1.2",
           "title": "Create API keys types module",
           "description": "Create frontend/src/lib/api/api-keys/types.ts with Zod schemas for UserAPIKey, CreateAPIKeyInput, CreateAPIKeyResponse, and ListAPIKeysResponse matching the backend API responses.",
-          "status": "pending",
-          "files": ["frontend/src/lib/api/api-keys/types.ts"],
+          "status": "completed",
+          "files": [
+            "frontend/src/lib/api/api-keys/types.ts"
+          ],
           "estimated_minutes": 10,
-          "notes": ""
+          "notes": "Created frontend/src/lib/api/api-keys/types.ts with all required Zod schemas matching backend API responses. Includes userApiKeySchema, createApiKeyInputSchema, createApiKeyResponseSchema, listApiKeysResponseSchema, and revokeApiKeyResponseSchema. Follows existing patterns from social/types.ts and mfa/types.ts.",
+          "updated_at": "2026-01-04T18:23:38.698496+00:00"
         },
         {
           "id": "1.3",
           "title": "Create API keys queries module",
           "description": "Create frontend/src/lib/api/api-keys/queries.ts with React Query hooks: useApiKeys (list), useCreateApiKey (mutation), useRevokeApiKey (mutation). Follow patterns from social/queries.ts.",
           "status": "pending",
-          "files": ["frontend/src/lib/api/api-keys/queries.ts"],
+          "files": [
+            "frontend/src/lib/api/api-keys/queries.ts"
+          ],
           "estimated_minutes": 15,
           "notes": ""
         },
@@ -47,7 +57,9 @@
           "title": "Create API keys index module",
           "description": "Create frontend/src/lib/api/api-keys/index.ts that re-exports all types and queries for clean imports.",
           "status": "pending",
-          "files": ["frontend/src/lib/api/api-keys/index.ts"],
+          "files": [
+            "frontend/src/lib/api/api-keys/index.ts"
+          ],
           "estimated_minutes": 3,
           "notes": ""
         }
@@ -64,7 +76,9 @@
           "title": "Create ApiKeysCard component",
           "description": "Create frontend/src/components/profile/api-keys-card.tsx - main Card component that displays the API Keys section with a list of keys and action buttons. Include loading skeleton, empty state, and error handling.",
           "status": "pending",
-          "files": ["frontend/src/components/profile/api-keys-card.tsx"],
+          "files": [
+            "frontend/src/components/profile/api-keys-card.tsx"
+          ],
           "estimated_minutes": 25,
           "notes": ""
         },
@@ -73,7 +87,9 @@
           "title": "Create CreateApiKeyDialog component",
           "description": "Create frontend/src/components/profile/create-api-key-dialog.tsx - Dialog for creating a new API key with a name input field. After creation, display the key with copy-to-clipboard functionality and warning that it won't be shown again.",
           "status": "pending",
-          "files": ["frontend/src/components/profile/create-api-key-dialog.tsx"],
+          "files": [
+            "frontend/src/components/profile/create-api-key-dialog.tsx"
+          ],
           "estimated_minutes": 30,
           "notes": ""
         },
@@ -82,7 +98,9 @@
           "title": "Create RevokeApiKeyDialog component",
           "description": "Create frontend/src/components/profile/revoke-api-key-dialog.tsx - Confirmation dialog for revoking an API key with clear warning about the action being irreversible.",
           "status": "pending",
-          "files": ["frontend/src/components/profile/revoke-api-key-dialog.tsx"],
+          "files": [
+            "frontend/src/components/profile/revoke-api-key-dialog.tsx"
+          ],
           "estimated_minutes": 15,
           "notes": ""
         },
@@ -91,7 +109,9 @@
           "title": "Create ApiKeyListItem component",
           "description": "Create frontend/src/components/profile/api-key-list-item.tsx - Individual list item showing API key details (name, prefix, created date, status badge) with revoke action trigger.",
           "status": "pending",
-          "files": ["frontend/src/components/profile/api-key-list-item.tsx"],
+          "files": [
+            "frontend/src/components/profile/api-key-list-item.tsx"
+          ],
           "estimated_minutes": 15,
           "notes": ""
         }
@@ -108,7 +128,9 @@
           "title": "Add API Keys section to profile page",
           "description": "Update frontend/src/routes/app/_layout/profile/index.tsx to import and render the ApiKeysCard component in the Security section, maintaining consistent styling with existing cards.",
           "status": "pending",
-          "files": ["frontend/src/routes/app/_layout/profile/index.tsx"],
+          "files": [
+            "frontend/src/routes/app/_layout/profile/index.tsx"
+          ],
           "estimated_minutes": 10,
           "notes": ""
         }
@@ -151,17 +173,42 @@
     }
   ],
   "dependencies": {
-    "1.2": ["1.1"],
-    "1.3": ["1.1", "1.2"],
-    "1.4": ["1.2", "1.3"],
-    "2.1": ["1.4"],
-    "2.2": ["1.4"],
-    "2.3": ["1.4"],
-    "2.4": ["1.4"],
-    "3.1": ["2.1", "2.2", "2.3", "2.4"],
-    "4.1": ["3.1"],
+    "1.2": [
+      "1.1"
+    ],
+    "1.3": [
+      "1.1",
+      "1.2"
+    ],
+    "1.4": [
+      "1.2",
+      "1.3"
+    ],
+    "2.1": [
+      "1.4"
+    ],
+    "2.2": [
+      "1.4"
+    ],
+    "2.3": [
+      "1.4"
+    ],
+    "2.4": [
+      "1.4"
+    ],
+    "3.1": [
+      "2.1",
+      "2.2",
+      "2.3",
+      "2.4"
+    ],
+    "4.1": [
+      "3.1"
+    ],
     "4.2": [],
-    "4.3": ["3.1"]
+    "4.3": [
+      "3.1"
+    ]
   },
   "total_estimated_minutes": 158,
   "notes": [
@@ -184,5 +231,6 @@
     "status": "pending",
     "tests_passed": "",
     "issues": ""
-  }
+  },
+  "last_updated": "2026-01-04T18:23:38.698511+00:00"
 }
