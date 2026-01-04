@@ -224,3 +224,77 @@ All signal integration subtasks completed. Both django-axes lockouts and local a
 - Write unit tests for lockout signals (4.2)
 - Write unit tests for lockout tasks (4.3)
 - Write integration tests for lockout flow (4.4)
+
+## Phase 4: Testing - In Progress
+
+### Completed Subtasks
+
+#### 4.1 - Unit tests for lockout tracking ✓
+- Created comprehensive unit tests for Redis-based lockout tracking at backend/api/tests/test_lockout_tracking.py
+- **Test Coverage (530 lines, 27 test methods across 6 test classes):**
+  - TestIncrementLockoutCount: 6 tests covering event creation, count tracking, detail storage, optional fields, automatic cleanup, and error handling
+  - TestGetLockoutCount: 4 tests covering zero state, current count, expired event exclusion, and error handling
+  - TestGetAffectedAccounts: 5 tests covering empty state, all accounts retrieval, detail fields, expired event exclusion, and error handling
+  - TestGetIpSummary: 4 tests covering empty state, IP aggregation, sorting by count, and empty IP exclusion
+  - TestClearLockoutTracking: 3 tests covering event removal, detail removal, and error handling
+  - TestWindowExpiryBehavior: 3 tests covering expiry logic, sliding window updates, and threshold detection
+
+**Implementation Approach:**
+- Created MockRedisClient class to simulate Redis sorted set operations since test environment uses LocMemCache
+- Mock properly handles byte encoding/decoding like real Redis
+- Implements all Redis sorted set operations: zadd, zcard, zremrangebyscore, zrangebyscore, zrange, hset, hgetall, expire, delete
+- Tests use mock_redis pytest fixture that patches caches to return MockRedisClient
+- All tests follow existing project patterns from test_tasks.py and test_audit.py
+- Comprehensive coverage of success paths, edge cases, and error handling
+- All test methods have clear docstrings explaining what they test
+
+**All Acceptance Criteria Met:**
+✓ Test increment and count functions
+✓ Test window expiry behavior  
+✓ Test threshold detection
+
+**Next Steps:**
+- Continue with subtask 4.2: Unit tests for lockout signals
+- Then 4.3: Unit tests for lockout tasks
+- Then 4.4: Integration tests for lockout flow
+
+#### 4.2 - Unit tests for lockout signals ✓
+- Created comprehensive unit tests for signal handlers at backend/api/tests/test_lockout_signals.py
+- **Test Coverage (3 test classes, 18 test methods):**
+  - TestAxesSignalHandler: 7 tests covering django-axes signal handler
+    - Valid user with email
+    - User without email
+    - Non-existent user
+    - Notifications disabled
+    - Mass tracking failure handling
+    - Lockout data format validation
+  - TestLocalAuthLockoutIntegration: 8 tests covering local auth lockout
+    - Failed attempts triggering lockout
+    - User without email
+    - Notifications disabled
+    - Successful login resetting counter
+    - Lockout duration calculation
+    - Tracking failure handling
+  - TestAuditLogCreation: 3 tests covering audit log creation
+    - All required fields present
+    - Source identification (axes vs local-auth)
+
+**Implementation Approach:**
+- Used unittest.mock for patching Celery tasks and tracking functions
+- All tests follow existing project patterns from test_tasks.py and test_audit.py
+- Mocked send_lockout_notification_task, check_mass_lockout_task, and increment_lockout_count
+- Tests verify notification triggering, audit log creation, and mass lockout tracking
+- Comprehensive coverage of success paths, edge cases, and error handling
+- Each test method has clear docstring explaining what it tests
+- Tests verify both django-axes signal handler and local auth integration
+- Syntax validated successfully
+
+**All Acceptance Criteria Met:**
+✓ Test axes signal handler
+✓ Test local auth lockout integration
+✓ Test notification task is called
+✓ Test audit log creation
+
+**Next Steps:**
+- Continue with subtask 4.3: Unit tests for lockout tasks
+- Then 4.4: Integration tests for lockout flow

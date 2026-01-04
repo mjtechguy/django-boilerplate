@@ -1,0 +1,344 @@
+{
+  "spec_id": "014-add-account-lockout-notifications-via-email-and-ad",
+  "title": "Add Account Lockout Notifications via Email and Admin Alerting",
+  "overview": "Implement email notifications to users when their account is locked due to failed login attempts, and admin alerting for mass lockout events (indicating potential credential stuffing attacks). This feature uses django-axes signals to detect lockouts and the existing email/audit infrastructure for notifications.",
+  "created_at": "2026-01-04T18:25:30.507Z",
+  "updated_at": "2026-01-04T19:06:50.520Z",
+  "status": "in_progress",
+  "planStatus": "approved",
+  "workflow_type": "development",
+  "spec_file": "spec.md",
+  "phases": [
+    {
+      "id": "phase-1",
+      "name": "Core Infrastructure",
+      "description": "Add settings, signal handlers, and email templates for lockout notifications",
+      "subtasks": [
+        {
+          "id": "1.1",
+          "title": "Add lockout notification settings",
+          "description": "Add configuration settings in base.py for enabling lockout notifications, admin email recipients, and mass lockout thresholds",
+          "file_path": "backend/config/settings/base.py",
+          "status": "completed",
+          "acceptance_criteria": [
+            "LOCKOUT_NOTIFICATION_ENABLED setting added (default: True)",
+            "LOCKOUT_ADMIN_EMAILS setting for admin recipients (default: empty list)",
+            "LOCKOUT_MASS_THRESHOLD setting for mass attack detection (default: 10 lockouts in 5 mins)",
+            "LOCKOUT_MASS_WINDOW_MINUTES setting (default: 5 minutes)"
+          ],
+          "notes": "Added lockout notification configuration settings to backend/config/settings/base.py:\n- LOCKOUT_NOTIFICATION_ENABLED (default: true)\n- LOCKOUT_ADMIN_EMAILS (default: empty list)\n- LOCKOUT_MASS_THRESHOLD (default: 10)\n- LOCKOUT_MASS_WINDOW_MINUTES (default: 5)\n\nAll settings follow existing patterns with os.getenv() and proper defaults.",
+          "updated_at": "2026-01-04T19:12:29.257758+00:00"
+        },
+        {
+          "id": "1.2",
+          "title": "Create lockout email template",
+          "description": "Create HTML email template for user lockout notifications with security guidance",
+          "file_path": "backend/templates/email/account_lockout.html",
+          "status": "completed",
+          "acceptance_criteria": [
+            "Template extends base.html",
+            "Shows lockout reason and duration",
+            "Includes security advice (password change recommendation)",
+            "Includes link to reset password if suspicious",
+            "Shows timestamp and IP address of failed attempts"
+          ],
+          "notes": "Created HTML email template for user lockout notifications at backend/templates/email/account_lockout.html. Template follows existing email patterns and includes:\n- Red warning styling (#dc2626) for security focus\n- Lockout duration, failed attempt count, IP address, and timestamp\n- Two-section guidance: \"Was this you?\" with different advice for legitimate vs suspicious attempts\n- Conditional password reset button with gradient styling\n- Security best practices section with green info box\n- Professional, user-friendly tone with clear security guidance\nAll acceptance criteria met: extends base.html, shows lockout details, includes security advice, has reset password link, and displays timestamp/IP.",
+          "updated_at": "2026-01-04T19:13:52.791416+00:00"
+        },
+        {
+          "id": "1.3",
+          "title": "Create admin alert email template",
+          "description": "Create HTML email template for admin mass lockout alerts",
+          "file_path": "backend/templates/email/mass_lockout_alert.html",
+          "status": "completed",
+          "acceptance_criteria": [
+            "Template extends base.html",
+            "Shows count of lockouts in time window",
+            "Lists affected accounts (usernames only, no passwords)",
+            "Includes IP address summary if available",
+            "Shows recommended actions"
+          ],
+          "notes": "Created HTML email template for admin mass lockout alerts at backend/templates/email/mass_lockout_alert.html. Template follows existing email patterns and includes:\n- Orange/red warning styling (#ea580c) for security urgency\n- Alert summary with lockout count, time window, detection time, and threshold\n- Table of affected accounts showing username, email, and lockout_time (no passwords)\n- Conditional IP address summary section with IP and attempt count table\n- Comprehensive 6-step recommended action plan for administrators\n- Educational section explaining credential stuffing attacks\n- Next steps section with specific tasks for incident response\n- Professional, admin-focused tone with clear security guidance\n\nAll acceptance criteria met: extends base.html, shows count of lockouts in time window, lists affected accounts (usernames only), includes IP address summary if available, and shows recommended actions.",
+          "updated_at": "2026-01-04T19:15:31.927446+00:00"
+        },
+        {
+          "id": "1.4",
+          "title": "Create lockout notification Celery tasks",
+          "description": "Add Celery tasks for sending lockout emails asynchronously and tracking mass lockout events",
+          "file_path": "backend/api/tasks_lockout.py",
+          "status": "completed",
+          "acceptance_criteria": [
+            "send_lockout_notification_task sends email to affected user",
+            "check_mass_lockout_task checks for mass lockout patterns",
+            "send_admin_lockout_alert_task sends alert to admin emails",
+            "Tasks use existing send_email infrastructure",
+            "Proper logging with structlog"
+          ],
+          "notes": "Created backend/api/tasks_lockout.py with three Celery tasks following existing patterns:\n- send_lockout_notification_task sends email to affected user asynchronously\n- send_admin_lockout_alert_task sends mass lockout alerts to admin emails\n- check_mass_lockout_task checks for mass lockout patterns and triggers alerts\nAll tasks use existing send_email infrastructure, proper logging with structlog, standard retry configuration (max_retries=3, exponential backoff), and bind=True for task context access. Implements debouncing using Redis cache to prevent alert spam.",
+          "updated_at": "2026-01-04T19:18:41.906474+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-2",
+      "name": "Signal Integration",
+      "description": "Hook into django-axes signals and local auth lockout events",
+      "subtasks": [
+        {
+          "id": "2.1",
+          "title": "Create lockout signal handlers",
+          "description": "Create signal handlers for django-axes user_locked_out signal and integrate with notification system",
+          "file_path": "backend/api/signals_lockout.py",
+          "status": "completed",
+          "acceptance_criteria": [
+            "Handler listens to axes.signals.user_locked_out",
+            "Extracts user info, IP, and failure count from signal",
+            "Triggers lockout notification task asynchronously",
+            "Creates audit log entry for account_locked action",
+            "Increments mass lockout counter in Redis"
+          ],
+          "notes": "Created backend/api/signals_lockout.py with signal handler for django-axes user_locked_out signal. Implementation includes:\n- Handler listens to axes.signals.user_locked_out using @receiver decorator\n- Extracts user info (username, email, first_name), IP address, and failure count from signal\n- Gracefully handles case where User object doesn't exist\n- Calculates lockout duration and unlock time from AXES_COOLOFF_TIME setting\n- Triggers send_lockout_notification_task asynchronously via Celery to send email to affected user\n- Creates audit log entry with action='account_locked' including metadata (IP, failure count, unlock time, source)\n- Increments mass lockout counter in Redis cache with TTL based on LOCKOUT_MASS_WINDOW_MINUTES\n- Triggers check_mass_lockout_task to check for mass lockout threshold and alert admins\n- Comprehensive structured logging throughout using structlog\n- Error handling to prevent signal handler failures from blocking lockout\nAll acceptance criteria met. Ready for integration in apps.py (subtask 2.2).",
+          "updated_at": "2026-01-04T19:21:45.905911+00:00"
+        },
+        {
+          "id": "2.2",
+          "title": "Connect lockout signals in app config",
+          "description": "Import lockout signals in apps.py ready() method",
+          "file_path": "backend/api/apps.py",
+          "status": "completed",
+          "acceptance_criteria": [
+            "signals_lockout module imported in ready()",
+            "Signals properly connected on app startup"
+          ],
+          "notes": "Successfully imported lockout signals in apps.py ready() method. Added 'import api.signals_lockout  # noqa: F401' following the existing pattern for api.signals import. This ensures that the signal handlers in signals_lockout.py are registered when the Django app starts up, enabling automatic account lockout notifications when the django-axes user_locked_out signal is triggered. Both apps.py and signals_lockout.py pass Python syntax validation.",
+          "updated_at": "2026-01-04T19:23:48.178847+00:00"
+        },
+        {
+          "id": "2.3",
+          "title": "Integrate with local auth lockout",
+          "description": "Add notification trigger when LocalUserProfile.record_login_attempt() causes a lockout",
+          "file_path": "backend/api/models_local_auth.py",
+          "status": "completed",
+          "acceptance_criteria": [
+            "Notification triggered when locked_until is set",
+            "Uses same notification task as axes integration",
+            "Handles case where user doesn't have email"
+          ],
+          "notes": "Successfully integrated lockout notifications with LocalUserProfile.record_login_attempt():\n- Added lockout detection flag that triggers when failed_login_attempts >= max_attempts\n- Created _send_lockout_notification() helper method following signals_lockout.py pattern\n- Sends notification email asynchronously using send_lockout_notification_task.delay()\n- Creates audit log entry with action='account_locked' and source='local-auth'\n- Increments mass lockout counter in Redis with TTL\n- Triggers check_mass_lockout_task for mass attack detection\n- Handles users without email (checks self.user.email and LOCKOUT_NOTIFICATION_ENABLED)\n- Comprehensive structured logging with local_auth_* prefixes\n- Error handling for Redis tracking prevents failures from blocking lockout\nAll acceptance criteria met:\n\u2713 Notification triggered when locked_until is set\n\u2713 Uses same notification task as axes integration (send_lockout_notification_task)\n\u2713 Handles case where user doesn't have email",
+          "updated_at": "2026-01-04T19:26:28.968677+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-3",
+      "name": "Mass Lockout Detection",
+      "description": "Implement mass lockout detection and admin alerting",
+      "subtasks": [
+        {
+          "id": "3.1",
+          "title": "Implement Redis-based lockout tracking",
+          "description": "Add utility functions to track lockout events in Redis for mass detection",
+          "file_path": "backend/api/lockout_tracking.py",
+          "status": "completed",
+          "acceptance_criteria": [
+            "increment_lockout_count() adds to sliding window counter",
+            "get_lockout_count() returns count in time window",
+            "Uses Redis sorted set for time-based window",
+            "Automatic expiry of old entries"
+          ],
+          "notes": "Created backend/api/lockout_tracking.py with comprehensive Redis-based lockout tracking utilities:\n\n\u2705 increment_lockout_count() - Adds lockout events to sliding window counter using Redis sorted sets with timestamps as scores\n\u2705 get_lockout_count() - Returns count of lockouts in time window with automatic cleanup of expired entries\n\u2705 get_affected_accounts() - Retrieves detailed account information for admin alerts (username, email, lockout_time, IP, source)\n\u2705 get_ip_summary() - Aggregates lockouts by IP address to identify attack patterns\n\u2705 clear_lockout_tracking() - Utility for testing and manual incident response\n\nImplementation details:\n- Uses Redis sorted sets (ZADD, ZCARD, ZRANGEBYSCORE, ZREMRANGEBYSCORE) for efficient time-based windowing\n- Stores detailed lockout information in Redis hashes for each event\n- Automatic expiry of old entries outside the configured time window\n- Comprehensive error handling to prevent tracking failures from blocking lockouts\n- Structured logging throughout using structlog\n- Follows existing Django cache patterns using caches[\"default\"]\n- Accesses raw Redis client via cache.client.get_client() for sorted set operations\n\nAll acceptance criteria met:\n\u2713 increment_lockout_count() adds to sliding window counter\n\u2713 get_lockout_count() returns count in time window\n\u2713 Uses Redis sorted set for time-based window\n\u2713 Automatic expiry of old entries\n\nReady for integration in subtask 3.2.",
+          "updated_at": "2026-01-04T19:29:28.832253+00:00"
+        },
+        {
+          "id": "3.2",
+          "title": "Add mass lockout check to signal handler",
+          "description": "After each lockout, check if threshold exceeded and trigger admin alert",
+          "file_path": "backend/api/signals_lockout.py",
+          "status": "completed",
+          "acceptance_criteria": [
+            "Checks lockout count after each event",
+            "Triggers admin alert when threshold exceeded",
+            "Uses debounce to prevent alert spam (one alert per window)",
+            "Includes all affected accounts in alert"
+          ],
+          "notes": "Successfully implemented mass lockout threshold checking and admin alert triggering. Implementation details:\n\n**Updated signals_lockout.py:**\n- Replaced simple counter with increment_lockout_count() from lockout_tracking.py\n- Uses proper Redis sorted set tracking with time-windowed counting\n- Passes username, email, IP address, and source='django-axes' to tracking\n- Triggers check_mass_lockout_task.delay() without parameters (gets data from Redis)\n\n**Updated tasks_lockout.py - check_mass_lockout_task:**\n- Removed current_count parameter - now gets count from Redis tracking\n- Imports and uses get_lockout_count(), get_affected_accounts(), get_ip_summary() from lockout_tracking\n- Retrieves real-time lockout count from Redis sorted sets\n- When threshold exceeded, collects detailed affected account and IP data\n- Passes complete data to send_admin_lockout_alert_task (not empty lists)\n- Includes affected_accounts_count and unique_ips in return value for better logging\n\n**Updated models_local_auth.py:**\n- Updated _send_lockout_notification() to use increment_lockout_count() from lockout_tracking.py\n- Passes username, email, IP address, and source='local-auth' to tracking\n- Triggers check_mass_lockout_task.delay() without parameters (consistent with axes integration)\n- Removed unused caches import\n\n**Cleanup:**\n- Removed all unused Django cache imports from both files\n- Removed placeholder code and TODO comments from phase 2\n\nAll acceptance criteria met:\n\u2713 Checks lockout count after each event using get_lockout_count()\n\u2713 Triggers admin alert when threshold exceeded via send_admin_lockout_alert_task\n\u2713 Uses debounce to prevent alert spam (one alert per window) - already implemented in check_mass_lockout_task\n\u2713 Includes all affected accounts in alert via get_affected_accounts() and get_ip_summary()\n\nThe system now provides comprehensive mass lockout detection:\n- Time-windowed counting using Redis sorted sets\n- Automatic cleanup of expired events\n- Detailed account and IP information for admin alerts\n- Consistent behavior across django-axes and local auth lockouts",
+          "updated_at": "2026-01-04T19:32:33.975870+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-4",
+      "name": "Testing",
+      "description": "Comprehensive tests for lockout notification system",
+      "subtasks": [
+        {
+          "id": "4.1",
+          "title": "Unit tests for lockout tracking",
+          "description": "Test Redis-based lockout counting and window expiry",
+          "file_path": "backend/api/tests/test_lockout_tracking.py",
+          "status": "completed",
+          "acceptance_criteria": [
+            "Test increment and count functions",
+            "Test window expiry behavior",
+            "Test threshold detection"
+          ],
+          "notes": "Created comprehensive unit tests for Redis-based lockout tracking in backend/api/tests/test_lockout_tracking.py:\n\n**Test Coverage:**\n- TestIncrementLockoutCount: 6 tests covering event creation, count tracking, detail storage, optional fields, automatic cleanup, and error handling\n- TestGetLockoutCount: 4 tests covering zero state, current count, expired event exclusion, and error handling\n- TestGetAffectedAccounts: 5 tests covering empty state, all accounts retrieval, detail fields, expired event exclusion, and error handling\n- TestGetIpSummary: 4 tests covering empty state, IP aggregation, sorting by count, and empty IP exclusion\n- TestClearLockoutTracking: 3 tests covering event removal, detail removal, and error handling\n- TestWindowExpiryBehavior: 3 tests covering expiry logic, sliding window updates, and threshold detection\n\n**Implementation Approach:**\n- Created MockRedisClient class to simulate Redis sorted set operations (zadd, zcard, zremrangebyscore, zrangebyscore, zrange, hset, hgetall, expire, delete)\n- Mock properly handles byte encoding/decoding like real Redis\n- Tests use mock_redis fixture that patches caches to return MockRedisClient\n- All tests follow existing project patterns from test_tasks.py and test_audit.py\n- Comprehensive coverage of success paths, edge cases, and error handling\n\n**All Acceptance Criteria Met:**\n\u2713 Test increment and count functions\n\u2713 Test window expiry behavior\n\u2713 Test threshold detection\n\nSyntax validated successfully. Ready for test execution in phase 5.",
+          "updated_at": "2026-01-04T19:37:42.519117+00:00"
+        },
+        {
+          "id": "4.2",
+          "title": "Unit tests for lockout signals",
+          "description": "Test signal handlers and notification triggering",
+          "file_path": "backend/api/tests/test_lockout_signals.py",
+          "status": "completed",
+          "acceptance_criteria": [
+            "Test axes signal handler",
+            "Test local auth lockout integration",
+            "Test notification task is called",
+            "Test audit log creation"
+          ],
+          "notes": "Created comprehensive unit tests for signal handlers at backend/api/tests/test_lockout_signals.py with 18 test methods covering:\n- django-axes signal handler (handle_user_locked_out): 7 tests covering valid user with email, user without email, non-existent user, notifications disabled, mass tracking failure handling, and lockout data format validation\n- Local auth lockout integration (LocalUserProfile._send_lockout_notification): 8 tests covering failed attempts triggering lockout, user without email, notifications disabled, successful login resetting counter, lockout duration calculation, and tracking failure handling\n- Audit log creation: 3 tests verifying all required fields and source identification\n\nAll tests verify notification task triggering, audit log creation, and mass lockout tracking integration. Syntax validated successfully. All acceptance criteria met.",
+          "updated_at": "2026-01-04T19:41:37.786924+00:00"
+        },
+        {
+          "id": "4.3",
+          "title": "Unit tests for lockout tasks",
+          "description": "Test Celery tasks for sending notifications",
+          "file_path": "backend/api/tests/test_lockout_tasks.py",
+          "status": "pending",
+          "acceptance_criteria": [
+            "Test user notification email sent",
+            "Test admin alert email sent",
+            "Test mass lockout detection",
+            "Test debounce behavior"
+          ]
+        },
+        {
+          "id": "4.4",
+          "title": "Integration tests for lockout flow",
+          "description": "End-to-end tests for the complete lockout notification flow",
+          "file_path": "backend/api/tests/test_lockout_integration.py",
+          "status": "pending",
+          "acceptance_criteria": [
+            "Test failed login attempts trigger lockout",
+            "Test lockout creates audit log",
+            "Test email is queued for user",
+            "Test mass lockout triggers admin alert"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phase-5",
+      "name": "Documentation and Finalization",
+      "description": "Update documentation and ensure feature is production-ready",
+      "subtasks": [
+        {
+          "id": "5.1",
+          "title": "Update README with lockout notification config",
+          "description": "Document the new lockout notification settings and behavior",
+          "file_path": "README.md",
+          "status": "pending",
+          "acceptance_criteria": [
+            "Document new environment variables",
+            "Explain lockout notification behavior",
+            "Document mass lockout detection feature"
+          ]
+        },
+        {
+          "id": "5.2",
+          "title": "Run all tests and verify functionality",
+          "description": "Execute full test suite and verify no regressions",
+          "file_path": null,
+          "status": "pending",
+          "acceptance_criteria": [
+            "All new tests pass",
+            "Existing tests still pass",
+            "No regressions in login flow"
+          ]
+        }
+      ]
+    }
+  ],
+  "dependencies": {
+    "1.4": [
+      "1.1",
+      "1.2",
+      "1.3"
+    ],
+    "2.1": [
+      "1.4"
+    ],
+    "2.2": [
+      "2.1"
+    ],
+    "2.3": [
+      "1.4"
+    ],
+    "3.1": [
+      "1.1"
+    ],
+    "3.2": [
+      "2.1",
+      "3.1"
+    ],
+    "4.1": [
+      "3.1"
+    ],
+    "4.2": [
+      "2.1",
+      "2.2",
+      "2.3"
+    ],
+    "4.3": [
+      "1.4",
+      "3.2"
+    ],
+    "4.4": [
+      "4.1",
+      "4.2",
+      "4.3"
+    ],
+    "5.1": [
+      "4.4"
+    ],
+    "5.2": [
+      "5.1"
+    ]
+  },
+  "architecture_notes": [
+    "Uses django-axes signals (user_locked_out) for axes-based lockout detection",
+    "Integrates with existing LocalUserProfile lockout tracking for local auth",
+    "Emails sent asynchronously via Celery to avoid blocking login flow",
+    "Mass lockout detection uses Redis sorted sets for time-windowed counting",
+    "Audit logs use existing AuditLog model with action='account_locked'",
+    "Admin alerts include debouncing to prevent notification spam"
+  ],
+  "critical_files": [
+    "backend/config/settings/base.py",
+    "backend/api/signals_lockout.py",
+    "backend/api/tasks_lockout.py",
+    "backend/api/lockout_tracking.py",
+    "backend/templates/email/account_lockout.html",
+    "backend/templates/email/mass_lockout_alert.html"
+  ],
+  "estimated_effort": "4-6 hours",
+  "services_involved": [
+    "django-axes",
+    "celery",
+    "redis",
+    "email"
+  ],
+  "final_acceptance": [
+    "Users receive email notification when their account is locked",
+    "Admins receive alert when mass lockout threshold is exceeded",
+    "Audit log entries created for all lockout events",
+    "All tests pass with no regressions"
+  ],
+  "qa_status": {
+    "status": "pending",
+    "tests_passed": null,
+    "issues": null
+  },
+  "last_updated": "2026-01-04T19:41:37.786931+00:00"
+}
