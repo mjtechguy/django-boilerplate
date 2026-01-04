@@ -89,13 +89,17 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           <Label htmlFor="last_name">
             Last name
           </Label>
-          <Input
-            id="last_name"
-            type="text"
-            placeholder="Doe"
-            autoComplete="family-name"
-            {...register("last_name")}
-          />
+          <div className="relative">
+            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <Input
+              id="last_name"
+              type="text"
+              placeholder="Doe"
+              autoComplete="family-name"
+              className="pl-10"
+              {...register("last_name")}
+            />
+          </div>
         </div>
       </div>
 

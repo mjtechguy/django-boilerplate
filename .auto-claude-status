@@ -1,0 +1,25 @@
+{
+  "active": true,
+  "spec": "010-fix-inconsistent-icon-placement-in-register-form-n",
+  "state": "building",
+  "subtasks": {
+    "completed": 0,
+    "total": 0,
+    "in_progress": 1,
+    "failed": 0
+  },
+  "phase": {
+    "current": "Fix Icon Consistency",
+    "id": null,
+    "total": 1
+  },
+  "workers": {
+    "active": 0,
+    "max": 1
+  },
+  "session": {
+    "number": 2,
+    "started_at": "2026-01-04T14:07:07.556149"
+  },
+  "last_update": "2026-01-04T14:08:51.601971"
+}

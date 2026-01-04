@@ -1,0 +1,10 @@
+{
+  "discovered_files": {
+    "frontend/src/components/auth/register-form.tsx": {
+      "description": "Register form uses lucide-react icons (User, Mail, Lock, Eye, EyeOff) with a consistent pattern: icons positioned absolute in a relative wrapper div, left-3 positioned, centered vertically with -translate-y-1/2, size w-5 h-5, color text-muted-foreground. Input fields need pl-10 class for proper icon spacing.",
+      "category": "patterns",
+      "discovered_at": "2026-01-04T19:08:35.045817+00:00"
+    }
+  },
+  "last_updated": "2026-01-04T19:08:35.045829+00:00"
+}

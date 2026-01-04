@@ -1,0 +1,34 @@
+{
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true
+  },
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "Read(./**)",
+      "Write(./**)",
+      "Edit(./**)",
+      "Glob(./**)",
+      "Grep(./**)",
+      "Read(/Users/mj/mjcode/ai-products/django-boilerplate/.worktrees/010-fix-inconsistent-icon-placement-in-register-form-n/**)",
+      "Write(/Users/mj/mjcode/ai-products/django-boilerplate/.worktrees/010-fix-inconsistent-icon-placement-in-register-form-n/**)",
+      "Edit(/Users/mj/mjcode/ai-products/django-boilerplate/.worktrees/010-fix-inconsistent-icon-placement-in-register-form-n/**)",
+      "Glob(/Users/mj/mjcode/ai-products/django-boilerplate/.worktrees/010-fix-inconsistent-icon-placement-in-register-form-n/**)",
+      "Grep(/Users/mj/mjcode/ai-products/django-boilerplate/.worktrees/010-fix-inconsistent-icon-placement-in-register-form-n/**)",
+      "Read(/Users/mj/mjcode/ai-products/django-boilerplate/.worktrees/010-fix-inconsistent-icon-placement-in-register-form-n/.auto-claude/specs/010-fix-inconsistent-icon-placement-in-register-form-n/**)",
+      "Write(/Users/mj/mjcode/ai-products/django-boilerplate/.worktrees/010-fix-inconsistent-icon-placement-in-register-form-n/.auto-claude/specs/010-fix-inconsistent-icon-placement-in-register-form-n/**)",
+      "Edit(/Users/mj/mjcode/ai-products/django-boilerplate/.worktrees/010-fix-inconsistent-icon-placement-in-register-form-n/.auto-claude/specs/010-fix-inconsistent-icon-placement-in-register-form-n/**)",
+      "Bash(*)",
+      "WebFetch(*)",
+      "WebSearch(*)",
+      "mcp__context7__resolve-library-id(*)",
+      "mcp__context7__get-library-docs(*)",
+      "mcp__graphiti-memory__search_nodes(*)",
+      "mcp__graphiti-memory__search_facts(*)",
+      "mcp__graphiti-memory__add_episode(*)",
+      "mcp__graphiti-memory__get_episodes(*)",
+      "mcp__graphiti-memory__get_entity_edge(*)"
+    ]
+  }
+}
