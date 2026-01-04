@@ -146,11 +146,12 @@
           "id": "5.2",
           "title": "Update export to respect filters",
           "description": "Ensure the Export button respects active filters when exporting audit logs",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "frontend/src/routes/admin/_layout/audit/index.tsx"
           ],
-          "notes": "getAuditExportUrl already accepts filters parameter; just need to pass current filters"
+          "notes": "Verified export functionality respects active filters. Both admin and org pages correctly pass appliedFilters to getAuditExportUrl(), which builds the export URL with all filter parameters. Implementation was already completed during subtasks 3.1 and 4.2. No changes needed.",
+          "updated_at": "2026-01-04T18:52:51.179187+00:00"
         }
       ]
     }
@@ -211,5 +212,5 @@
     "estimated_complexity": "medium",
     "estimated_subtasks": 10
   },
-  "last_updated": "2026-01-04T18:51:25.378571+00:00"
+  "last_updated": "2026-01-04T18:52:51.179192+00:00"
 }

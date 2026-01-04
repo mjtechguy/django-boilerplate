@@ -54,3 +54,9 @@ See implementation_plan.json for detailed phases and subtasks.
   - All 12 verification criteria passed (see verification-results.md)
   - No critical or minor issues found
   - Implementation is production-ready
+- [2026-01-04] Completed subtask 5.2: Verified export respects active filters
+  - Admin audit page: handleExport passes appliedFilters to getAuditExportUrl
+  - Org audit page: handleExport passes appliedFilters to getAuditExportUrl
+  - getAuditExportUrl function properly builds URL with all filter query parameters
+  - Implementation was already completed during subtasks 3.1 and 4.2
+  - No changes needed - functionality working as expected
