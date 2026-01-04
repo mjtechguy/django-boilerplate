@@ -1,0 +1,33 @@
+{
+  "subtasks": {
+    "1.1": {
+      "attempts": [
+        {
+          "session": 2,
+          "timestamp": "2026-01-04T14:12:20.271309",
+          "approach": "Implemented: Remove the hardcoded mock notifications array and use the useWebSocket() hook to get notifications, ",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "1.2": {
+      "attempts": [
+        {
+          "session": 3,
+          "timestamp": "2026-01-04T14:14:21.391825",
+          "approach": "Implemented: The WebSocket context provides notifications with {id, title, body, timestamp, read} format. Map 'bo",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    }
+  },
+  "stuck_subtasks": [],
+  "metadata": {
+    "created_at": "2026-01-04T14:07:19.256724",
+    "last_updated": "2026-01-04T14:14:21.391846"
+  }
+}

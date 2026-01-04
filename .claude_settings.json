@@ -1,0 +1,34 @@
+{
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true
+  },
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "Read(./**)",
+      "Write(./**)",
+      "Edit(./**)",
+      "Glob(./**)",
+      "Grep(./**)",
+      "Read(/Users/mj/mjcode/ai-products/django-boilerplate/.worktrees/006-connect-notifications-page-to-real-websocket-event/**)",
+      "Write(/Users/mj/mjcode/ai-products/django-boilerplate/.worktrees/006-connect-notifications-page-to-real-websocket-event/**)",
+      "Edit(/Users/mj/mjcode/ai-products/django-boilerplate/.worktrees/006-connect-notifications-page-to-real-websocket-event/**)",
+      "Glob(/Users/mj/mjcode/ai-products/django-boilerplate/.worktrees/006-connect-notifications-page-to-real-websocket-event/**)",
+      "Grep(/Users/mj/mjcode/ai-products/django-boilerplate/.worktrees/006-connect-notifications-page-to-real-websocket-event/**)",
+      "Read(/Users/mj/mjcode/ai-products/django-boilerplate/.worktrees/006-connect-notifications-page-to-real-websocket-event/.auto-claude/specs/006-connect-notifications-page-to-real-websocket-event/**)",
+      "Write(/Users/mj/mjcode/ai-products/django-boilerplate/.worktrees/006-connect-notifications-page-to-real-websocket-event/.auto-claude/specs/006-connect-notifications-page-to-real-websocket-event/**)",
+      "Edit(/Users/mj/mjcode/ai-products/django-boilerplate/.worktrees/006-connect-notifications-page-to-real-websocket-event/.auto-claude/specs/006-connect-notifications-page-to-real-websocket-event/**)",
+      "Bash(*)",
+      "WebFetch(*)",
+      "WebSearch(*)",
+      "mcp__context7__resolve-library-id(*)",
+      "mcp__context7__get-library-docs(*)",
+      "mcp__graphiti-memory__search_nodes(*)",
+      "mcp__graphiti-memory__search_facts(*)",
+      "mcp__graphiti-memory__add_episode(*)",
+      "mcp__graphiti-memory__get_episodes(*)",
+      "mcp__graphiti-memory__get_entity_edge(*)"
+    ]
+  }
+}

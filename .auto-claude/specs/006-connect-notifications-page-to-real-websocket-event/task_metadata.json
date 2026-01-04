@@ -1,0 +1,13 @@
+{
+  "sourceType": "ideation",
+  "ideationType": "code_improvements",
+  "ideaId": "ci-005",
+  "rationale": "WebSocket infrastructure exists in lib/websocket/ with ws-context.tsx managing connections and orgEvents. Notifications page has complete UI but uses hardcoded mock data. The orgEvents pattern already accumulates real-time events that should power the notifications UI.",
+  "category": "feature",
+  "estimatedEffort": "medium",
+  "complexity": "medium",
+  "affectedFiles": [
+    "frontend/src/routes/app/_layout/notifications/index.tsx",
+    "frontend/src/lib/websocket/ws-context.tsx"
+  ]
+}
