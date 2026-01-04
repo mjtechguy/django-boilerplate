@@ -139,6 +139,13 @@ class TestSecuritySettings:
         assert hasattr(settings, "CSP_FRAME_ANCESTORS")
         assert settings.CSP_FRAME_ANCESTORS == ("'none'",)
 
+    def test_csp_style_src_no_unsafe_inline(self):
+        """CSP_STYLE_SRC should not contain 'unsafe-inline'."""
+        from django.conf import settings
+
+        assert hasattr(settings, "CSP_STYLE_SRC")
+        assert "'unsafe-inline'" not in settings.CSP_STYLE_SRC
+
     def test_cors_settings_present(self):
         """CORS settings should be configured."""
         from django.conf import settings
