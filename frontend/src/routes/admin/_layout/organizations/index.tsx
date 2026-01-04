@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { type ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal, Building2 } from "lucide-react";
@@ -39,6 +39,15 @@ function OrganizationsPage() {
   const [licenseTierFilter, setLicenseTierFilter] = useState<string>("all");
   const { data, isLoading } = useOrganizations();
   const [deactivateOrg, setDeactivateOrg] = useState<{ id: string; name: string } | null>(null);
+
+  // Debounce search input to avoid excessive API calls
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchInput);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   const columns: ColumnDef<OrgListItem>[] = [
     {
