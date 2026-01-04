@@ -78,21 +78,23 @@
           "id": "3.1",
           "title": "Wire up Filter button in admin audit page",
           "description": "Connect the existing Filter button to open the AuditLogFilters popover and pass filters to useAuditLogs hook",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "frontend/src/routes/admin/_layout/audit/index.tsx"
           ],
-          "notes": "The useAuditLogs hook already accepts AuditFilters parameter"
+          "notes": "Successfully wired up Filter button in admin audit page. Integrated Popover component with AuditLogFilters, connected useAuditFilters hook for state management, and passed appliedFilters to useAuditLogs API hook. Export functionality also updated to respect active filters.",
+          "updated_at": "2026-01-04T18:39:18.653998+00:00"
         },
         {
           "id": "3.2",
           "title": "Add active filter indicators",
           "description": "Show badges or visual indicators when filters are active, and add a way to clear individual or all filters",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "frontend/src/routes/admin/_layout/audit/index.tsx"
           ],
-          "notes": "Use Badge component to show active filter count"
+          "notes": "Successfully implemented active filter indicators. Added badge to Filter button showing active count, displayed filter badges with clear functionality, and added 'Clear all' button. Committed as c87908a.",
+          "updated_at": "2026-01-04T18:41:29.924657+00:00"
         }
       ]
     },
@@ -105,22 +107,24 @@
           "id": "4.1",
           "title": "Wire org audit page to API",
           "description": "Replace mock data in org audit page with actual useAuditLogs API call",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "frontend/src/routes/org/_layout/audit/index.tsx"
           ],
-          "notes": "Page currently uses hardcoded mock data; needs to call the API like admin page does"
+          "notes": "Successfully replaced mock data with useAuditLogs() API call. The org audit page now fetches real data from the backend, displays it with proper formatting, includes loading states, empty state handling, and functional export. Filter controls remain disabled for next subtask 4.2.",
+          "updated_at": "2026-01-04T18:43:52.975811+00:00"
         },
         {
           "id": "4.2",
           "title": "Add filter functionality to org audit page",
           "description": "Add filter UI to org audit page, reusing the AuditLogFilters component",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "frontend/src/routes/org/_layout/audit/index.tsx",
             "frontend/src/components/shared/audit-log-filters.tsx"
           ],
-          "notes": "Refactor filter component to be shared between admin and org layouts"
+          "notes": "Successfully integrated filter UI into org audit page. Moved AuditLogFilters component and useAuditFilters hook to shared locations (components/shared and hooks) for reuse between admin and org layouts. Org audit page now has full filter functionality with Popover UI, active filter indicators, and Export respecting filters. Committed as ff6593f.",
+          "updated_at": "2026-01-04T18:47:26.117094+00:00"
         }
       ]
     },
@@ -206,5 +210,5 @@
     "estimated_complexity": "medium",
     "estimated_subtasks": 10
   },
-  "last_updated": "2026-01-04T18:37:56.066225+00:00"
+  "last_updated": "2026-01-04T18:47:26.117106+00:00"
 }
