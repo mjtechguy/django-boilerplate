@@ -1,0 +1,115 @@
+{% extends "email/base.html" %}
+
+{% block content %}
+<tr>
+    <td style="padding-bottom: 20px;">
+        <h1 style="color: #ea580c; margin: 0;">🚨 Mass Account Lockout Alert</h1>
+    </td>
+</tr>
+<tr>
+    <td style="padding-bottom: 20px; color: #666;">
+        <p>Hi Admin,</p>
+        <p>A potential credential stuffing attack has been detected. Multiple accounts have been locked due to failed login attempts in a short time window.</p>
+    </td>
+</tr>
+<tr>
+    <td style="padding-bottom: 20px;">
+        <table width="100%" cellpadding="12" cellspacing="0" style="background: #fff7ed; border-left: 4px solid #ea580c; border-radius: 4px;">
+            <tr>
+                <td style="color: #666;">
+                    <p style="margin: 0; font-weight: 600; color: #c2410c;">⚠️ Alert Summary:</p>
+                    <p style="margin: 8px 0 0 0;"><strong>Lockouts Detected:</strong> {{ lockout_count }} accounts</p>
+                    <p style="margin: 4px 0 0 0;"><strong>Time Window:</strong> {{ time_window }} minutes</p>
+                    <p style="margin: 4px 0 0 0;"><strong>Detection Time:</strong> {{ detection_time }}</p>
+                    <p style="margin: 4px 0 0 0;"><strong>Threshold:</strong> {{ threshold }} lockouts</p>
+                </td>
+            </tr>
+        </table>
+    </td>
+</tr>
+<tr>
+    <td style="padding-bottom: 20px; color: #666;">
+        <h2 style="color: #333; font-size: 18px; margin: 0 0 12px 0;">📋 Affected Accounts:</h2>
+        <table width="100%" cellpadding="8" cellspacing="0" style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 4px;">
+            <tr style="background: #f3f4f6;">
+                <td style="font-weight: 600; color: #374151; padding: 10px;">Username</td>
+                <td style="font-weight: 600; color: #374151; padding: 10px;">Email</td>
+                <td style="font-weight: 600; color: #374151; padding: 10px;">Lockout Time</td>
+            </tr>
+            {% for account in affected_accounts %}
+            <tr style="border-top: 1px solid #e5e7eb;">
+                <td style="padding: 10px; color: #666;">{{ account.username }}</td>
+                <td style="padding: 10px; color: #666;">{{ account.email }}</td>
+                <td style="padding: 10px; color: #666;">{{ account.lockout_time }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </td>
+</tr>
+{% if ip_summary %}
+<tr>
+    <td style="padding-bottom: 20px; color: #666;">
+        <h2 style="color: #333; font-size: 18px; margin: 0 0 12px 0;">🌐 IP Address Summary:</h2>
+        <table width="100%" cellpadding="8" cellspacing="0" style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 4px;">
+            <tr style="background: #f3f4f6;">
+                <td style="font-weight: 600; color: #374151; padding: 10px;">IP Address</td>
+                <td style="font-weight: 600; color: #374151; padding: 10px;">Attempts</td>
+            </tr>
+            {% for ip in ip_summary %}
+            <tr style="border-top: 1px solid #e5e7eb;">
+                <td style="padding: 10px; color: #666; font-family: monospace;">{{ ip.address }}</td>
+                <td style="padding: 10px; color: #666;">{{ ip.count }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </td>
+</tr>
+{% endif %}
+<tr>
+    <td style="padding-bottom: 20px; color: #666;">
+        <h2 style="color: #333; font-size: 18px; margin: 0 0 12px 0;">🛡️ Recommended Actions:</h2>
+        <ol style="margin: 8px 0; padding-left: 20px; line-height: 1.6;">
+            <li><strong>Review audit logs</strong> - Check the system audit logs for suspicious patterns across these accounts</li>
+            <li><strong>Investigate IP addresses</strong> - Determine if attacks are originating from specific IP ranges or known malicious sources</li>
+            <li><strong>Consider IP blocking</strong> - If attacks persist from specific IPs, consider adding firewall rules or rate limiting</li>
+            <li><strong>Notify affected users</strong> - Users have been automatically notified, but consider proactive outreach for high-value accounts</li>
+            <li><strong>Review security settings</strong> - Evaluate whether current lockout thresholds and cooldown periods are appropriate</li>
+            <li><strong>Monitor for escalation</strong> - Continue monitoring for additional lockout events or related security incidents</li>
+        </ol>
+    </td>
+</tr>
+<tr>
+    <td style="padding-bottom: 20px;">
+        <table width="100%" cellpadding="12" cellspacing="0" style="background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 4px;">
+            <tr>
+                <td style="color: #666;">
+                    <p style="margin: 0; font-weight: 600; color: #b45309;">💡 Understanding Credential Stuffing:</p>
+                    <p style="margin: 8px 0 0 0;">Credential stuffing attacks use leaked username/password combinations from other breaches to gain unauthorized access. Mass lockouts indicate attackers are systematically testing credentials across multiple accounts.</p>
+                </td>
+            </tr>
+        </table>
+    </td>
+</tr>
+<tr>
+    <td style="padding-bottom: 20px;">
+        <table width="100%" cellpadding="12" cellspacing="0" style="background: #dbeafe; border-left: 4px solid #3b82f6; border-radius: 4px;">
+            <tr>
+                <td style="color: #666;">
+                    <p style="margin: 0; font-weight: 600; color: #1e40af;">📊 Next Steps:</p>
+                    <ul style="margin: 8px 0 0 0; padding-left: 20px;">
+                        <li>Access the admin dashboard to view detailed audit logs</li>
+                        <li>Review django-axes access failure logs for attack patterns</li>
+                        <li>Check if any accounts were successfully compromised before lockout</li>
+                        <li>Document the incident and response actions taken</li>
+                    </ul>
+                </td>
+            </tr>
+        </table>
+    </td>
+</tr>
+<tr>
+    <td style="color: #999; font-size: 12px;">
+        <p>This is an automated security alert generated by the account lockout monitoring system. Individual users have been notified of their account lockouts separately.</p>
+    </td>
+</tr>
+{% endblock %}
