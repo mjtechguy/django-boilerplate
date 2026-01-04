@@ -19,8 +19,65 @@ export const Route = createFileRoute("/app/_layout/notifications/")({
   component: NotificationsPage,
 });
 
+/**
+ * Format a timestamp as relative time (e.g., "5 min ago", "2 hours ago")
+ */
+function formatRelativeTime(timestamp: string): string {
+  const now = new Date();
+  const then = new Date(timestamp);
+  const diffMs = now.getTime() - then.getTime();
+  const diffSec = Math.floor(diffMs / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHour = Math.floor(diffMin / 60);
+  const diffDay = Math.floor(diffHour / 24);
+
+  if (diffSec < 60) {
+    return "Just now";
+  } else if (diffMin < 60) {
+    return `${diffMin} min ago`;
+  } else if (diffHour < 24) {
+    return `${diffHour} hour${diffHour === 1 ? "" : "s"} ago`;
+  } else if (diffDay < 7) {
+    return `${diffDay} day${diffDay === 1 ? "" : "s"} ago`;
+  } else {
+    return then.toLocaleDateString();
+  }
+}
+
+interface UINotification {
+  id: string;
+  type: string;
+  title: string;
+  message: string;
+  time: string;
+  read: boolean;
+}
+
+/**
+ * Map WebSocket notification format to UI format
+ */
+function mapNotificationForUI(notification: {
+  id: string;
+  title: string;
+  body: string;
+  timestamp: string;
+  read?: boolean;
+}): UINotification {
+  return {
+    id: notification.id,
+    type: "info", // Default type, can be enhanced later
+    title: notification.title,
+    message: notification.body,
+    time: formatRelativeTime(notification.timestamp),
+    read: notification.read ?? false,
+  };
+}
+
 function NotificationsPage() {
   const { notifications, unreadCount, notificationStatus } = useWebSocket();
+
+  // Map notifications from WebSocket format to UI format
+  const uiNotifications = notifications.map(mapNotificationForUI);
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -45,7 +102,7 @@ function NotificationsPage() {
       <div className="flex items-center gap-4">
         <Badge variant="secondary" className="text-sm">
           <Bell className="mr-1 h-3 w-3" />
-          {notifications.length} total
+          {uiNotifications.length} total
         </Badge>
         {unreadCount > 0 && (
           <Badge
@@ -60,7 +117,7 @@ function NotificationsPage() {
       {/* Notifications List */}
       <Card>
         <CardContent className="p-0 divide-y">
-          {notifications.map((notification) => (
+          {uiNotifications.map((notification) => (
             <NotificationItem key={notification.id} notification={notification} />
           ))}
         </CardContent>
@@ -75,14 +132,7 @@ function NotificationsPage() {
 }
 
 interface NotificationItemProps {
-  notification: {
-    id: string;
-    type: string;
-    title: string;
-    message: string;
-    time: string;
-    read: boolean;
-  };
+  notification: UINotification;
 }
 
 function NotificationItem({ notification }: NotificationItemProps) {
