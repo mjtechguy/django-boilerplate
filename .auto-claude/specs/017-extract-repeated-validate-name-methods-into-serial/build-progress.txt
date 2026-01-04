@@ -36,3 +36,4 @@ def validate_name(self, value: str) -> str:
 - 2026-01-04: ✅ Subtask 2.1 - Updated OrgCreateSerializer to use NameValidationMixin
 - 2026-01-04: ✅ Subtask 2.2 - Updated OrgUpdateSerializer to use NameValidationMixin
 - 2026-01-04: ✅ Subtask 3.1 - Updated DivisionCreateSerializer to use NameValidationMixin
+- 2026-01-04: ✅ Subtask 3.2 - Updated DivisionUpdateSerializer to use NameValidationMixin

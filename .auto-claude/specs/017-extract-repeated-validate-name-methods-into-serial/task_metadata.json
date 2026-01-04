@@ -1,0 +1,9 @@
+{
+  "sourceType": "ideation",
+  "ideationType": "code_quality",
+  "ideaId": "cq-003",
+  "rationale": "Duplicated validation logic increases maintenance burden and risks inconsistent behavior when changes are needed. A single mixin would ensure consistent validation across all serializers.",
+  "category": "refactoring",
+  "codeQualitySeverity": "minor",
+  "priority": "medium"
+}

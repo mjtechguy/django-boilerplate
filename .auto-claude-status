@@ -1,0 +1,25 @@
+{
+  "active": true,
+  "spec": "017-extract-repeated-validate-name-methods-into-serial",
+  "state": "building",
+  "subtasks": {
+    "completed": 7,
+    "total": 9,
+    "in_progress": 1,
+    "failed": 0
+  },
+  "phase": {
+    "current": "Add Tests",
+    "id": null,
+    "total": 1
+  },
+  "workers": {
+    "active": 0,
+    "max": 1
+  },
+  "session": {
+    "number": 9,
+    "started_at": "2026-01-04T14:37:21.325064"
+  },
+  "last_update": "2026-01-04T14:50:15.438436"
+}

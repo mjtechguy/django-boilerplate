@@ -92,13 +92,15 @@
           "id": "3.2",
           "title": "Update DivisionUpdateSerializer to use mixin",
           "description": "Add NameValidationMixin to DivisionUpdateSerializer's inheritance chain. Set name_entity_type = 'Division'. Remove the duplicate validate_name method.",
-          "status": "pending",
+          "status": "completed",
           "acceptance_criteria": [
             "DivisionUpdateSerializer inherits from NameValidationMixin",
             "name_entity_type is set to 'Division'",
             "Original validate_name method is removed",
             "Validation behavior is unchanged"
-          ]
+          ],
+          "notes": "Added NameValidationMixin to DivisionUpdateSerializer's inheritance chain. Set name_entity_type = 'Division'. Removed the duplicate validate_name method. The serializer now uses the mixin's validate_name implementation which provides identical validation behavior (checks for empty/whitespace-only values and returns stripped value) with customized error message for Division entities. The validate() method for additional constraints remains unchanged.",
+          "updated_at": "2026-01-04T19:47:16.755559+00:00"
         }
       ]
     },
@@ -112,25 +114,29 @@
           "id": "4.1",
           "title": "Update TeamCreateSerializer to use mixin",
           "description": "Add NameValidationMixin to TeamCreateSerializer's inheritance chain. Set name_entity_type = 'Team'. Remove the duplicate validate_name method.",
-          "status": "pending",
+          "status": "completed",
           "acceptance_criteria": [
             "TeamCreateSerializer inherits from NameValidationMixin",
             "name_entity_type is set to 'Team'",
             "Original validate_name method is removed",
             "Validation behavior is unchanged"
-          ]
+          ],
+          "notes": "Added NameValidationMixin to TeamCreateSerializer's inheritance chain. Set name_entity_type = 'Team'. Removed the duplicate validate_name method. The serializer now uses the mixin's validate_name implementation which provides identical validation behavior (checks for empty/whitespace-only values and returns stripped value) with customized error message for Team entities. The validate() method for other constraints remains unchanged.",
+          "updated_at": "2026-01-04T19:48:34.019332+00:00"
         },
         {
           "id": "4.2",
           "title": "Update TeamUpdateSerializer to use mixin",
           "description": "Add NameValidationMixin to TeamUpdateSerializer's inheritance chain. Set name_entity_type = 'Team'. Remove the duplicate validate_name method.",
-          "status": "pending",
+          "status": "completed",
           "acceptance_criteria": [
             "TeamUpdateSerializer inherits from NameValidationMixin",
             "name_entity_type is set to 'Team'",
             "Original validate_name method is removed",
             "Validation behavior is unchanged"
-          ]
+          ],
+          "notes": "Added NameValidationMixin to TeamUpdateSerializer's inheritance chain. Set name_entity_type = 'Team'. Removed the duplicate validate_name method. The serializer now uses the mixin's validate_name implementation which provides identical validation behavior (checks for empty/whitespace-only values and returns stripped value) with customized error message for Team entities. The validate_division and validate() methods remain unchanged.",
+          "updated_at": "2026-01-04T19:49:58.517640+00:00"
         }
       ]
     },
@@ -184,5 +190,5 @@
     "Code is cleaner with reduced duplication"
   ],
   "spec_file": "spec.md",
-  "last_updated": "2026-01-04T19:45:24.491047+00:00"
+  "last_updated": "2026-01-04T19:49:58.517648+00:00"
 }
