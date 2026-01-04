@@ -71,11 +71,35 @@
         }
       ],
       "status": "completed"
+    },
+    "2.2": {
+      "attempts": [
+        {
+          "session": 8,
+          "timestamp": "2026-01-04T15:56:59.283490",
+          "approach": "Implemented: Add tests for parseUser, hasRole, hasAnyRole, hasAllRoles functions",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "2.3": {
+      "attempts": [
+        {
+          "session": 9,
+          "timestamp": "2026-01-04T16:00:04.093567",
+          "approach": "Implemented: Add tests for token storage, retrieval, expiration checking, and JWT parsing",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
     }
   },
   "stuck_subtasks": [],
   "metadata": {
     "created_at": "2026-01-04T15:35:45.794035",
-    "last_updated": "2026-01-04T15:54:53.274568"
+    "last_updated": "2026-01-04T16:00:04.093588"
   }
 }

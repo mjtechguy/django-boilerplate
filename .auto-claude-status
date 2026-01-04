@@ -3,7 +3,7 @@
   "spec": "015-add-frontend-unit-tests-for-critical-components",
   "state": "building",
   "subtasks": {
-    "completed": 6,
+    "completed": 8,
     "total": 18,
     "in_progress": 1,
     "failed": 0
@@ -18,8 +18,8 @@
     "max": 1
   },
   "session": {
-    "number": 8,
+    "number": 10,
     "started_at": "2026-01-04T15:35:45.794343"
   },
-  "last_update": "2026-01-04T15:54:58.828371"
+  "last_update": "2026-01-04T16:00:10.584939"
 }
