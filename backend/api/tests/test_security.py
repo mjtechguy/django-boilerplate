@@ -146,6 +146,14 @@ class TestSecuritySettings:
         assert hasattr(settings, "CSP_STYLE_SRC")
         assert "'unsafe-inline'" not in settings.CSP_STYLE_SRC
 
+    def test_csp_exclude_url_prefixes_configured(self):
+        """CSP_EXCLUDE_URL_PREFIXES should be configured with admin paths."""
+        from django.conf import settings
+
+        assert hasattr(settings, "CSP_EXCLUDE_URL_PREFIXES")
+        assert "/admin/" in settings.CSP_EXCLUDE_URL_PREFIXES
+        assert "/cms/" in settings.CSP_EXCLUDE_URL_PREFIXES
+
     def test_cors_settings_present(self):
         """CORS settings should be configured."""
         from django.conf import settings
