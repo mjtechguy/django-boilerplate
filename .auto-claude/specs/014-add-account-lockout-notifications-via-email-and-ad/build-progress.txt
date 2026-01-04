@@ -48,7 +48,7 @@
 - Debounce admin alerts to prevent spam
 - Leverage existing `AuditLog` model with `action='account_locked'`
 
-## Phase 1: Core Infrastructure - In Progress
+## Phase 1: Core Infrastructure - Complete ✓
 
 ### Completed Subtasks
 
@@ -103,8 +103,38 @@
 - All tasks follow existing patterns from `backend/api/tasks.py`
 - Proper error handling and structured logging throughout
 
+## Phase 2: Signal Integration - In Progress
+
+### Completed Subtasks
+
+#### 2.1 - Create lockout signal handlers ✓
+- Created `backend/api/signals_lockout.py` with handler for django-axes `user_locked_out` signal
+- Signal handler implementation:
+  - Uses `@receiver(user_locked_out)` decorator to listen to axes signals
+  - Extracts user information (username, email, first_name) from User model
+  - Gracefully handles cases where User object doesn't exist (logs warning, continues with username)
+  - Extracts IP address and failure count from signal parameters and settings
+  - Calculates lockout duration and unlock time from `AXES_COOLOFF_TIME` setting
+  - Prepares comprehensive lockout_data dict with duration, failure count, IP, timestamps, reset URL
+  - Prepares user_data dict with first_name, email, username for email personalization
+- Audit logging:
+  - Creates audit log entry with `action="account_locked"`
+  - Includes metadata: IP address, failure count, lockout duration, unlock time, source
+  - Uses `log_audit()` from `api.audit` following existing patterns
+  - Sets both actor_id and resource_id to user_id (user attempted login)
+- Notification triggering:
+  - Triggers `send_lockout_notification_task.delay()` asynchronously via Celery
+  - Only sends if user has email and `LOCKOUT_NOTIFICATION_ENABLED` is True
+  - Logs reason if notification is skipped (no_email or disabled)
+- Mass lockout tracking:
+  - Increments Redis counter using `lockout_count:{window}m` key
+  - Sets TTL on counter to expire after time window
+  - Triggers `check_mass_lockout_task.delay()` with current count
+  - Error handling prevents tracking failures from blocking signal handler
+- Comprehensive structured logging throughout using structlog
+- All acceptance criteria met
+
 ## Next Steps
-- Continue Phase 2: Create lockout signal handlers (2.1)
-- Hook into django-axes user_locked_out signal
-- Trigger notification tasks when lockouts occur
-- Create audit log entries for account_locked actions
+- Continue Phase 2: Connect signals in apps.py (2.2)
+- Import signals_lockout module in api/apps.py ready() method
+- Integrate with local auth lockout in models_local_auth.py (2.3)
