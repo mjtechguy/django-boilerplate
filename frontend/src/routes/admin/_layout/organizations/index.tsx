@@ -37,7 +37,11 @@ function OrganizationsPage() {
   const [debouncedSearch, setDebouncedSearch] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [licenseTierFilter, setLicenseTierFilter] = useState<string>("all");
-  const { data, isLoading } = useOrganizations();
+  const { data, isLoading } = useOrganizations({
+    search: debouncedSearch || undefined,
+    status: statusFilter === "all" ? undefined : statusFilter,
+    license_tier: licenseTierFilter === "all" ? undefined : licenseTierFilter,
+  });
   const [deactivateOrg, setDeactivateOrg] = useState<{ id: string; name: string } | null>(null);
 
   // Debounce search input to avoid excessive API calls
