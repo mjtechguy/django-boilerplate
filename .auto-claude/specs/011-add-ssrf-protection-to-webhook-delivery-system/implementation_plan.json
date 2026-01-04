@@ -85,14 +85,15 @@
           "title": "Add URL validation to webhook serializer",
           "description": "Add URL validation in WebhookEndpointSerializer to validate URLs at creation/update time. This provides early feedback to users when they configure invalid URLs. Import validate_webhook_url from ssrf module and add custom validation in the serializer's validate_url method.",
           "estimated_hours": 1,
-          "status": "pending",
+          "status": "completed",
           "files_to_modify": [
             "backend/api/serializers_webhooks.py"
           ],
           "dependencies": [
             "1.1"
           ],
-          "notes": "Provides user-friendly validation at configuration time"
+          "notes": "Completed URL validation in WebhookEndpointSerializer. Added validate_url method that calls validate_webhook_url from ssrf module and converts SSRF exceptions to DRF ValidationError. This provides early feedback to users when they configure webhook endpoints with invalid URLs (private IPs, metadata endpoints, blocked hosts, invalid schemes).",
+          "completed_at": "2026-01-04T21:30:00Z"
         },
         {
           "subtask_id": "2.3",
