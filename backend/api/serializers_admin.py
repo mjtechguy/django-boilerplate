@@ -13,6 +13,35 @@ from api.models_local_auth import LocalUserProfile
 User = get_user_model()
 
 
+class NameValidationMixin:
+    """Mixin for validating name fields in serializers.
+
+    Provides a validate_name method that checks for empty/whitespace-only values
+    and returns the stripped value. Error messages can be customized via the
+    name_entity_type class attribute.
+    """
+
+    name_entity_type = "Name"
+
+    def validate_name(self, value: str) -> str:
+        """Validate name is not empty and return stripped value.
+
+        Args:
+            value: The name value to validate
+
+        Returns:
+            The stripped name value
+
+        Raises:
+            ValidationError: If name is empty or whitespace-only
+        """
+        if not value or not value.strip():
+            raise serializers.ValidationError(
+                f"{self.name_entity_type} name cannot be empty."
+            )
+        return value.strip()
+
+
 class OrgSerializer(serializers.ModelSerializer):
     """Serializer for Org model - read operations."""
 
@@ -43,8 +72,10 @@ class OrgSerializer(serializers.ModelSerializer):
         return obj.memberships.values("user_id").distinct().count()
 
 
-class OrgCreateSerializer(serializers.ModelSerializer):
+class OrgCreateSerializer(NameValidationMixin, serializers.ModelSerializer):
     """Serializer for creating a new Org."""
+
+    name_entity_type = "Organization"
 
     class Meta:
         model = Org
@@ -59,15 +90,11 @@ class OrgCreateSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
 
-    def validate_name(self, value: str) -> str:
-        """Validate org name is not empty."""
-        if not value or not value.strip():
-            raise serializers.ValidationError("Organization name cannot be empty.")
-        return value.strip()
 
-
-class OrgUpdateSerializer(serializers.ModelSerializer):
+class OrgUpdateSerializer(NameValidationMixin, serializers.ModelSerializer):
     """Serializer for updating an Org."""
+
+    name_entity_type = "Organization"
 
     class Meta:
         model = Org
@@ -77,12 +104,6 @@ class OrgUpdateSerializer(serializers.ModelSerializer):
             "license_tier",
             "feature_flags",
         ]
-
-    def validate_name(self, value: str) -> str:
-        """Validate org name is not empty."""
-        if not value or not value.strip():
-            raise serializers.ValidationError("Organization name cannot be empty.")
-        return value.strip()
 
     def validate_status(self, value: str) -> str:
         """Validate status is a valid choice."""
@@ -201,8 +222,10 @@ class DivisionListSerializer(serializers.ModelSerializer):
         return obj.memberships.count()
 
 
-class DivisionCreateSerializer(serializers.ModelSerializer):
+class DivisionCreateSerializer(NameValidationMixin, serializers.ModelSerializer):
     """Create serializer for Division."""
+
+    name_entity_type = "Division"
 
     class Meta:
         model = Division
@@ -218,12 +241,6 @@ class DivisionCreateSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
-
-    def validate_name(self, value: str) -> str:
-        """Validate division name is not empty."""
-        if not value or not value.strip():
-            raise serializers.ValidationError("Division name cannot be empty.")
-        return value.strip()
 
     def validate(self, attrs):
         """Validate division constraints."""
@@ -244,8 +261,10 @@ class DivisionCreateSerializer(serializers.ModelSerializer):
         return attrs
 
 
-class DivisionUpdateSerializer(serializers.ModelSerializer):
+class DivisionUpdateSerializer(NameValidationMixin, serializers.ModelSerializer):
     """Update serializer for Division."""
+
+    name_entity_type = "Division"
 
     class Meta:
         model = Division
@@ -256,12 +275,6 @@ class DivisionUpdateSerializer(serializers.ModelSerializer):
             "feature_flags",
             "billing_email",
         ]
-
-    def validate_name(self, value: str) -> str:
-        """Validate division name is not empty."""
-        if not value or not value.strip():
-            raise serializers.ValidationError("Division name cannot be empty.")
-        return value.strip()
 
     def validate(self, attrs):
         """Validate division constraints."""
@@ -343,8 +356,10 @@ class TeamListSerializer(serializers.ModelSerializer):
         return obj.memberships.count()
 
 
-class TeamCreateSerializer(serializers.ModelSerializer):
+class TeamCreateSerializer(NameValidationMixin, serializers.ModelSerializer):
     """Serializer for creating a new Team."""
+
+    name_entity_type = "Team"
 
     class Meta:
         model = Team
@@ -357,12 +372,6 @@ class TeamCreateSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
-
-    def validate_name(self, value: str) -> str:
-        """Validate team name is not empty."""
-        if not value or not value.strip():
-            raise serializers.ValidationError("Team name cannot be empty.")
-        return value.strip()
 
     def validate(self, data):
         """Validate team constraints."""
@@ -385,18 +394,14 @@ class TeamCreateSerializer(serializers.ModelSerializer):
         return data
 
 
-class TeamUpdateSerializer(serializers.ModelSerializer):
+class TeamUpdateSerializer(NameValidationMixin, serializers.ModelSerializer):
     """Serializer for updating a Team."""
+
+    name_entity_type = "Team"
 
     class Meta:
         model = Team
         fields = ["name", "division"]
-
-    def validate_name(self, value: str) -> str:
-        """Validate team name is not empty."""
-        if not value or not value.strip():
-            raise serializers.ValidationError("Team name cannot be empty.")
-        return value.strip()
 
     def validate_division(self, value):
         """Validate division belongs to the team's org."""
