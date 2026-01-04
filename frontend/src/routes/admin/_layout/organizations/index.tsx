@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { DataTable, DataTableColumnHeader } from "@/components/shared/data-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,6 +16,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useOrganizations, type OrgListItem } from "@/lib/api/organizations";
 import { EmptyState } from "@/components/shared/empty-state";
 import { CreateOrgDialog } from "./-components/create-org-dialog";
@@ -25,6 +33,10 @@ export const Route = createFileRoute("/admin/_layout/organizations/")({
 });
 
 function OrganizationsPage() {
+  const [searchInput, setSearchInput] = useState<string>("");
+  const [debouncedSearch, setDebouncedSearch] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [licenseTierFilter, setLicenseTierFilter] = useState<string>("all");
   const { data, isLoading } = useOrganizations();
   const [deactivateOrg, setDeactivateOrg] = useState<{ id: string; name: string } | null>(null);
 

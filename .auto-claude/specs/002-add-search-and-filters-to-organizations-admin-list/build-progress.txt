@@ -1,0 +1,32 @@
+# Build Progress: Add Search and Filters to Organizations Admin List
+
+## Status: Planning Complete
+
+## Implementation Plan Created
+- 2 phases with 6 subtasks total
+- Phase 1: Add Filters to Organizations Page (4 subtasks)
+- Phase 2: Testing and Verification (2 subtasks)
+
+## Key Findings from Codebase Analysis
+
+### Backend (Already Implemented)
+- `backend/api/views_admin_orgs.py` already supports:
+  - `search` - text search by org name (case-insensitive contains)
+  - `status` - filter by "active" or "inactive"
+  - `license_tier` - filter by tier (free, starter, pro, enterprise)
+
+### Frontend Hook (Already Implemented)
+- `useOrganizations` hook accepts `OrgsQueryParams` with all filter params
+- Located at: `frontend/src/lib/api/organizations/queries.ts`
+
+### Reference Pattern (Users Page)
+- `frontend/src/routes/admin/_layout/users/index.tsx` shows the exact pattern to follow
+- Uses Select dropdowns with w-[180px] width
+- Filter row uses `flex items-center gap-4`
+
+### Target File
+- `frontend/src/routes/admin/_layout/organizations/index.tsx`
+- Currently has no filtering - just calls `useOrganizations()` with no params
+
+## Next Steps
+1. Start implementing subtask 1.1: Add filter state and imports
