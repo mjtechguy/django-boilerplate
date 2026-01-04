@@ -9,8 +9,11 @@ the THROTTLE_RATE_API_KEY_CREATE environment variable (default: 5/hour).
 import time
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.core.cache import caches
 from rest_framework.throttling import BaseThrottle
+
+User = get_user_model()
 
 
 class APIKeyCreationThrottle(BaseThrottle):
@@ -118,3 +121,47 @@ class APIKeyCreationThrottle(BaseThrottle):
 
         duration = duration_map.get(period.lower(), 3600)
         return (num_requests, duration)
+
+
+def get_user_api_key_quota(user):
+    """
+    Get the maximum number of API keys a user can create based on their org's tier.
+
+    This function determines the max API key quota by:
+    1. Getting the user's organization from their first membership
+    2. Checking org's feature_flags['max_api_keys'] for custom override
+    3. Falling back to tier defaults from STRIPE_TIER_FEATURES
+    4. Defaulting to free tier limit (5) if org not found
+
+    Args:
+        user: User instance (Django User model)
+
+    Returns:
+        int: Maximum API keys allowed (-1 for unlimited, positive int for limit)
+    """
+    # Validate user
+    if not user or not user.is_authenticated:
+        # Unauthenticated users get free tier default
+        return settings.STRIPE_TIER_FEATURES.get("free", {}).get("max_api_keys", 5)
+
+    # Get user's primary org from first membership
+    membership = user.memberships.select_related("org").first()
+    if not membership or not membership.org:
+        # No org membership, use free tier default
+        return settings.STRIPE_TIER_FEATURES.get("free", {}).get("max_api_keys", 5)
+
+    org = membership.org
+
+    # Check if org has custom max_api_keys in feature_flags
+    if org.feature_flags and "max_api_keys" in org.feature_flags:
+        return org.feature_flags["max_api_keys"]
+
+    # Fall back to tier defaults
+    tier_features = settings.STRIPE_TIER_FEATURES.get(org.license_tier, {})
+    max_api_keys = tier_features.get("max_api_keys")
+
+    if max_api_keys is None:
+        # No tier config, use free tier as default
+        return settings.STRIPE_TIER_FEATURES.get("free", {}).get("max_api_keys", 5)
+
+    return max_api_keys
