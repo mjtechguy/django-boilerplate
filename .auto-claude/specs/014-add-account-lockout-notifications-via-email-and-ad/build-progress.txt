@@ -1,0 +1,110 @@
+# Build Progress: Account Lockout Notifications
+
+## Status: Planning Complete ✓
+
+## 2026-01-04: Initial Planning
+
+### Codebase Analysis Complete
+- Reviewed django-axes configuration in `backend/config/settings/base.py`
+- Examined existing email infrastructure in `backend/api/email.py`
+- Reviewed existing signal patterns in `backend/api/signals.py`
+- Analyzed admin alerting pattern in `backend/api/views_alerts.py`
+- Checked local auth lockout tracking in `backend/api/models_local_auth.py`
+
+### Key Findings
+1. **django-axes** already configured:
+   - `AXES_FAILURE_LIMIT=5` (lock after 5 failures)
+   - `AXES_COOLOFF_TIME=1` hour lockout
+   - `AXES_ENABLE_ACCESS_FAILURE_LOG=True`
+   - Uses `AxesStandaloneBackend` for authentication
+
+2. **Email infrastructure** exists:
+   - `send_email()` and `send_email_async()` in `api/email.py`
+   - Celery task `send_email_task` for async delivery
+   - Templates in `backend/templates/email/`
+   - `EmailLog` model for tracking
+
+3. **Admin alerting** pattern exists:
+   - `AlertListView` in `views_alerts.py` already checks for `account_locked` action
+   - Aggregates alerts from audit, system, and webhook sources
+
+4. **Local auth** has separate lockout tracking:
+   - `LocalUserProfile.record_login_attempt()` tracks failures
+   - `locked_until` field for lockout expiry
+   - `failed_login_attempts` counter
+
+### Implementation Plan Created
+- 5 phases, 14 subtasks
+- Phase 1: Core Infrastructure (settings, templates, tasks)
+- Phase 2: Signal Integration (axes signals, local auth integration)
+- Phase 3: Mass Lockout Detection (Redis tracking, admin alerts)
+- Phase 4: Testing (unit tests, integration tests)
+- Phase 5: Documentation
+
+### Architecture Decisions
+- Use django-axes `user_locked_out` signal for axes-based lockouts
+- Send emails asynchronously via Celery (non-blocking)
+- Use Redis sorted sets for time-windowed mass lockout detection
+- Debounce admin alerts to prevent spam
+- Leverage existing `AuditLog` model with `action='account_locked'`
+
+## Phase 1: Core Infrastructure - In Progress
+
+### Completed Subtasks
+
+#### 1.1 - Add lockout notification settings ✓
+- Added lockout notification configuration settings to `backend/config/settings/base.py`
+- LOCKOUT_NOTIFICATION_ENABLED (default: true)
+- LOCKOUT_ADMIN_EMAILS (default: empty list)
+- LOCKOUT_MASS_THRESHOLD (default: 10)
+- LOCKOUT_MASS_WINDOW_MINUTES (default: 5)
+- All settings follow existing patterns with os.getenv() and proper defaults
+
+#### 1.2 - Create lockout email template ✓
+- Created HTML email template for user lockout notifications at `backend/templates/email/account_lockout.html`
+- Template follows existing email patterns and includes:
+  - Red warning styling (#dc2626) for security focus
+  - Lockout duration, failed attempt count, IP address, and timestamp
+  - Two-section guidance: "Was this you?" with different advice for legitimate vs suspicious attempts
+  - Conditional password reset button with gradient styling
+  - Security best practices section with green info box
+  - Professional, user-friendly tone with clear security guidance
+
+#### 1.3 - Create admin alert email template ✓
+- Created HTML email template for admin mass lockout alerts at `backend/templates/email/mass_lockout_alert.html`
+- Orange/red warning styling (#ea580c) for security urgency
+- Alert summary with lockout count, time window, detection time, and threshold
+- Table of affected accounts showing username, email, and lockout_time (no passwords)
+- Conditional IP address summary section with IP and attempt count table
+- Comprehensive 6-step recommended action plan for administrators
+- Educational section explaining credential stuffing attacks
+- Next steps section with specific tasks for incident response
+
+#### 1.4 - Create lockout notification Celery tasks ✓
+- Created `backend/api/tasks_lockout.py` with three Celery tasks following existing patterns
+- `send_lockout_notification_task` - Sends email to affected user asynchronously
+  - Accepts user_email, user_data, and lockout_data parameters
+  - Uses existing send_email infrastructure
+  - Respects LOCKOUT_NOTIFICATION_ENABLED setting
+  - Includes detailed structured logging with task_id, user_email, and ip_address
+- `send_admin_lockout_alert_task` - Sends mass lockout alerts to admin emails
+  - Accepts lockout_count, time_window_minutes, affected_accounts, and ip_summary
+  - Sends to all emails in LOCKOUT_ADMIN_EMAILS setting
+  - Skips gracefully if no admin emails configured
+  - Uses mass_lockout_alert.html template with comprehensive security guidance
+- `check_mass_lockout_task` - Checks for mass lockout patterns and triggers alerts
+  - Implements debouncing using Redis cache to prevent alert spam
+  - Checks if lockout count exceeds LOCKOUT_MASS_THRESHOLD
+  - Sets debounce key with TTL matching time window
+  - Triggers admin alert task when threshold exceeded
+  - Returns status dict with count, threshold, and alert status
+- All tasks use standard retry configuration (max_retries=3, exponential backoff)
+- All tasks use bind=True for access to task context (self.request.id)
+- All tasks follow existing patterns from `backend/api/tasks.py`
+- Proper error handling and structured logging throughout
+
+## Next Steps
+- Continue Phase 2: Create lockout signal handlers (2.1)
+- Hook into django-axes user_locked_out signal
+- Trigger notification tasks when lockouts occur
+- Create audit log entries for account_locked actions
