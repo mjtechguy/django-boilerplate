@@ -9,14 +9,14 @@ Setting up testing infrastructure and adding comprehensive unit tests for critic
 | Phase | Name | Subtasks | Status |
 |-------|------|----------|--------|
 | 1 | Testing Infrastructure Setup | 5 | ✅ Complete |
-| 2 | Pure Utility Function Tests | 4 | 🔄 In Progress (1/4) |
+| 2 | Pure Utility Function Tests | 4 | 🔄 In Progress (3/4) |
 | 3 | Custom Hook Tests | 2 | Pending |
 | 4 | Auth Hook Tests | 1 | Pending |
 | 5 | Auth Component Tests | 3 | Pending |
 | 6 | API Client Tests | 1 | Pending |
 | 7 | Verification and Documentation | 2 | Pending |
 
-**Total Subtasks: 16 (6 completed, 10 remaining)**
+**Total Subtasks: 16 (8 completed, 8 remaining)**
 
 ## Codebase Analysis
 
@@ -92,8 +92,24 @@ Setting up testing infrastructure and adding comprehensive unit tests for critic
   - Tests for getPrimaryForeground: light/dark backgrounds, luminance threshold (0.5), various colors
   - Edge cases: hex format variations, case insensitivity, boundary values
   - File: `frontend/src/lib/color-utils.test.ts`
-- [ ] 2.2 - Test parse-user.ts
-- [ ] 2.3 - Test local-storage.ts
+- [x] 2.2 - Test parse-user.ts ✅ COMPLETE
+  - Created comprehensive test suite with 77 test cases
+  - Tests for parseUser: extracts user info, realm/client roles, org/team IDs, handles missing fields
+  - Tests for hasRole: checks both realm and client roles, handles null user, case-sensitive matching
+  - Tests for hasAnyRole: validates alias functionality, multiple role checking
+  - Tests for hasAllRoles: ensures all roles present, handles empty arrays, duplicate roles
+  - Edge cases: empty strings, special characters, very long role arrays, undefined values
+  - File: `frontend/src/lib/auth/parse-user.test.ts`
+- [x] 2.3 - Test local-storage.ts ✅ COMPLETE
+  - Created comprehensive test suite with 60+ test cases
+  - Tests for storeLocalTokens: stores tokens, calculates expiresAt, handles errors, overwrites existing
+  - Tests for getLocalTokens: retrieves tokens, handles missing/malformed data, error handling
+  - Tests for clearLocalTokens: removes tokens, handles missing tokens, error handling
+  - Tests for isLocalTokenExpired: checks expiration with buffer, handles null tokens, various buffer scenarios
+  - Tests for updateAccessToken: updates token/expiry, preserves refresh token, handles missing tokens
+  - Tests for parseJwtPayload: parses JWT, handles invalid tokens, base64url encoding, nested objects
+  - Edge cases: concurrent operations, long tokens, special characters, negative/zero expiry
+  - File: `frontend/src/lib/auth/local-storage.test.ts`
 - [ ] 2.4 - Test cn.ts utility
 
-**Next:** Subtask 2.2 - Add tests for parse-user.ts
+**Next:** Subtask 2.4 - Add tests for cn.ts utility
