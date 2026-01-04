@@ -113,12 +113,13 @@
           "id": "2.4",
           "title": "Create ApiKeyListItem component",
           "description": "Create frontend/src/components/profile/api-key-list-item.tsx - Individual list item showing API key details (name, prefix, created date, status badge) with revoke action trigger.",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "frontend/src/components/profile/api-key-list-item.tsx"
           ],
           "estimated_minutes": 15,
-          "notes": ""
+          "notes": "Created frontend/src/components/profile/api-key-list-item.tsx component that displays individual API key details (name, prefix, created date, status badge) with revoke action trigger. Refactored ApiKeysCard to use the new list item component for cleaner code organization. Component follows existing patterns from profile page and accepts apiKey prop and onRevoke callback.",
+          "updated_at": "2026-01-04T18:34:29.576970+00:00"
         }
       ]
     },
@@ -237,5 +238,5 @@
     "tests_passed": "",
     "issues": ""
   },
-  "last_updated": "2026-01-04T18:32:06.176320+00:00"
+  "last_updated": "2026-01-04T18:34:29.576974+00:00"
 }
