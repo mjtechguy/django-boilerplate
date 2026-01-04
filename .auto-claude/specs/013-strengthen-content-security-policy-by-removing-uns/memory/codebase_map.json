@@ -1,0 +1,10 @@
+{
+  "discovered_files": {
+    "backend/config/settings/base.py": {
+      "description": "CSP configuration uses django-csp middleware. CSP_EXCLUDE_URL_PREFIXES can be used to exclude paths like /admin/ and /cms/ from CSP enforcement, allowing strict CSP for main app while admin interfaces use relaxed rules.",
+      "category": "security",
+      "discovered_at": "2026-01-04T20:40:38.009044+00:00"
+    }
+  },
+  "last_updated": "2026-01-04T20:40:38.009062+00:00"
+}

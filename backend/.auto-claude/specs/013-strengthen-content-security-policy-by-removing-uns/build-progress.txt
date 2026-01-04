@@ -1,0 +1,40 @@
+# Build Progress: Strengthen CSP by Removing unsafe-inline for Styles
+
+## Status: Planning Complete
+
+## Summary
+Remove 'unsafe-inline' from CSP_STYLE_SRC and implement CSP nonces to strengthen XSS protections
+while maintaining compatibility with Django admin and Wagtail admin interfaces.
+
+## Key Findings from Research
+
+### Current State
+- django-csp==4.0 is installed and configured
+- CSP middleware is active in MIDDLEWARE
+- base.py has: CSP_STYLE_SRC = ("'self'", "'unsafe-inline'")
+- production.py already removes 'unsafe-inline' (CSP_STYLE_SRC = ("'self'",))
+- Email templates use inline styles (style= attributes) - OK, these are sent via email not rendered in browser
+
+### Approach
+1. Enable CSP nonce generation using CSP_INCLUDE_NONCE_IN = ["style-src"]
+2. Remove 'unsafe-inline' from base.py CSP_STYLE_SRC
+3. Add CSP_EXCLUDE_URL_PREFIXES for /admin/ and /cms/ to allow admin interfaces to function
+4. Update templates to load csp tags for future inline style support
+5. Update tests to verify the new configuration
+
+### Admin Interface Handling
+Django admin and Wagtail admin use inline styles that we cannot modify.
+The recommended approach is to exempt admin paths from CSP style restrictions using
+CSP_EXCLUDE_URL_PREFIXES. This is acceptable because:
+- Admin is already protected by authentication
+- Admin is restricted by hostname in production (AdminHostnameMiddleware)
+- Public-facing pages get full CSP protection
+
+## Phases
+1. Research and Configuration Setup (3 subtasks)
+2. Template Updates (2 subtasks)
+3. Production Settings Alignment (2 subtasks)
+4. Testing and Validation (3 subtasks)
+
+## Next Steps
+- Begin implementation starting with Phase 1, Subtask 1.1

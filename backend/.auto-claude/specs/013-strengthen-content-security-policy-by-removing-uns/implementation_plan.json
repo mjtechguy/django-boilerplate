@@ -1,0 +1,132 @@
+{
+  "title": "Strengthen Content Security Policy by Removing unsafe-inline for Styles",
+  "summary": "Remove 'unsafe-inline' from CSP_STYLE_SRC and implement CSP nonces for inline styles. This strengthens XSS protections while maintaining compatibility with Django admin and Wagtail admin interfaces.",
+  "spec_file": ".auto-claude/specs/013-strengthen-content-security-policy-by-removing-uns/spec.md",
+  "phases": [
+    {
+      "id": "phase-1",
+      "name": "Research and Configuration Setup",
+      "description": "Configure django-csp nonce support and understand admin requirements",
+      "subtasks": [
+        {
+          "id": "1.1",
+          "title": "Enable CSP nonce generation in settings",
+          "description": "Add CSP_INCLUDE_NONCE_IN to settings to enable nonce generation for style-src. Configure django-csp to generate nonces per-request.",
+          "files": ["backend/config/settings/base.py"],
+          "status": "pending",
+          "notes": ""
+        },
+        {
+          "id": "1.2",
+          "title": "Update CSP_STYLE_SRC to use nonce",
+          "description": "Remove 'unsafe-inline' from CSP_STYLE_SRC in base.py and add nonce-based allowlisting. The django-csp middleware will automatically add the generated nonce.",
+          "files": ["backend/config/settings/base.py"],
+          "status": "pending",
+          "notes": ""
+        },
+        {
+          "id": "1.3",
+          "title": "Configure CSP exemption for admin interfaces",
+          "description": "Since Django admin and Wagtail admin rely on inline styles that we cannot modify, configure path-based CSP exemptions for /admin/ and /cms/ paths. Use CSP_EXCLUDE_URL_PREFIXES setting.",
+          "files": ["backend/config/settings/base.py"],
+          "status": "pending",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "phase-2",
+      "name": "Template Updates",
+      "description": "Update any custom templates to use CSP nonces for inline styles",
+      "subtasks": [
+        {
+          "id": "2.1",
+          "title": "Audit templates for inline styles",
+          "description": "Review all templates in backend/templates/ for any inline <style> blocks that need nonce attributes. Note: style= attributes on elements are allowed by CSP.",
+          "files": ["backend/templates/base.html", "backend/templates/home/home_page.html"],
+          "status": "pending",
+          "notes": ""
+        },
+        {
+          "id": "2.2",
+          "title": "Update base template with CSP nonce support",
+          "description": "Add the {% load csp %} template tag to base.html and document how to add nonce attribute to any future inline <style> blocks using {{ request.csp_nonce }}.",
+          "files": ["backend/config/settings/base.py", "backend/templates/base.html"],
+          "status": "pending",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "phase-3",
+      "name": "Production Settings Alignment",
+      "description": "Ensure production settings are consistent with the new approach",
+      "subtasks": [
+        {
+          "id": "3.1",
+          "title": "Update production.py CSP configuration",
+          "description": "Remove the standalone CSP_STYLE_SRC override in production.py since base.py now has the correct settings. The nonce-based approach works in both environments.",
+          "files": ["backend/config/settings/production.py"],
+          "status": "pending",
+          "notes": ""
+        },
+        {
+          "id": "3.2",
+          "title": "Add CSP documentation comments",
+          "description": "Add comprehensive comments in base.py explaining the CSP configuration, nonce usage, and admin exemptions for future maintainers.",
+          "files": ["backend/config/settings/base.py"],
+          "status": "pending",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "phase-4",
+      "name": "Testing and Validation",
+      "description": "Add tests and verify the CSP configuration works correctly",
+      "subtasks": [
+        {
+          "id": "4.1",
+          "title": "Update CSP security tests",
+          "description": "Update test_security.py to verify that unsafe-inline is not in CSP_STYLE_SRC and that CSP_INCLUDE_NONCE_IN is configured. Add test for CSP_EXCLUDE_URL_PREFIXES.",
+          "files": ["backend/api/tests/test_security.py"],
+          "status": "pending",
+          "notes": ""
+        },
+        {
+          "id": "4.2",
+          "title": "Add CSP header verification tests",
+          "description": "Add integration tests that verify CSP headers are correctly set on responses, including nonce generation and admin exemptions.",
+          "files": ["backend/api/tests/test_security.py"],
+          "status": "pending",
+          "notes": ""
+        },
+        {
+          "id": "4.3",
+          "title": "Run full test suite",
+          "description": "Run pytest to ensure all existing tests pass with the new CSP configuration.",
+          "files": [],
+          "status": "pending",
+          "notes": ""
+        }
+      ]
+    }
+  ],
+  "qa_signoff": {
+    "status": "pending",
+    "issues": "",
+    "tests_passed": ""
+  },
+  "metadata": {
+    "created_at": "2025-01-04",
+    "estimated_complexity": "medium",
+    "key_risks": [
+      "Django admin or Wagtail admin may break if CSP exemptions are not properly configured",
+      "Third-party libraries may inject inline styles that break without nonces",
+      "Email templates use inline styles but are exempt from CSP (sent via email client)"
+    ],
+    "dependencies": [
+      "django-csp==4.0 (already installed)"
+    ]
+  }
+}

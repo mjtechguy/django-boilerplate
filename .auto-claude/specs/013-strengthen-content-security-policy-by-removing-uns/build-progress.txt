@@ -1,0 +1,40 @@
+# Build Progress: Strengthen CSP by Removing unsafe-inline for Styles
+
+## Objective
+Remove 'unsafe-inline' from CSP_STYLE_SRC to strengthen XSS protections against CSS-based data exfiltration attacks.
+
+## Current State Analysis
+
+### CSP Configuration:
+- base.py: CSP_STYLE_SRC = ("'self'", "'unsafe-inline'") - PROBLEMATIC
+- production.py: CSP_STYLE_SRC = ("'self'",) - already removed
+
+### Why unsafe-inline is Dangerous:
+- Allows CSS injection attacks
+- Enables data exfiltration via CSS selectors (reading form inputs character by character)
+- Weakens XSS protections across the entire application
+
+### Dependencies on Inline Styles:
+- Django admin uses inline styles extensively
+- Wagtail CMS admin also requires inline styles
+- Main application templates (base.html) do NOT use inline styles
+- Email templates use inline styles but are not served via CSP-protected responses
+
+## Implementation Approach
+
+Use CSP_EXCLUDE_URL_PREFIXES to exclude admin paths from CSP enforcement:
+- /admin/ - Django admin
+- /cms/ - Wagtail CMS admin
+
+This is acceptable because:
+1. Admin access is restricted by authentication
+2. Admin can be separated to a different hostname via ADMIN_HOSTNAME setting
+3. Main application endpoints remain fully protected
+4. API endpoints (/api/) remain fully protected
+
+## Progress
+
+- [x] Analysis complete
+- [ ] Phase 1: Update CSP Configuration
+- [ ] Phase 2: Update Security Tests
+- [ ] Phase 3: Verification and Documentation
