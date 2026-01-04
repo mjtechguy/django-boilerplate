@@ -17,3 +17,56 @@
 - All schemas match backend API responses from views_api_keys.py
 - Follows patterns from existing types files (social/types.ts, mfa/types.ts)
 - Committed: 9ab6ebc
+
+#### Subtask 1.3 - Create API keys queries module ✅ COMPLETED
+- Created frontend/src/lib/api/api-keys/queries.ts
+- Implemented React Query hooks:
+  - useApiKeys: Query hook for fetching API keys list
+  - useCreateApiKey: Mutation hook for creating new API keys
+  - useRevokeApiKey: Mutation hook for revoking API keys
+- All mutations invalidate the list query on success to keep UI in sync
+- Follows patterns from social/queries.ts and mfa/queries.ts
+
+#### Subtask 1.4 - Create API keys index module ✅ COMPLETED
+- Created frontend/src/lib/api/api-keys/index.ts
+- Re-exports all types and queries for clean imports
+- Follows pattern from social/index.ts and mfa/index.ts
+
+### Phase 2: UI Components
+
+#### Subtask 2.1 - Create ApiKeysCard component ✅ COMPLETED
+- Created frontend/src/components/profile/api-keys-card.tsx
+- Features implemented:
+  - Loading skeleton with placeholder cards
+  - Empty state with centered icon and "Create API Key" button
+  - Error state with clear error message display
+  - List view showing all API keys with Active/Revoked badges
+  - Create button in header when keys exist
+  - Integration with CreateApiKeyDialog and RevokeApiKeyDialog
+- Uses date-fns for relative time formatting
+- Follows patterns from social-accounts-list.tsx
+
+#### Subtask 2.2 - Create CreateApiKeyDialog component ✅ COMPLETED
+- Created frontend/src/components/profile/create-api-key-dialog.tsx
+- Features implemented:
+  - Form with name input using react-hook-form and Zod validation
+  - Two-stage dialog: input form → success view with API key
+  - Copy-to-clipboard functionality with visual feedback (Check icon)
+  - Prominent amber warning that key won't be shown again
+  - Prevents accidental dialog closure when displaying the key
+  - Toast notifications for success/error states
+- Follows MFA setup dialog pattern for consistency
+
+#### Subtask 2.3 - Create RevokeApiKeyDialog component ✅ COMPLETED
+- Created frontend/src/components/profile/revoke-api-key-dialog.tsx
+- Features implemented:
+  - Confirmation dialog with clear warning about irreversible action
+  - Displays API key name and prefix for user verification
+  - Prominent red warning box explaining consequences
+  - Cancel and Revoke buttons with destructive styling
+  - Loading state during mutation with animated Loader2 icon
+  - Toast notifications for success/error states
+  - Closes dialog automatically after successful revocation
+- Uses AlertTriangle icon in title for visual warning
+- Follows existing dialog patterns from CreateApiKeyDialog
+- Committed: 5b5a253

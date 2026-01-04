@@ -4,11 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
 import { useApiKeys } from "@/lib/api/api-keys";
-import { formatDistanceToNow } from "date-fns";
 import { CreateApiKeyDialog } from "./create-api-key-dialog";
 import { RevokeApiKeyDialog } from "./revoke-api-key-dialog";
+import { ApiKeyListItem } from "./api-key-list-item";
 import type { UserAPIKey } from "@/lib/api/api-keys/types";
 
 export function ApiKeysCard() {
@@ -142,45 +141,10 @@ export function ApiKeysCard() {
           {apiKeys.map((apiKey, index) => (
             <div key={apiKey.id}>
               {index > 0 && <Separator className="my-4" />}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
-                    <Key className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium">{apiKey.name}</p>
-                      {apiKey.revoked && (
-                        <Badge variant="destructive" className="text-xs">
-                          Revoked
-                        </Badge>
-                      )}
-                      {!apiKey.revoked && (
-                        <Badge variant="secondary" className="text-xs">
-                          Active
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      {apiKey.prefix}••••••••
-                      {" · "}
-                      Created{" "}
-                      {formatDistanceToNow(new Date(apiKey.created), {
-                        addSuffix: true,
-                      })}
-                    </p>
-                  </div>
-                </div>
-                {!apiKey.revoked && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setKeyToRevoke(apiKey)}
-                  >
-                    Revoke
-                  </Button>
-                )}
-              </div>
+              <ApiKeyListItem
+                apiKey={apiKey}
+                onRevoke={setKeyToRevoke}
+              />
             </div>
           ))}
         </CardContent>

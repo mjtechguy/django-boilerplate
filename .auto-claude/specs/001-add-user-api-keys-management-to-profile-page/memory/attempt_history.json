@@ -47,11 +47,47 @@
         }
       ],
       "status": "completed"
+    },
+    "2.1": {
+      "attempts": [
+        {
+          "session": 6,
+          "timestamp": "2026-01-04T13:28:23.032410",
+          "approach": "Implemented: Create frontend/src/components/profile/api-keys-card.tsx - main Card component that displays the API",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "2.2": {
+      "attempts": [
+        {
+          "session": 7,
+          "timestamp": "2026-01-04T13:30:11.565360",
+          "approach": "Implemented: Create frontend/src/components/profile/create-api-key-dialog.tsx - Dialog for creating a new API key",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "2.3": {
+      "attempts": [
+        {
+          "session": 8,
+          "timestamp": "2026-01-04T13:32:48.137272",
+          "approach": "Implemented: Create frontend/src/components/profile/revoke-api-key-dialog.tsx - Confirmation dialog for revoking ",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
     }
   },
   "stuck_subtasks": [],
   "metadata": {
     "created_at": "2026-01-04T13:18:02.931944",
-    "last_updated": "2026-01-04T13:26:05.529456"
+    "last_updated": "2026-01-04T13:32:48.137289"
   }
 }

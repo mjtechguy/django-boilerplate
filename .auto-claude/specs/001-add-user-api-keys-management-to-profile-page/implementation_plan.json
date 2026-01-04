@@ -77,34 +77,37 @@
           "id": "2.1",
           "title": "Create ApiKeysCard component",
           "description": "Create frontend/src/components/profile/api-keys-card.tsx - main Card component that displays the API Keys section with a list of keys and action buttons. Include loading skeleton, empty state, and error handling.",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "frontend/src/components/profile/api-keys-card.tsx"
           ],
           "estimated_minutes": 25,
-          "notes": ""
+          "notes": "Created frontend/src/components/profile/api-keys-card.tsx with all required features: loading skeleton, empty state with create button, error handling with clear error message, list of API keys with Active/Revoked badges, and action buttons. Also created stub components for CreateApiKeyDialog and RevokeApiKeyDialog to avoid import errors. Follows existing patterns from social-accounts-list.tsx and profile page components.",
+          "updated_at": "2026-01-04T18:28:11.046913+00:00"
         },
         {
           "id": "2.2",
           "title": "Create CreateApiKeyDialog component",
           "description": "Create frontend/src/components/profile/create-api-key-dialog.tsx - Dialog for creating a new API key with a name input field. After creation, display the key with copy-to-clipboard functionality and warning that it won't be shown again.",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "frontend/src/components/profile/create-api-key-dialog.tsx"
           ],
           "estimated_minutes": 30,
-          "notes": ""
+          "notes": "Created frontend/src/components/profile/create-api-key-dialog.tsx with all required features: form with name input using react-hook-form and zod validation, two-stage dialog (input form \u2192 success view), copy-to-clipboard functionality with visual feedback (Check icon), prominent warning message that key won't be shown again, prevention of accidental dialog closure when key is displayed, and consistent styling following MFA setup dialog pattern. Includes toast notifications for success/error states.",
+          "updated_at": "2026-01-04T18:29:55.639398+00:00"
         },
         {
           "id": "2.3",
           "title": "Create RevokeApiKeyDialog component",
           "description": "Create frontend/src/components/profile/revoke-api-key-dialog.tsx - Confirmation dialog for revoking an API key with clear warning about the action being irreversible.",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "frontend/src/components/profile/revoke-api-key-dialog.tsx"
           ],
           "estimated_minutes": 15,
-          "notes": ""
+          "notes": "Created frontend/src/components/profile/revoke-api-key-dialog.tsx with all required features: confirmation dialog with clear warning about irreversible action, displays API key name and prefix for user verification, Cancel and Revoke buttons with destructive styling, loading state during mutation with animated Loader2 icon, toast notifications for success/error states, and closes dialog after successful revocation. Follows existing patterns from CreateApiKeyDialog and uses proper TypeScript types with error handling.",
+          "updated_at": "2026-01-04T18:32:06.176311+00:00"
         },
         {
           "id": "2.4",
@@ -234,5 +237,5 @@
     "tests_passed": "",
     "issues": ""
   },
-  "last_updated": "2026-01-04T18:25:54.144722+00:00"
+  "last_updated": "2026-01-04T18:32:06.176320+00:00"
 }
