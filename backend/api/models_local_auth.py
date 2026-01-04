@@ -195,6 +195,15 @@ class LocalUserProfile(TimeStampedModel):
 
     def record_login_attempt(self, success: bool, ip_address: str | None = None) -> None:
         """Record a login attempt and update lockout status."""
+        import structlog
+        from django.core.cache import caches
+
+        from api.audit import log_audit
+        from api.tasks_lockout import check_mass_lockout_task, send_lockout_notification_task
+
+        logger = structlog.get_logger(__name__)
+        lockout_occurred = False
+
         if success:
             self.failed_login_attempts = 0
             self.locked_until = None
@@ -207,6 +216,7 @@ class LocalUserProfile(TimeStampedModel):
 
             if self.failed_login_attempts >= max_attempts:
                 self.locked_until = timezone.now() + timezone.timedelta(seconds=lockout_duration)
+                lockout_occurred = True
 
         self.save(update_fields=[
             "failed_login_attempts",
@@ -214,6 +224,129 @@ class LocalUserProfile(TimeStampedModel):
             "last_login_at",
             "last_login_ip",
         ])
+
+        # Send lockout notification if a lockout just occurred
+        if lockout_occurred:
+            self._send_lockout_notification(ip_address, logger)
+
+    def _send_lockout_notification(self, ip_address: str | None, logger) -> None:
+        """
+        Send lockout notification email and create audit log.
+
+        This method is called internally when a lockout occurs during record_login_attempt().
+        It follows the same pattern as the django-axes signal handler.
+        """
+        from django.core.cache import caches
+
+        from api.audit import log_audit
+        from api.tasks_lockout import check_mass_lockout_task, send_lockout_notification_task
+
+        logger.info(
+            "local_auth_lockout_occurred",
+            user_id=str(self.user.id),
+            username=self.user.username,
+            ip_address=ip_address,
+        )
+
+        # Calculate lockout duration (in seconds from settings)
+        lockout_duration_seconds = getattr(settings, "LOCAL_AUTH_LOCKOUT_DURATION", 1800)
+        lockout_duration_minutes = lockout_duration_seconds // 60
+        lockout_duration_hours = lockout_duration_seconds // 3600
+
+        # Format lockout duration for display
+        if lockout_duration_hours >= 1:
+            lockout_duration = f"{lockout_duration_hours} hour{'s' if lockout_duration_hours != 1 else ''}"
+        else:
+            lockout_duration = f"{lockout_duration_minutes} minute{'s' if lockout_duration_minutes != 1 else ''}"
+
+        # Prepare lockout data for email
+        lockout_data = {
+            "lockout_duration": lockout_duration,
+            "failure_count": self.failed_login_attempts,
+            "ip_address": ip_address or "Unknown",
+            "lockout_time": timezone.now().strftime("%Y-%m-%d %H:%M:%S UTC"),
+            "unlock_time": self.locked_until.strftime("%Y-%m-%d %H:%M:%S UTC") if self.locked_until else "Unknown",
+            "reset_password_url": f"{settings.FRONTEND_URL}/reset-password" if hasattr(settings, 'FRONTEND_URL') else None,
+        }
+
+        # Prepare user data for email
+        user_data = {
+            "first_name": getattr(self.user, 'first_name', '') or self.user.username,
+            "email": self.user.email,
+            "username": self.user.username,
+        }
+
+        # Create audit log entry for the lockout
+        log_audit(
+            action="account_locked",
+            resource_type="User",
+            resource_id=str(self.user.id),
+            actor_id=str(self.user.id),  # The user is the actor (attempted login)
+            actor_email=self.user.email,
+            metadata={
+                "ip_address": ip_address or "Unknown",
+                "failure_count": self.failed_login_attempts,
+                "lockout_duration_seconds": lockout_duration_seconds,
+                "unlock_time": self.locked_until.isoformat() if self.locked_until else None,
+                "source": "local-auth",
+            },
+        )
+
+        logger.info(
+            "local_auth_lockout_audit_logged",
+            user_id=str(self.user.id),
+            username=self.user.username,
+            ip_address=ip_address,
+        )
+
+        # Send notification email asynchronously (if user has email)
+        if self.user.email and settings.LOCKOUT_NOTIFICATION_ENABLED:
+            send_lockout_notification_task.delay(
+                user_email=self.user.email,
+                user_data=user_data,
+                lockout_data=lockout_data,
+            )
+            logger.info(
+                "local_auth_lockout_notification_queued",
+                user_email=self.user.email,
+                ip_address=ip_address,
+            )
+        else:
+            logger.info(
+                "local_auth_lockout_notification_skipped",
+                username=self.user.username,
+                reason="no_email" if not self.user.email else "disabled",
+            )
+
+        # Increment mass lockout counter in Redis for tracking
+        cache = caches["default"]
+        time_window_minutes = settings.LOCKOUT_MASS_WINDOW_MINUTES
+        time_window_seconds = time_window_minutes * 60
+        lockout_counter_key = f"lockout_count:{time_window_minutes}m"
+
+        try:
+            # Increment counter
+            current_count = cache.get(lockout_counter_key, 0)
+            current_count += 1
+            cache.set(lockout_counter_key, current_count, time_window_seconds)
+
+            logger.info(
+                "local_auth_mass_lockout_counter_incremented",
+                count=current_count,
+                threshold=settings.LOCKOUT_MASS_THRESHOLD,
+                time_window_minutes=time_window_minutes,
+            )
+
+            # Check if we've crossed the mass lockout threshold
+            check_mass_lockout_task.delay(current_count=current_count)
+
+        except Exception as e:
+            logger.error(
+                "local_auth_mass_lockout_tracking_failed",
+                error=str(e),
+                username=self.user.username,
+            )
+            # Don't fail the whole method if tracking fails
 
     def is_locked(self) -> bool:
         """Check if the account is currently locked."""
