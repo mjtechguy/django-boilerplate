@@ -3,23 +3,23 @@
   "spec": "015-add-frontend-unit-tests-for-critical-components",
   "state": "building",
   "subtasks": {
-    "completed": 8,
+    "completed": 11,
     "total": 18,
     "in_progress": 1,
     "failed": 0
   },
   "phase": {
-    "current": "Pure Utility Function Tests",
+    "current": "Auth Hook Tests",
     "id": null,
-    "total": 4
+    "total": 1
   },
   "workers": {
     "active": 0,
     "max": 1
   },
   "session": {
-    "number": 10,
+    "number": 13,
     "started_at": "2026-01-04T15:35:45.794343"
   },
-  "last_update": "2026-01-04T16:00:10.584939"
+  "last_update": "2026-01-04T16:43:29.980699"
 }
