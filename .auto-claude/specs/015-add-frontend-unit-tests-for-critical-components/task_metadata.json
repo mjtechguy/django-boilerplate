@@ -1,0 +1,9 @@
+{
+  "sourceType": "ideation",
+  "ideationType": "code_quality",
+  "ideaId": "cq-001",
+  "rationale": "Without tests, refactoring is risky, regressions go undetected until production, and developers lack confidence in their changes. Critical auth flows, form components, and data fetching logic are especially vulnerable.",
+  "category": "refactoring",
+  "codeQualitySeverity": "critical",
+  "priority": "urgent"
+}
