@@ -140,7 +140,7 @@
           "title": "Add SSRF integration tests for webhook delivery",
           "description": "Update backend/api/tests/test_webhooks.py to add integration tests: 1) Test that deliver_webhook fails for private IP URLs, 2) Test that deliver_webhook fails for localhost URLs, 3) Test that deliver_webhook fails for metadata endpoint URLs, 4) Test that deliver_webhook succeeds for valid public URLs (mocked), 5) Test proper error logging for SSRF attempts, 6) Test delivery status is correctly set to FAILED for SSRF violations.",
           "estimated_hours": 1.5,
-          "status": "pending",
+          "status": "completed",
           "files_to_modify": [
             "backend/api/tests/test_webhooks.py"
           ],
@@ -148,7 +148,8 @@
             "2.1",
             "2.3"
           ],
-          "notes": "Tests should mock DNS resolution to test rebinding scenarios"
+          "notes": "Completed comprehensive integration tests with 8 test cases covering all SSRF protection scenarios: private IP blocking, localhost blocking, metadata endpoint blocking, valid public URL success, security event logging, FAILED status setting, and direct hostname blocking. Tests use proper mocking of DNS resolution to validate behavior without making network requests.",
+          "completed_at": "2026-01-04T22:00:00Z"
         },
         {
           "subtask_id": "3.3",
