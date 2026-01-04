@@ -15,6 +15,7 @@ Production-ready, multi-tenant SaaS boilerplate with enterprise security feature
 - [Stripe Billing](#stripe-billing)
 - [Frontend Admin Console](#frontend-admin-console)
 - [Audit Trail](#audit-trail)
+- [Account Lockout Notifications](#account-lockout-notifications)
 - [Custom Webhooks](#custom-webhooks)
 - [Storage Configuration](#storage-configuration)
 - [Runbooks](#runbooks)
@@ -29,6 +30,8 @@ Production-ready, multi-tenant SaaS boilerplate with enterprise security feature
 - **Argon2 Passwords**: Industry-standard password hashing
 - **MFA Support**: Multi-factor authentication via Keycloak
 - **Account Lockout**: Brute-force protection with django-axes
+- **Lockout Notifications**: Email alerts to users and admins on account lockouts
+- **Mass Attack Detection**: Automated admin alerts for credential stuffing attempts
 - **Rate Limiting**: Global and per-tenant throttling with tier-based quotas
 
 ### Multi-Tenancy
@@ -270,6 +273,10 @@ docker compose -f compose/docker-compose.yml exec -w /app/backend web \
 | `ADMIN_HOSTNAME` | Hostname for Django admin (production) | `` |
 | `AXES_FAILURE_LIMIT` | Login failures before lockout | `5` |
 | `AXES_COOLOFF_TIME` | Lockout duration (hours) | `1` |
+| `LOCKOUT_NOTIFICATION_ENABLED` | Send email on account lockout | `true` |
+| `LOCKOUT_ADMIN_EMAILS` | Admin emails for mass lockout alerts (comma-separated) | `` |
+| `LOCKOUT_MASS_THRESHOLD` | Lockout count to trigger admin alert | `10` |
+| `LOCKOUT_MASS_WINDOW_MINUTES` | Time window for mass lockout detection (minutes) | `5` |
 | `THROTTLE_RATE_ANON` | Anonymous rate limit | `100/hour` |
 | `THROTTLE_RATE_USER` | Authenticated rate limit | `1000/hour` |
 | `CORS_ALLOWED_ORIGINS` | Allowed CORS origins | `http://localhost:5173` |
@@ -699,6 +706,97 @@ curl -X POST -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"org_id": "uuid", "start_date": "2024-01-01"}' \
   http://localhost:8000/api/v1/audit/chain-verify
+```
+
+## Account Lockout Notifications
+
+### Overview
+
+The system automatically sends email notifications when accounts are locked due to failed login attempts. This feature provides security transparency and enables rapid response to potential account compromise or credential stuffing attacks.
+
+### User Notifications
+
+When an account is locked (after exceeding the configured failure limit), the affected user receives an email containing:
+
+- **Lockout details**: Duration, failed attempt count, IP address, and timestamp
+- **Security guidance**: Different advice for legitimate users vs. suspicious activity
+- **Password reset link**: Quick access to reset password if account is compromised
+- **Best practices**: Recommendations for account security
+
+The notification is sent asynchronously via Celery to avoid blocking the login flow.
+
+### Mass Lockout Detection
+
+The system tracks lockout events in a time-windowed counter using Redis sorted sets. When the number of lockouts exceeds a configured threshold within a time window, administrators receive an alert email.
+
+**Default thresholds:**
+- **Threshold**: 10 lockouts
+- **Time window**: 5 minutes
+
+**Admin alert includes:**
+- Count of lockouts in the time window
+- List of affected accounts (username, email, lockout time)
+- IP address summary showing attack sources
+- Recommended incident response actions
+- Educational content about credential stuffing attacks
+
+### Configuration
+
+```bash
+# Enable/disable lockout notifications
+LOCKOUT_NOTIFICATION_ENABLED=true
+
+# Admin email recipients for mass lockout alerts (comma-separated)
+LOCKOUT_ADMIN_EMAILS=security@example.com,admin@example.com
+
+# Number of lockouts to trigger admin alert
+LOCKOUT_MASS_THRESHOLD=10
+
+# Time window for mass lockout detection (minutes)
+LOCKOUT_MASS_WINDOW_MINUTES=5
+```
+
+### Behavior
+
+**User lockout triggers:**
+- **django-axes lockouts**: Triggered by the `user_locked_out` signal when AXES_FAILURE_LIMIT is exceeded
+- **Local auth lockouts**: Triggered by `LocalUserProfile.record_login_attempt()` when LOCAL_AUTH_MAX_FAILED_ATTEMPTS is exceeded
+
+**Audit logging:**
+- All lockout events create an audit log entry with `action='account_locked'`
+- Includes metadata: IP address, failure count, lockout duration, unlock time, source (django-axes or local-auth)
+
+**Mass attack detection:**
+- Uses Redis sorted sets for efficient time-windowed counting
+- Automatically cleans up expired lockout events
+- Debounces admin alerts (one alert per time window) to prevent notification spam
+- Tracks lockout source to distinguish between attack patterns
+
+### Disabling Notifications
+
+To disable lockout notifications entirely:
+
+```bash
+LOCKOUT_NOTIFICATION_ENABLED=false
+```
+
+Individual users without email addresses will not receive notifications, but the lockout will still occur and be logged in the audit trail.
+
+### Testing Lockout Notifications
+
+```bash
+# Trigger a lockout by failing login attempts
+for i in {1..6}; do
+  curl -X POST http://localhost:8000/api/v1/auth/login \
+    -H "Content-Type: application/json" \
+    -d '{"email": "user@example.com", "password": "wrong_password"}'
+done
+
+# Check email in Mailpit (development)
+# Open http://localhost:8025
+
+# Trigger mass lockout detection (requires multiple users)
+# See backend/api/tests/test_lockout_integration.py for examples
 ```
 
 ## Custom Webhooks
