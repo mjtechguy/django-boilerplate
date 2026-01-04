@@ -227,6 +227,10 @@ class TestProductionSecuritySettings:
         assert "CSRF_COOKIE_SECURE = True" in content
         assert "DEBUG = False" in content
 
+        # CSP_STYLE_SRC should NOT be overridden in production.py
+        # (it's properly configured in base.py now)
+        assert "CSP_STYLE_SRC = " not in content
+
     def test_production_settings_has_secret_key_check(self):
         """Production settings should fail if SECRET_KEY is default."""
         prod_file = __file__.replace(
