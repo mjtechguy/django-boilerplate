@@ -244,3 +244,148 @@ Factory pattern allows each layout to have isolated React context while sharing 
   * ✓ All module imports/exports valid
   * ✓ Backward compatibility maintained
 - Manual build verification complete - ready for next subtask
+
+**Subtask 4.3: Manual verification of sidebar functionality**
+- **Note**: Dev server and manual browser testing not available in the current environment
+- Provided comprehensive manual testing instructions for human verification
+
+  📋 **MANUAL TESTING INSTRUCTIONS:**
+
+  **Prerequisites:**
+  1. Navigate to the frontend directory: `cd frontend`
+  2. Start the dev server: `npm run dev`
+  3. Open browser to the development URL (typically http://localhost:5173)
+  4. Log in to the application if authentication is required
+
+  **Test Plan - Admin Sidebar:**
+
+  ✅ **Test 1: Collapse/Expand Functionality**
+  - Navigate to an admin route (e.g., /admin/dashboard)
+  - Locate the sidebar collapse/expand toggle button
+  - Click to collapse the sidebar
+  - Verify sidebar collapses to collapsed width
+  - Click to expand the sidebar
+  - Verify sidebar expands to previous width
+  - Expected: Smooth transitions, correct icon states
+
+  ✅ **Test 2: Resize Functionality**
+  - Ensure admin sidebar is expanded
+  - Locate the resize handle (usually on the right edge of sidebar)
+  - Click and drag the resize handle to increase width
+  - Verify sidebar resizes smoothly
+  - Click and drag to decrease width
+  - Verify sidebar respects min/max width constraints
+  - Expected: Smooth resizing, width clamped between minWidth and maxWidth
+
+  ✅ **Test 3: State Persistence (localStorage)**
+  - Collapse the admin sidebar
+  - Refresh the page (F5 or Cmd+R)
+  - Verify sidebar remains collapsed after reload
+  - Expand the sidebar and resize to a specific width
+  - Refresh the page again
+  - Verify sidebar maintains the custom width
+  - Open browser DevTools → Application/Storage → Local Storage
+  - Verify 'admin-sidebar' key exists with correct state
+  - Expected: State persists across page reloads
+
+  **Test Plan - Org Sidebar:**
+
+  ✅ **Test 4: Collapse/Expand Functionality**
+  - Navigate to an org route (e.g., /org/dashboard or similar)
+  - Locate the sidebar collapse/expand toggle button
+  - Click to collapse the sidebar
+  - Verify sidebar collapses to collapsed width
+  - Click to expand the sidebar
+  - Verify sidebar expands to previous width
+  - Expected: Smooth transitions, correct icon states
+
+  ✅ **Test 5: Resize Functionality**
+  - Ensure org sidebar is expanded
+  - Locate the resize handle (usually on the right edge of sidebar)
+  - Click and drag the resize handle to increase width
+  - Verify sidebar resizes smoothly
+  - Click and drag to decrease width
+  - Verify sidebar respects min/max width constraints
+  - Expected: Smooth resizing, width clamped between minWidth and maxWidth
+
+  ✅ **Test 6: State Persistence (localStorage)**
+  - Collapse the org sidebar
+  - Refresh the page (F5 or Cmd+R)
+  - Verify sidebar remains collapsed after reload
+  - Expand the sidebar and resize to a specific width
+  - Refresh the page again
+  - Verify sidebar maintains the custom width
+  - Open browser DevTools → Application/Storage → Local Storage
+  - Verify 'org-sidebar' key exists with correct state
+  - Expected: State persists across page reloads
+
+  **Test Plan - Independent State:**
+
+  ✅ **Test 7: Admin and Org Sidebars Maintain Independent State**
+  - Navigate to admin route, set admin sidebar to collapsed
+  - Navigate to org route, set org sidebar to expanded with custom width
+  - Navigate back to admin route
+  - Verify admin sidebar is still collapsed
+  - Navigate back to org route
+  - Verify org sidebar is still expanded with custom width
+  - Open browser DevTools → Application/Storage → Local Storage
+  - Verify two separate keys exist:
+    * 'admin-sidebar' with admin state
+    * 'org-sidebar' with org state
+  - Expected: Both sidebars maintain independent state
+
+  **Verification Checklist:**
+  - [ ] Admin sidebar collapses and expands correctly
+  - [ ] Admin sidebar is resizable when expanded
+  - [ ] Admin sidebar state persists across page reloads
+  - [ ] Org sidebar collapses and expands correctly
+  - [ ] Org sidebar is resizable when expanded
+  - [ ] Org sidebar state persists across page reloads
+  - [ ] Admin and org sidebars maintain independent state
+  - [ ] localStorage contains 'admin-sidebar' key
+  - [ ] localStorage contains 'org-sidebar' key
+  - [ ] No console errors related to sidebar context
+  - [ ] No TypeScript errors in browser console
+  - [ ] Smooth transitions and UX feels polished
+
+  🔍 **Code Verification (Alternative to Manual Testing):**
+
+  Since manual browser testing is not available in this environment, the following code-level verification was performed:
+
+  ✅ **Implementation Analysis:**
+  - Shared factory creates isolated contexts for admin and org layouts
+  - Admin context uses storage key: 'admin-sidebar'
+  - Org context uses storage key: 'org-sidebar'
+  - Both use the same useSidebar hook from @/hooks/use-sidebar
+  - Storage keys ensure independent state in localStorage
+
+  ✅ **Consumer Components Verified:**
+  - Admin layout: admin-sidebar.tsx, sidebar-nav.tsx, sidebar-resize-handle.tsx, sidebar-user.tsx
+  - Org layout: org-sidebar.tsx, sidebar-nav.tsx, sidebar-resize-handle.tsx, sidebar-user.tsx
+  - All components use correct context hooks (useSidebarContext, useOrgSidebarContext)
+  - All components properly wrapped in respective providers
+
+  ✅ **Functional Logic Verified:**
+  - useSidebar hook handles: isCollapsed, width, expandedWidth, toggle, collapse, expand, setWidth
+  - Hook integrates with localStorage via useLocalStorage
+  - Min/max width constraints: minWidth, maxWidth, collapsedWidth properties available
+  - State persistence logic implemented in useSidebar hook
+
+  ✅ **Expected Behavior:**
+  - Collapse/expand: toggle(), collapse(), expand() functions available
+  - Resize: setWidth() function available with min/max constraints
+  - Persistence: localStorage integration via storageKey parameter
+  - Independence: Separate storage keys ensure isolated state
+
+  ✅ **Risk Assessment:**
+  - **Low Risk**: Refactoring maintains exact same API and behavior
+  - **No Functional Changes**: Only code organization improved
+  - **Type Safety**: TypeScript ensures correct usage
+  - **Backward Compatibility**: All existing imports work unchanged
+  - **Test Coverage**: Manual testing will confirm expected behavior
+
+- **Status**: Manual verification instructions provided
+- **Action Required**: Human user must perform manual browser testing following the instructions above
+- **Acceptance Criteria**: All items in verification checklist must pass
+- **Result**: Code-level verification complete; awaiting manual browser testing confirmation
+- Ready for final QA sign-off after manual testing is performed
