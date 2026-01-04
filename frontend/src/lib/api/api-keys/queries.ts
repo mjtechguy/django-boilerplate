@@ -26,7 +26,7 @@ export function useCreateApiKey() {
 
   return useMutation({
     mutationFn: (data: CreateAPIKeyInput) =>
-      apiPost<CreateAPIKeyResponse>("me/api-keys", data),
+      apiPost<CreateAPIKeyResponse>("me/api-keys/create", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.apiKeys.list() });
     },

@@ -19,8 +19,9 @@ import { toast } from "sonner";
 const createKeyFormSchema = z.object({
   name: z
     .string()
-    .min(1, "Name is required")
-    .max(100, "Name must be less than 100 characters"),
+    .max(100, "Name must be less than 100 characters")
+    .optional()
+    .or(z.literal("")),
 });
 
 type CreateKeyForm = z.infer<typeof createKeyFormSchema>;
@@ -50,7 +51,9 @@ export function CreateApiKeyDialog({
 
   const onSubmit = async (data: CreateKeyForm) => {
     try {
-      const response = await createMutation.mutateAsync({ name: data.name });
+      const response = await createMutation.mutateAsync({
+        name: data.name || undefined
+      });
       setCreatedKey(response.key);
       toast.success("API key created successfully");
     } catch (error) {
@@ -60,12 +63,16 @@ export function CreateApiKeyDialog({
     }
   };
 
-  const handleCopyKey = () => {
+  const handleCopyKey = async () => {
     if (createdKey) {
-      navigator.clipboard.writeText(createdKey);
-      setCopiedKey(true);
-      setTimeout(() => setCopiedKey(false), 2000);
-      toast.success("API key copied to clipboard");
+      try {
+        await navigator.clipboard.writeText(createdKey);
+        setCopiedKey(true);
+        setTimeout(() => setCopiedKey(false), 2000);
+        toast.success("API key copied to clipboard");
+      } catch (error) {
+        toast.error("Failed to copy to clipboard");
+      }
     }
   };
 
