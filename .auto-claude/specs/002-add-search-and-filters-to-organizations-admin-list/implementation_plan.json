@@ -47,13 +47,15 @@
           "title": "Pass filter params to useOrganizations hook",
           "description": "Update the useOrganizations call to pass the filter parameters when they are set.",
           "file": "frontend/src/routes/admin/_layout/organizations/index.tsx",
-          "status": "pending",
+          "status": "completed",
           "acceptance_criteria": [
             "Pass search param when debouncedSearch is non-empty",
             "Pass status param when statusFilter is not 'all'",
             "Pass license_tier param when licenseTierFilter is not 'all'",
             "Query should refetch when any filter changes"
-          ]
+          ],
+          "notes": "Updated useOrganizations hook call to pass filter parameters: search (when debouncedSearch is non-empty), status (when not 'all'), and license_tier (when not 'all'). The query will automatically refetch when any filter value changes due to react-query's dependency tracking on the params.",
+          "updated_at": "2026-01-04T18:33:37.543826+00:00"
         },
         {
           "id": "1.4",
@@ -126,5 +128,5 @@
     "issues": null
   },
   "spec_file": "spec.md",
-  "last_updated": "2026-01-04T18:32:04.530529+00:00"
+  "last_updated": "2026-01-04T18:33:37.543831+00:00"
 }

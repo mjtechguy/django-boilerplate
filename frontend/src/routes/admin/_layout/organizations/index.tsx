@@ -190,6 +190,41 @@ function OrganizationsPage() {
         actions={<CreateOrgDialog />}
       />
 
+      <div className="flex items-center gap-4">
+        <Input
+          placeholder="Search organizations..."
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          className="w-[280px]"
+        />
+        <div className="w-[180px]">
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger>
+              <SelectValue placeholder="All statuses" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All statuses</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="inactive">Inactive</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="w-[180px]">
+          <Select value={licenseTierFilter} onValueChange={setLicenseTierFilter}>
+            <SelectTrigger>
+              <SelectValue placeholder="All tiers" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All tiers</SelectItem>
+              <SelectItem value="free">Free</SelectItem>
+              <SelectItem value="starter">Starter</SelectItem>
+              <SelectItem value="pro">Pro</SelectItem>
+              <SelectItem value="enterprise">Enterprise</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
       {!isLoading && (!data?.results || data.results.length === 0) ? (
         <EmptyState
           icon={<Building2 className="h-6 w-6 text-muted-foreground" />}
