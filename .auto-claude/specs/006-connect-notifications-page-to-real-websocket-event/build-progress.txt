@@ -42,7 +42,7 @@ Replace mock notification data in the Notifications page with real-time updates 
 - [x] 3.2: Handle empty notifications state
 
 ### Phase 4: Testing
-- [ ] 4.1: Add unit tests for notifications page
+- [x] 4.1: Add unit tests for notifications page
 - [ ] 4.2: Verify TypeScript compilation and linting
 
 ## Technical Notes
