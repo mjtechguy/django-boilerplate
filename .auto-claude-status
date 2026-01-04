@@ -1,25 +1,25 @@
 {
   "active": true,
-  "spec": "016-extract-duplicated-sidebar-context-into-shared-gen",
+  "spec": "011-add-ssrf-protection-to-webhook-delivery-system",
   "state": "building",
   "subtasks": {
-    "completed": 4,
-    "total": 9,
+    "completed": 0,
+    "total": 0,
     "in_progress": 1,
     "failed": 0
   },
   "phase": {
-    "current": "Migrate Org Layout to Shared Context",
+    "current": "Comprehensive Testing",
     "id": null,
-    "total": 2
+    "total": 3
   },
   "workers": {
     "active": 0,
     "max": 1
   },
   "session": {
-    "number": 6,
-    "started_at": "2026-01-04T14:37:24.998085"
+    "number": 8,
+    "started_at": "2026-01-04T15:27:53.202456"
   },
-  "last_update": "2026-01-04T14:58:33.883907"
+  "last_update": "2026-01-04T15:49:24.408358"
 }
