@@ -91,8 +91,10 @@ class OrgCreateSerializer(NameValidationMixin, serializers.ModelSerializer):
         read_only_fields = ["id", "created_at", "updated_at"]
 
 
-class OrgUpdateSerializer(serializers.ModelSerializer):
+class OrgUpdateSerializer(NameValidationMixin, serializers.ModelSerializer):
     """Serializer for updating an Org."""
+
+    name_entity_type = "Organization"
 
     class Meta:
         model = Org
@@ -102,12 +104,6 @@ class OrgUpdateSerializer(serializers.ModelSerializer):
             "license_tier",
             "feature_flags",
         ]
-
-    def validate_name(self, value: str) -> str:
-        """Validate org name is not empty."""
-        if not value or not value.strip():
-            raise serializers.ValidationError("Organization name cannot be empty.")
-        return value.strip()
 
     def validate_status(self, value: str) -> str:
         """Validate status is a valid choice."""
