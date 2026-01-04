@@ -14,7 +14,7 @@ from rest_framework.response import Response
 
 from api.models import Division, Team
 from api.permissions import IsPlatformAdmin
-from api.serializers_admin import (
+from api.serializers_admin_divisions import (
     DivisionCreateSerializer,
     DivisionListSerializer,
     DivisionSerializer,
