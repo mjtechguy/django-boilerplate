@@ -233,6 +233,35 @@ def run_security_checks(env: str = "production") -> int:
     for passed, msg in checks[-1:]:
         print(msg)
 
+    # Webhook SSRF Protection
+    print("\n--- Webhook SSRF Protection ---")
+    checks.append(
+        check_setting(
+            "WEBHOOK_SSRF_PROTECTION_ENABLED",
+            True,
+            getattr(settings, "WEBHOOK_SSRF_PROTECTION_ENABLED", False),
+            "SSRF protection must be enabled for webhooks",
+        )
+    )
+    checks.append(
+        check_setting(
+            "WEBHOOK_BLOCK_PRIVATE_IPS",
+            True,
+            getattr(settings, "WEBHOOK_BLOCK_PRIVATE_IPS", False),
+            "Private IP blocking must be enabled for webhooks",
+        )
+    )
+    checks.append(
+        check_setting(
+            "WEBHOOK_ALLOWED_SCHEMES",
+            lambda x: x == ["https"] if env == "production" else True,
+            getattr(settings, "WEBHOOK_ALLOWED_SCHEMES", []),
+            "Only HTTPS should be allowed in production" if env == "production" else "HTTPS should be preferred",
+        )
+    )
+    for passed, msg in checks[-3:]:
+        print(msg)
+
     # Summary
     print("\n" + "=" * 60)
     passed_count = sum(1 for passed, _ in checks if passed)
