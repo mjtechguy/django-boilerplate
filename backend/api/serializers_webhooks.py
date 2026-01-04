@@ -5,6 +5,7 @@ Serializers for webhook endpoints and deliveries.
 from rest_framework import serializers
 
 from api.models import WebhookDelivery, WebhookEndpoint
+from api.ssrf import SSRFProtectionError, validate_webhook_url
 from api.webhooks import generate_webhook_secret
 
 
@@ -28,6 +29,23 @@ class WebhookEndpointSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
+
+    def validate_url(self, value):
+        """
+        Validate webhook URL for SSRF protection.
+
+        This provides early feedback to users when they configure invalid URLs.
+        Validates that the URL:
+        - Uses an allowed scheme (e.g., https)
+        - Does not point to private/internal IP addresses
+        - Does not point to cloud metadata endpoints
+        - Does not point to localhost or blocked hostnames
+        """
+        try:
+            validate_webhook_url(value)
+            return value
+        except SSRFProtectionError as e:
+            raise serializers.ValidationError(str(e))
 
     def create(self, validated_data):
         """Auto-generate secret if not provided."""
