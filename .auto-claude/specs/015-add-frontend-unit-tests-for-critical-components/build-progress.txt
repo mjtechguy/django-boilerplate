@@ -3,20 +3,20 @@
 ## Overview
 Setting up testing infrastructure and adding comprehensive unit tests for critical frontend components including auth, utilities, hooks, and API clients.
 
-## Current Status: Phase 1 - Testing Infrastructure Setup (Complete) ✅
+## Current Status: Phase 2 - Pure Utility Function Tests (In Progress) 🔄
 
 ### Phase Summary
 | Phase | Name | Subtasks | Status |
 |-------|------|----------|--------|
 | 1 | Testing Infrastructure Setup | 5 | ✅ Complete |
-| 2 | Pure Utility Function Tests | 4 | Pending |
+| 2 | Pure Utility Function Tests | 4 | 🔄 In Progress (1/4) |
 | 3 | Custom Hook Tests | 2 | Pending |
 | 4 | Auth Hook Tests | 1 | Pending |
 | 5 | Auth Component Tests | 3 | Pending |
 | 6 | API Client Tests | 1 | Pending |
 | 7 | Verification and Documentation | 2 | Pending |
 
-**Total Subtasks: 16 (5 completed, 11 remaining)**
+**Total Subtasks: 16 (6 completed, 10 remaining)**
 
 ## Codebase Analysis
 
@@ -84,10 +84,16 @@ Setting up testing infrastructure and adding comprehensive unit tests for critic
 
 ---
 
-#### Phase 2: Pure Utility Function Tests (Next)
-- [ ] 2.1 - Test color-utils.ts
+#### Phase 2: Pure Utility Function Tests 🔄 IN PROGRESS
+- [x] 2.1 - Test color-utils.ts ✅ COMPLETE
+  - Created comprehensive test suite with 31 test cases
+  - Tests for hexToOklch: format validation, color conversions (black, white, red, green, blue), hex format handling
+  - Tests for adjustLightness: positive/negative offsets, clamping to 0-1 range, preservation of chroma/hue
+  - Tests for getPrimaryForeground: light/dark backgrounds, luminance threshold (0.5), various colors
+  - Edge cases: hex format variations, case insensitivity, boundary values
+  - File: `frontend/src/lib/color-utils.test.ts`
 - [ ] 2.2 - Test parse-user.ts
 - [ ] 2.3 - Test local-storage.ts
 - [ ] 2.4 - Test cn.ts utility
 
-**Next:** Begin Phase 2 by implementing tests for pure utility functions
+**Next:** Subtask 2.2 - Add tests for parse-user.ts
