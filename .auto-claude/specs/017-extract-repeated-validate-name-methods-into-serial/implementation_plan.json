@@ -1,0 +1,186 @@
+{
+  "feature": "Extract Repeated validate_name Methods into Serializer Mixin",
+  "description": "The serializers_admin.py file contains 6 nearly identical validate_name methods across OrgCreateSerializer, OrgUpdateSerializer, DivisionCreateSerializer, DivisionUpdateSerializer, TeamCreateSerializer, and TeamUpdateSerializer. Each validates that the name field is not empty with identical logic. This plan extracts the common logic into a reusable NameValidationMixin.",
+  "created_at": "2026-01-04T19:35:17.865Z",
+  "updated_at": "2026-01-04T19:40:00.000Z",
+  "status": "in_progress",
+  "planStatus": "approved",
+  "workflow_type": "development",
+  "services_involved": [
+    "backend"
+  ],
+  "phases": [
+    {
+      "id": "phase-1",
+      "name": "Create Name Validation Mixin",
+      "description": "Create a reusable mixin class that provides name validation logic with configurable entity name for error messages",
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": "1.1",
+          "title": "Create NameValidationMixin class",
+          "description": "Create a new mixin class in serializers_admin.py that provides a validate_name method. The mixin should use a class attribute (name_entity_type) to customize the error message (e.g., 'Organization', 'Division', 'Team'). The validation logic: check if value is falsy or empty when stripped, raise ValidationError with message '<entity_type> name cannot be empty.', return stripped value.",
+          "status": "completed",
+          "acceptance_criteria": [
+            "NameValidationMixin class exists in serializers_admin.py",
+            "Class has a name_entity_type class attribute defaulting to 'Name'",
+            "validate_name method validates non-empty strings and strips whitespace",
+            "Error message uses configurable entity type"
+          ],
+          "notes": "Created NameValidationMixin class in serializers_admin.py with name_entity_type attribute and validate_name method. The mixin provides reusable name validation logic that checks for empty/whitespace-only values and returns stripped values. Error messages are customizable via the name_entity_type class attribute.",
+          "updated_at": "2026-01-04T19:40:21.471279+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-2",
+      "name": "Apply Mixin to Org Serializers",
+      "description": "Refactor OrgCreateSerializer and OrgUpdateSerializer to use the mixin",
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": "2.1",
+          "title": "Update OrgCreateSerializer to use mixin",
+          "description": "Add NameValidationMixin to OrgCreateSerializer's inheritance chain. Set name_entity_type = 'Organization'. Remove the duplicate validate_name method.",
+          "status": "completed",
+          "acceptance_criteria": [
+            "OrgCreateSerializer inherits from NameValidationMixin",
+            "name_entity_type is set to 'Organization'",
+            "Original validate_name method is removed",
+            "Validation behavior is unchanged"
+          ],
+          "notes": "Added NameValidationMixin to OrgCreateSerializer's inheritance chain. Set name_entity_type = 'Organization'. Removed the duplicate validate_name method. The serializer now uses the mixin's validate_name implementation which provides identical validation behavior (checks for empty/whitespace-only values and returns stripped value) with customized error message.",
+          "updated_at": "2026-01-04T19:42:07.037387+00:00"
+        },
+        {
+          "id": "2.2",
+          "title": "Update OrgUpdateSerializer to use mixin",
+          "description": "Add NameValidationMixin to OrgUpdateSerializer's inheritance chain. Set name_entity_type = 'Organization'. Remove the duplicate validate_name method.",
+          "status": "completed",
+          "acceptance_criteria": [
+            "OrgUpdateSerializer inherits from NameValidationMixin",
+            "name_entity_type is set to 'Organization'",
+            "Original validate_name method is removed",
+            "Validation behavior is unchanged"
+          ],
+          "notes": "Added NameValidationMixin to OrgUpdateSerializer's inheritance chain. Set name_entity_type = 'Organization'. Removed the duplicate validate_name method. The serializer now uses the mixin's validate_name implementation which provides identical validation behavior (checks for empty/whitespace-only values and returns stripped value) with customized error message. The validate_status method remains unchanged.",
+          "updated_at": "2026-01-04T19:43:37.680921+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-3",
+      "name": "Apply Mixin to Division Serializers",
+      "description": "Refactor DivisionCreateSerializer and DivisionUpdateSerializer to use the mixin",
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": "3.1",
+          "title": "Update DivisionCreateSerializer to use mixin",
+          "description": "Add NameValidationMixin to DivisionCreateSerializer's inheritance chain. Set name_entity_type = 'Division'. Remove the duplicate validate_name method.",
+          "status": "pending",
+          "acceptance_criteria": [
+            "DivisionCreateSerializer inherits from NameValidationMixin",
+            "name_entity_type is set to 'Division'",
+            "Original validate_name method is removed",
+            "Validation behavior is unchanged"
+          ]
+        },
+        {
+          "id": "3.2",
+          "title": "Update DivisionUpdateSerializer to use mixin",
+          "description": "Add NameValidationMixin to DivisionUpdateSerializer's inheritance chain. Set name_entity_type = 'Division'. Remove the duplicate validate_name method.",
+          "status": "pending",
+          "acceptance_criteria": [
+            "DivisionUpdateSerializer inherits from NameValidationMixin",
+            "name_entity_type is set to 'Division'",
+            "Original validate_name method is removed",
+            "Validation behavior is unchanged"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phase-4",
+      "name": "Apply Mixin to Team Serializers",
+      "description": "Refactor TeamCreateSerializer and TeamUpdateSerializer to use the mixin",
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": "4.1",
+          "title": "Update TeamCreateSerializer to use mixin",
+          "description": "Add NameValidationMixin to TeamCreateSerializer's inheritance chain. Set name_entity_type = 'Team'. Remove the duplicate validate_name method.",
+          "status": "pending",
+          "acceptance_criteria": [
+            "TeamCreateSerializer inherits from NameValidationMixin",
+            "name_entity_type is set to 'Team'",
+            "Original validate_name method is removed",
+            "Validation behavior is unchanged"
+          ]
+        },
+        {
+          "id": "4.2",
+          "title": "Update TeamUpdateSerializer to use mixin",
+          "description": "Add NameValidationMixin to TeamUpdateSerializer's inheritance chain. Set name_entity_type = 'Team'. Remove the duplicate validate_name method.",
+          "status": "pending",
+          "acceptance_criteria": [
+            "TeamUpdateSerializer inherits from NameValidationMixin",
+            "name_entity_type is set to 'Team'",
+            "Original validate_name method is removed",
+            "Validation behavior is unchanged"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phase-5",
+      "name": "Add Tests",
+      "description": "Create comprehensive tests for the NameValidationMixin and verify all serializers work correctly",
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": "5.1",
+          "title": "Create test file for NameValidationMixin",
+          "description": "Create backend/api/tests/test_serializer_mixins.py with tests covering: empty string validation, whitespace-only string validation, valid string stripping, custom entity type error messages, each serializer using the mixin correctly.",
+          "status": "pending",
+          "acceptance_criteria": [
+            "Test file exists at backend/api/tests/test_serializer_mixins.py",
+            "Tests cover empty string validation failure",
+            "Tests cover whitespace-only string validation failure",
+            "Tests cover valid string stripping",
+            "Tests cover different entity types in error messages",
+            "All tests pass"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phase-6",
+      "name": "Verification",
+      "description": "Run full test suite and verify no regressions",
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": "6.1",
+          "title": "Run test suite and verify no regressions",
+          "description": "Run the full test suite to ensure no existing tests are broken by the refactoring. Focus on any tests that involve Org, Division, or Team creation/update operations.",
+          "status": "pending",
+          "acceptance_criteria": [
+            "All existing tests pass",
+            "New mixin tests pass",
+            "No regressions in functionality"
+          ]
+        }
+      ]
+    }
+  ],
+  "final_acceptance": [
+    "NameValidationMixin class is defined and reusable",
+    "All 6 serializers use the mixin instead of duplicated validate_name methods",
+    "Error messages remain consistent with original behavior",
+    "All tests pass including new mixin tests",
+    "Code is cleaner with reduced duplication"
+  ],
+  "spec_file": "spec.md",
+  "last_updated": "2026-01-04T19:43:37.680931+00:00"
+}
