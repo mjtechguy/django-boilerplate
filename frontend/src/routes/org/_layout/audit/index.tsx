@@ -1,9 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { FileText, Download, Filter, Search, Clock } from "lucide-react";
+import { FileText, Download, Filter, X } from "lucide-react";
 import { format } from "date-fns";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -15,14 +14,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useAuditLogs, type AuditLog, getAuditExportUrl } from "@/lib/api/audit";
 import { EmptyState } from "@/components/shared/empty-state";
+import { AuditLogFilters } from "@/components/shared/audit-log-filters";
+import { useAuditFilters } from "@/hooks/use-audit-filters";
 
 export const Route = createFileRoute("/org/_layout/audit/")({
   component: OrgAuditPage,
@@ -38,13 +37,42 @@ const actionColors: Record<string, "default" | "secondary" | "destructive" | "ou
 };
 
 function OrgAuditPage() {
-  const { data, isLoading } = useAuditLogs();
+  const {
+    draftFilters,
+    setDraftFilters,
+    appliedFilters,
+    applyFilters,
+    clearFilters,
+    clearFilter,
+    activeFilterCount,
+    hasActiveFilters,
+  } = useAuditFilters();
+
+  const { data, isLoading } = useAuditLogs(appliedFilters);
 
   const handleExport = () => {
-    window.open(getAuditExportUrl(), "_blank");
+    window.open(getAuditExportUrl(appliedFilters), "_blank");
   };
 
   const auditLogs = data?.results ?? [];
+
+  // Helper to get human-readable filter labels
+  const getFilterLabel = (key: string, value: string): string => {
+    switch (key) {
+      case "action":
+        return `Action: ${value}`;
+      case "resource_type":
+        return `Resource: ${value}`;
+      case "actor_id":
+        return `Actor: ${value}`;
+      case "start_date":
+        return `From: ${format(new Date(value), "MMM d, yyyy")}`;
+      case "end_date":
+        return `To: ${format(new Date(value), "MMM d, yyyy")}`;
+      default:
+        return `${key}: ${value}`;
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -52,50 +80,68 @@ function OrgAuditPage() {
         title="Audit Logs"
         description="Track all activity within your organization"
         actions={
-          <Button variant="outline" onClick={handleExport}>
-            <Download className="mr-2 h-4 w-4" />
-            Export Logs
-          </Button>
+          <div className="flex gap-2">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="relative">
+                  <Filter className="mr-2 h-4 w-4" />
+                  Filter
+                  {hasActiveFilters && (
+                    <Badge
+                      variant="default"
+                      className="ml-2 h-5 min-w-5 rounded-full px-1.5 text-xs"
+                    >
+                      {activeFilterCount}
+                    </Badge>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-80">
+                <AuditLogFilters
+                  filters={draftFilters}
+                  onFiltersChange={setDraftFilters}
+                  onApply={applyFilters}
+                  onClear={clearFilters}
+                />
+              </PopoverContent>
+            </Popover>
+            <Button variant="outline" onClick={handleExport}>
+              <Download className="mr-2 h-4 w-4" />
+              Export Logs
+            </Button>
+          </div>
         }
       />
 
-      {/* Filters - will be wired up in subtask 4.2 */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-wrap gap-4">
-            <div className="relative flex-1 min-w-[200px]">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input placeholder="Search by actor or resource..." className="pl-9" disabled />
-            </div>
-            <Select defaultValue="all" disabled>
-              <SelectTrigger className="w-[160px]">
-                <Filter className="mr-2 h-4 w-4" />
-                <SelectValue placeholder="Action type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Actions</SelectItem>
-                <SelectItem value="user">User Actions</SelectItem>
-                <SelectItem value="team">Team Actions</SelectItem>
-                <SelectItem value="webhook">Webhook Actions</SelectItem>
-                <SelectItem value="settings">Settings</SelectItem>
-                <SelectItem value="auth">Authentication</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select defaultValue="7d" disabled>
-              <SelectTrigger className="w-[140px]">
-                <Clock className="mr-2 h-4 w-4" />
-                <SelectValue placeholder="Time range" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="24h">Last 24 hours</SelectItem>
-                <SelectItem value="7d">Last 7 days</SelectItem>
-                <SelectItem value="30d">Last 30 days</SelectItem>
-                <SelectItem value="90d">Last 90 days</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
+      {hasActiveFilters && (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border bg-muted/50 p-3">
+          <span className="text-sm font-medium text-muted-foreground">
+            Active filters:
+          </span>
+          {Object.entries(appliedFilters).map(([key, value]) => {
+            if (!value) return null;
+            return (
+              <Badge
+                key={key}
+                variant="secondary"
+                className="gap-1 pr-1 cursor-pointer hover:bg-secondary/80"
+                onClick={() => clearFilter(key as keyof typeof appliedFilters)}
+              >
+                {getFilterLabel(key, value)}
+                <X className="h-3 w-3" />
+              </Badge>
+            );
+          })}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearFilters}
+            className="h-6 px-2 text-xs"
+          >
+            Clear all
+          </Button>
+        </div>
+      )}
 
       {/* Audit Log Table */}
       {!isLoading && auditLogs.length === 0 ? (

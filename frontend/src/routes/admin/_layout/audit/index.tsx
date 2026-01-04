@@ -13,8 +13,8 @@ import {
 } from "@/components/ui/popover";
 import { useAuditLogs, type AuditLog, getAuditExportUrl } from "@/lib/api/audit";
 import { EmptyState } from "@/components/shared/empty-state";
-import { AuditLogFilters } from "./-components/audit-log-filters";
-import { useAuditFilters } from "./-hooks/use-audit-filters";
+import { AuditLogFilters } from "@/components/shared/audit-log-filters";
+import { useAuditFilters } from "@/hooks/use-audit-filters";
 
 export const Route = createFileRoute("/admin/_layout/audit/")({
   component: AuditLogsPage,
