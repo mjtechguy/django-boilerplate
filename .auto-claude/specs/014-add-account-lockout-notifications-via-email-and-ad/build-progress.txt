@@ -134,7 +134,44 @@
 - Comprehensive structured logging throughout using structlog
 - All acceptance criteria met
 
+#### 2.2 - Connect lockout signals in app config ✓
+- Successfully imported lockout signals in `backend/api/apps.py` ready() method
+- Added `import api.signals_lockout  # noqa: F401` following existing pattern for api.signals
+- Signal handlers in signals_lockout.py are now registered when Django app starts up
+- Enables automatic account lockout notifications when django-axes user_locked_out signal is triggered
+- Both apps.py and signals_lockout.py pass Python syntax validation
+- All acceptance criteria met
+
+#### 2.3 - Integrate with local auth lockout ✓
+- Successfully integrated lockout notifications with `LocalUserProfile.record_login_attempt()` in `backend/api/models_local_auth.py`
+- Implementation details:
+  - Added lockout detection flag (`lockout_occurred`) that triggers when `failed_login_attempts >= max_attempts`
+  - Created `_send_lockout_notification()` helper method following `signals_lockout.py` pattern
+  - Sends notification email asynchronously using `send_lockout_notification_task.delay()`
+  - Creates audit log entry with `action='account_locked'` and `source='local-auth'`
+  - Increments mass lockout counter in Redis with TTL based on `LOCKOUT_MASS_WINDOW_MINUTES`
+  - Triggers `check_mass_lockout_task.delay()` for mass attack detection
+  - Handles users without email (checks `self.user.email` and `LOCKOUT_NOTIFICATION_ENABLED`)
+  - Comprehensive structured logging with `local_auth_*` prefixes for easy filtering
+  - Error handling for Redis tracking prevents failures from blocking the lockout process
+- All acceptance criteria met:
+  ✓ Notification triggered when locked_until is set
+  ✓ Uses same notification task as axes integration (send_lockout_notification_task)
+  ✓ Handles case where user doesn't have email
+- Lockout duration formatting:
+  - Displays hours if >= 1 hour (e.g., "1 hour", "2 hours")
+  - Displays minutes if < 1 hour (e.g., "30 minutes")
+- Follows DRY principle by extracting notification logic into reusable helper method
+- Maintains consistency with django-axes signal handler implementation
+
+## Phase 2: Signal Integration - Complete ✓
+
+All signal integration subtasks completed. Both django-axes lockouts and local auth lockouts now trigger:
+- User email notifications with security guidance
+- Audit log entries for tracking
+- Mass lockout detection for admin alerting
+
 ## Next Steps
-- Continue Phase 2: Connect signals in apps.py (2.2)
-- Import signals_lockout module in api/apps.py ready() method
-- Integrate with local auth lockout in models_local_auth.py (2.3)
+- Begin Phase 3: Mass Lockout Detection
+- Implement Redis-based lockout tracking utilities (3.1)
+- Add mass lockout check to signal handler (3.2)
