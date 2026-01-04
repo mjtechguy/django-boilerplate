@@ -1,25 +1,25 @@
 {
   "active": true,
-  "spec": "016-extract-duplicated-sidebar-context-into-shared-gen",
+  "spec": "014-add-account-lockout-notifications-via-email-and-ad",
   "state": "building",
   "subtasks": {
-    "completed": 4,
-    "total": 9,
+    "completed": 11,
+    "total": 15,
     "in_progress": 1,
     "failed": 0
   },
   "phase": {
-    "current": "Migrate Org Layout to Shared Context",
+    "current": "Testing",
     "id": null,
-    "total": 2
+    "total": 4
   },
   "workers": {
     "active": 0,
     "max": 1
   },
   "session": {
-    "number": 6,
-    "started_at": "2026-01-04T14:37:24.998085"
+    "number": 13,
+    "started_at": "2026-01-04T14:06:51.633881"
   },
   "last_update": "2026-01-04T14:58:33.883907"
 }

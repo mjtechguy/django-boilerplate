@@ -7,3 +7,4 @@ class ApiConfig(AppConfig):
     def ready(self):
         """Import signals when Django app is ready."""
         import api.signals  # noqa: F401
+        import api.signals_lockout  # noqa: F401
