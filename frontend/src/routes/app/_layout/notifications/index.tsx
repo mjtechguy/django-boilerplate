@@ -8,6 +8,9 @@ import {
   AlertCircle,
   Settings,
   Trash2,
+  Wifi,
+  WifiOff,
+  Loader2,
 } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
@@ -73,6 +76,48 @@ function mapNotificationForUI(notification: {
   };
 }
 
+/**
+ * Connection status badge showing WebSocket state
+ */
+function ConnectionStatusBadge({ status }: { status: string }) {
+  const statusConfig = {
+    connected: {
+      icon: Wifi,
+      label: "Connected",
+      variant: "default" as const,
+      className: "bg-green-500/10 text-green-600 dark:text-green-500 border-green-500/20 hover:bg-green-500/20",
+    },
+    connecting: {
+      icon: Loader2,
+      label: "Connecting",
+      variant: "secondary" as const,
+      className: "animate-pulse",
+    },
+    disconnected: {
+      icon: WifiOff,
+      label: "Disconnected",
+      variant: "outline" as const,
+      className: "text-muted-foreground",
+    },
+    error: {
+      icon: AlertCircle,
+      label: "Error",
+      variant: "destructive" as const,
+      className: "",
+    },
+  };
+
+  const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.disconnected;
+  const Icon = config.icon;
+
+  return (
+    <Badge variant={config.variant} className={`text-xs ${config.className}`}>
+      <Icon className={`mr-1 h-3 w-3 ${status === "connecting" ? "animate-spin" : ""}`} />
+      {config.label}
+    </Badge>
+  );
+}
+
 function NotificationsPage() {
   const { notifications, unreadCount, notificationStatus, markAsRead, markAllAsRead, removeNotification } = useWebSocket();
 
@@ -112,6 +157,7 @@ function NotificationsPage() {
             {unreadCount} unread
           </Badge>
         )}
+        <ConnectionStatusBadge status={notificationStatus} />
       </div>
 
       {/* Notifications List */}
