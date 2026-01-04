@@ -261,8 +261,10 @@ class DivisionCreateSerializer(NameValidationMixin, serializers.ModelSerializer)
         return attrs
 
 
-class DivisionUpdateSerializer(serializers.ModelSerializer):
+class DivisionUpdateSerializer(NameValidationMixin, serializers.ModelSerializer):
     """Update serializer for Division."""
+
+    name_entity_type = "Division"
 
     class Meta:
         model = Division
@@ -273,12 +275,6 @@ class DivisionUpdateSerializer(serializers.ModelSerializer):
             "feature_flags",
             "billing_email",
         ]
-
-    def validate_name(self, value: str) -> str:
-        """Validate division name is not empty."""
-        if not value or not value.strip():
-            raise serializers.ValidationError("Division name cannot be empty.")
-        return value.strip()
 
     def validate(self, attrs):
         """Validate division constraints."""
