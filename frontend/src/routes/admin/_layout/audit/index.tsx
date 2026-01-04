@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { type ColumnDef } from "@tanstack/react-table";
-import { Download, FileText, Filter } from "lucide-react";
+import { Download, FileText, Filter, X } from "lucide-react";
 import { format } from "date-fns";
 import { PageHeader } from "@/components/shared/page-header";
 import { DataTable, DataTableColumnHeader } from "@/components/shared/data-table";
@@ -97,12 +97,33 @@ function AuditLogsPage() {
     appliedFilters,
     applyFilters,
     clearFilters,
+    clearFilter,
+    activeFilterCount,
+    hasActiveFilters,
   } = useAuditFilters();
 
   const { data, isLoading } = useAuditLogs(appliedFilters);
 
   const handleExport = () => {
     window.open(getAuditExportUrl(appliedFilters), "_blank");
+  };
+
+  // Helper to get human-readable filter labels
+  const getFilterLabel = (key: string, value: string): string => {
+    switch (key) {
+      case "action":
+        return `Action: ${value}`;
+      case "resource_type":
+        return `Resource: ${value}`;
+      case "actor_id":
+        return `Actor: ${value}`;
+      case "start_date":
+        return `From: ${format(new Date(value), "MMM d, yyyy")}`;
+      case "end_date":
+        return `To: ${format(new Date(value), "MMM d, yyyy")}`;
+      default:
+        return `${key}: ${value}`;
+    }
   };
 
   return (
@@ -114,9 +135,17 @@ function AuditLogsPage() {
           <div className="flex gap-2">
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline">
+                <Button variant="outline" className="relative">
                   <Filter className="mr-2 h-4 w-4" />
                   Filter
+                  {hasActiveFilters && (
+                    <Badge
+                      variant="default"
+                      className="ml-2 h-5 min-w-5 rounded-full px-1.5 text-xs"
+                    >
+                      {activeFilterCount}
+                    </Badge>
+                  )}
                 </Button>
               </PopoverTrigger>
               <PopoverContent align="end" className="w-80">
@@ -135,6 +164,36 @@ function AuditLogsPage() {
           </div>
         }
       />
+
+      {hasActiveFilters && (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border bg-muted/50 p-3">
+          <span className="text-sm font-medium text-muted-foreground">
+            Active filters:
+          </span>
+          {Object.entries(appliedFilters).map(([key, value]) => {
+            if (!value) return null;
+            return (
+              <Badge
+                key={key}
+                variant="secondary"
+                className="gap-1 pr-1 cursor-pointer hover:bg-secondary/80"
+                onClick={() => clearFilter(key as keyof typeof appliedFilters)}
+              >
+                {getFilterLabel(key, value)}
+                <X className="h-3 w-3" />
+              </Badge>
+            );
+          })}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearFilters}
+            className="h-6 px-2 text-xs"
+          >
+            Clear all
+          </Button>
+        </div>
+      )}
 
       {!isLoading && (!data?.results || data.results.length === 0) ? (
         <EmptyState
