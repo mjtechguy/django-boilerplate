@@ -92,4 +92,10 @@ export const queryKeys = {
     providers: () => ["social", "providers"] as const,
     accounts: () => ["social", "accounts"] as const,
   },
+
+  // API Keys
+  apiKeys: {
+    all: ["apiKeys"] as const,
+    list: () => ["apiKeys", "list"] as const,
+  },
 } as const;

@@ -1,0 +1,20 @@
+{
+  "discovered_files": {
+    "backend/api/views_api_keys.py": {
+      "description": "Backend API endpoints for user API keys: GET /api/v1/me/api-keys (list), POST /api/v1/me/api-keys/create (create), DELETE /api/v1/me/api-keys/{id} (revoke). Keys use prefix for display, full key only shown once at creation.",
+      "category": "api",
+      "discovered_at": "2026-01-04T18:21:23.704939+00:00"
+    },
+    "frontend/src/lib/api/social/queries.ts": {
+      "description": "Pattern for API hooks: useQuery for fetching, useMutation for create/delete with queryClient.invalidateQueries on success. Uses apiGet/apiPost/apiDelete from client.ts.",
+      "category": "pattern",
+      "discovered_at": "2026-01-04T18:21:23.720997+00:00"
+    },
+    "frontend/src/routes/app/_layout/profile/index.tsx": {
+      "description": "Profile page with Card-based sections for Personal Information and Security. Uses shadcn/ui components (Card, Button, Input, Badge, Separator, Switch) and lucide-react icons.",
+      "category": "ui",
+      "discovered_at": "2026-01-04T18:21:23.733558+00:00"
+    }
+  },
+  "last_updated": "2026-01-04T18:21:23.733562+00:00"
+}
