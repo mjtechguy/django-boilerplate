@@ -236,8 +236,6 @@ class LocalUserProfile(TimeStampedModel):
         This method is called internally when a lockout occurs during record_login_attempt().
         It follows the same pattern as the django-axes signal handler.
         """
-        from django.core.cache import caches
-
         from api.audit import log_audit
         from api.tasks_lockout import check_mass_lockout_task, send_lockout_notification_task
 
@@ -318,27 +316,28 @@ class LocalUserProfile(TimeStampedModel):
                 reason="no_email" if not self.user.email else "disabled",
             )
 
-        # Increment mass lockout counter in Redis for tracking
-        cache = caches["default"]
-        time_window_minutes = settings.LOCKOUT_MASS_WINDOW_MINUTES
-        time_window_seconds = time_window_minutes * 60
-        lockout_counter_key = f"lockout_count:{time_window_minutes}m"
+        # Increment mass lockout counter in Redis using proper tracking utilities
+        from api.lockout_tracking import increment_lockout_count
 
         try:
-            # Increment counter
-            current_count = cache.get(lockout_counter_key, 0)
-            current_count += 1
-            cache.set(lockout_counter_key, current_count, time_window_seconds)
+            # Add lockout event to Redis sorted set for time-windowed tracking
+            current_count = increment_lockout_count(
+                username=self.user.username,
+                email=self.user.email,
+                ip_address=ip_address,
+                source="local-auth",
+            )
 
             logger.info(
                 "local_auth_mass_lockout_counter_incremented",
                 count=current_count,
                 threshold=settings.LOCKOUT_MASS_THRESHOLD,
-                time_window_minutes=time_window_minutes,
+                time_window_minutes=settings.LOCKOUT_MASS_WINDOW_MINUTES,
             )
 
             # Check if we've crossed the mass lockout threshold
-            check_mass_lockout_task.delay(current_count=current_count)
+            # This will trigger admin alerts if needed with real affected account data
+            check_mass_lockout_task.delay()
 
         except Exception as e:
             logger.error(

@@ -212,7 +212,7 @@ def send_admin_lockout_alert_task(
     max_retries=3,
     acks_late=True,
 )
-def check_mass_lockout_task(self, current_count: int = None) -> dict:
+def check_mass_lockout_task(self) -> dict:
     """
     Check for mass lockout patterns and trigger admin alerts if threshold exceeded.
 
@@ -220,18 +220,15 @@ def check_mass_lockout_task(self, current_count: int = None) -> dict:
     mass lockout threshold. It uses Redis-based tracking to count lockouts
     within the configured time window.
 
-    Args:
-        current_count: Optional pre-computed lockout count (for optimization)
-
     Returns:
         Dictionary with check results and alert status
     """
     from django.core.cache import caches
+    from api.lockout_tracking import get_lockout_count, get_affected_accounts, get_ip_summary
 
     logger.info(
         "mass_lockout_check_start",
         task_id=self.request.id,
-        current_count=current_count,
     )
 
     if not settings.LOCKOUT_NOTIFICATION_ENABLED:
@@ -244,18 +241,8 @@ def check_mass_lockout_task(self, current_count: int = None) -> dict:
     threshold = settings.LOCKOUT_MASS_THRESHOLD
     time_window_minutes = settings.LOCKOUT_MASS_WINDOW_MINUTES
 
-    # Get lockout count from tracking (will be implemented in lockout_tracking.py)
-    # For now, we use the provided count or return early
-    if current_count is None:
-        logger.warning(
-            "mass_lockout_check_no_count",
-            task_id=self.request.id,
-        )
-        return {
-            "status": "skipped",
-            "task_id": self.request.id,
-            "reason": "No count provided and tracking not yet implemented",
-        }
+    # Get lockout count from Redis-based tracking
+    current_count = get_lockout_count(time_window_minutes)
 
     logger.info(
         "mass_lockout_count",
@@ -294,14 +281,23 @@ def check_mass_lockout_task(self, current_count: int = None) -> dict:
             time_window_minutes=time_window_minutes,
         )
 
-        # Trigger admin alert
-        # Note: In phase 3, this will collect actual affected accounts
-        # For now, we'll pass placeholder data
+        # Get detailed information about affected accounts and IP addresses
+        affected_accounts = get_affected_accounts(time_window_minutes)
+        ip_summary = get_ip_summary(time_window_minutes)
+
+        logger.info(
+            "mass_lockout_alert_data_collected",
+            task_id=self.request.id,
+            affected_accounts_count=len(affected_accounts),
+            unique_ips=len(ip_summary),
+        )
+
+        # Trigger admin alert with real affected account and IP data
         send_admin_lockout_alert_task.delay(
             lockout_count=current_count,
             time_window_minutes=time_window_minutes,
-            affected_accounts=[],  # Will be populated in phase 3
-            ip_summary=None,  # Will be populated in phase 3
+            affected_accounts=affected_accounts,
+            ip_summary=ip_summary,
         )
 
         return {
@@ -309,6 +305,8 @@ def check_mass_lockout_task(self, current_count: int = None) -> dict:
             "task_id": self.request.id,
             "count": current_count,
             "threshold": threshold,
+            "affected_accounts_count": len(affected_accounts),
+            "unique_ips": len(ip_summary),
         }
 
     return {

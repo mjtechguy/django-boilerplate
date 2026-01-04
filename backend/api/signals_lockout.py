@@ -11,7 +11,6 @@ import structlog
 from axes.signals import user_locked_out
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.core.cache import caches
 from django.dispatch import receiver
 from django.utils import timezone
 
@@ -131,27 +130,17 @@ def handle_user_locked_out(sender, request, username: str, ip_address: str, **kw
             reason="no_email" if not user_email else "disabled",
         )
 
-    # Increment mass lockout counter in Redis for tracking
-    # This uses a sorted set to track lockouts within the time window
-    cache = caches["default"]
-    time_window_seconds = settings.LOCKOUT_MASS_WINDOW_MINUTES * 60
-
-    # Use a sorted set key for tracking lockouts with timestamps
-    lockout_tracking_key = f"lockout_events:{settings.LOCKOUT_MASS_WINDOW_MINUTES}m"
-
-    # Add current lockout to tracking with current timestamp as score
-    # Note: In phase 3, this will be replaced with proper lockout_tracking.py utilities
-    current_timestamp = timezone.now().timestamp()
-
-    # For now, we'll use a simple counter that expires
-    # Phase 3 will implement proper sorted set tracking
-    lockout_counter_key = f"lockout_count:{settings.LOCKOUT_MASS_WINDOW_MINUTES}m"
+    # Increment mass lockout counter in Redis using proper tracking utilities
+    from api.lockout_tracking import increment_lockout_count
 
     try:
-        # Increment counter
-        current_count = cache.get(lockout_counter_key, 0)
-        current_count += 1
-        cache.set(lockout_counter_key, current_count, time_window_seconds)
+        # Add lockout event to Redis sorted set for time-windowed tracking
+        current_count = increment_lockout_count(
+            username=username,
+            email=user_email,
+            ip_address=ip_address,
+            source="django-axes",
+        )
 
         logger.info(
             "mass_lockout_counter_incremented",
@@ -161,8 +150,8 @@ def handle_user_locked_out(sender, request, username: str, ip_address: str, **kw
         )
 
         # Check if we've crossed the mass lockout threshold
-        # This will trigger admin alerts if needed
-        check_mass_lockout_task.delay(current_count=current_count)
+        # This will trigger admin alerts if needed with real affected account data
+        check_mass_lockout_task.delay()
 
     except Exception as e:
         logger.error(
