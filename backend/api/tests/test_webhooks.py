@@ -886,3 +886,179 @@ class TestWebhookAPI:
         data = response.json()
         assert data["count"] == 2
         assert len(data["results"]) == 2
+
+    def test_create_webhook_with_private_ip_url_fails(self):
+        """Test that creating a webhook with private IP URL fails with 400."""
+        data = {
+            "org_id": "org-123",
+            "name": "Private IP Endpoint",
+            "url": "https://192.168.1.100/webhook",
+            "events": ["user.created"],
+        }
+
+        response = self.client.post("/api/v1/webhooks", data, format="json")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "url" in response.json()
+        assert WebhookEndpoint.objects.count() == 0
+
+    def test_create_webhook_with_localhost_url_fails(self):
+        """Test that creating a webhook with localhost URL fails with 400."""
+        data = {
+            "org_id": "org-123",
+            "name": "Localhost Endpoint",
+            "url": "https://localhost/webhook",
+            "events": ["user.created"],
+        }
+
+        response = self.client.post("/api/v1/webhooks", data, format="json")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "url" in response.json()
+        error_message = str(response.json()["url"])
+        assert "localhost" in error_message.lower() or "blocked" in error_message.lower()
+        assert WebhookEndpoint.objects.count() == 0
+
+    def test_create_webhook_with_metadata_endpoint_fails(self):
+        """Test that creating a webhook with metadata endpoint URL fails with 400."""
+        data = {
+            "org_id": "org-123",
+            "name": "Metadata Endpoint",
+            "url": "https://169.254.169.254/latest/meta-data/",
+            "events": ["user.created"],
+        }
+
+        response = self.client.post("/api/v1/webhooks", data, format="json")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "url" in response.json()
+        error_message = str(response.json()["url"])
+        assert "169.254.169.254" in error_message or "metadata" in error_message.lower()
+        assert WebhookEndpoint.objects.count() == 0
+
+    def test_create_webhook_with_internal_network_url_fails(self):
+        """Test that creating a webhook with internal network URL fails with 400."""
+        data = {
+            "org_id": "org-123",
+            "name": "Internal Endpoint",
+            "url": "https://10.0.0.5/webhook",
+            "events": ["user.created"],
+        }
+
+        response = self.client.post("/api/v1/webhooks", data, format="json")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "url" in response.json()
+        error_message = str(response.json()["url"])
+        assert "10.0.0.5" in error_message or "private" in error_message.lower()
+        assert WebhookEndpoint.objects.count() == 0
+
+    def test_create_webhook_with_valid_url_succeeds(self):
+        """Test that creating a webhook with valid public URL succeeds."""
+        data = {
+            "org_id": "org-123",
+            "name": "Valid Endpoint",
+            "url": "https://example.com/webhook",
+            "events": ["user.created"],
+        }
+
+        response = self.client.post("/api/v1/webhooks", data, format="json")
+
+        assert response.status_code == status.HTTP_201_CREATED
+        assert WebhookEndpoint.objects.count() == 1
+        endpoint = WebhookEndpoint.objects.first()
+        assert endpoint.url == "https://example.com/webhook"
+
+    def test_update_webhook_url_to_private_ip_fails(self):
+        """Test that updating webhook URL to private IP fails with 400."""
+        endpoint = WebhookEndpoint.objects.create(
+            org_id="org-123",
+            name="Test Endpoint",
+            url="https://example.com/webhook",
+            secret="test-secret",
+        )
+
+        data = {"url": "https://192.168.1.1/webhook"}
+        response = self.client.patch(f"/api/v1/webhooks/{endpoint.id}", data, format="json")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "url" in response.json()
+        error_message = str(response.json()["url"])
+        assert "192.168.1.1" in error_message or "private" in error_message.lower()
+
+        # Verify URL was not updated
+        endpoint.refresh_from_db()
+        assert endpoint.url == "https://example.com/webhook"
+
+    def test_update_webhook_url_to_localhost_fails(self):
+        """Test that updating webhook URL to localhost fails with 400."""
+        endpoint = WebhookEndpoint.objects.create(
+            org_id="org-123",
+            name="Test Endpoint",
+            url="https://example.com/webhook",
+            secret="test-secret",
+        )
+
+        data = {"url": "https://127.0.0.1/webhook"}
+        response = self.client.patch(f"/api/v1/webhooks/{endpoint.id}", data, format="json")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "url" in response.json()
+        error_message = str(response.json()["url"])
+        assert "127.0.0.1" in error_message or "loopback" in error_message.lower()
+
+        # Verify URL was not updated
+        endpoint.refresh_from_db()
+        assert endpoint.url == "https://example.com/webhook"
+
+    def test_update_webhook_url_to_valid_url_succeeds(self):
+        """Test that updating webhook URL to valid public URL succeeds."""
+        endpoint = WebhookEndpoint.objects.create(
+            org_id="org-123",
+            name="Test Endpoint",
+            url="https://example.com/webhook",
+            secret="test-secret",
+        )
+
+        data = {"url": "https://newdomain.com/webhook"}
+        response = self.client.patch(f"/api/v1/webhooks/{endpoint.id}", data, format="json")
+
+        assert response.status_code == status.HTTP_200_OK
+        endpoint.refresh_from_db()
+        assert endpoint.url == "https://newdomain.com/webhook"
+
+    def test_ssrf_validation_error_messages_are_user_friendly(self):
+        """Test that SSRF validation errors return clear, user-friendly messages."""
+        test_cases = [
+            {
+                "url": "https://192.168.1.100/webhook",
+                "expected_keywords": ["192.168.1.100", "private"],
+            },
+            {
+                "url": "https://localhost/webhook",
+                "expected_keywords": ["localhost", "blocked"],
+            },
+            {
+                "url": "https://10.0.0.1/webhook",
+                "expected_keywords": ["10.0.0.1", "private"],
+            },
+        ]
+
+        for test_case in test_cases:
+            data = {
+                "org_id": "org-123",
+                "name": "Test Endpoint",
+                "url": test_case["url"],
+                "events": ["user.created"],
+            }
+
+            response = self.client.post("/api/v1/webhooks", data, format="json")
+
+            assert response.status_code == status.HTTP_400_BAD_REQUEST
+            assert "url" in response.json()
+            error_message = str(response.json()["url"]).lower()
+
+            # Check that at least one expected keyword is in the error message
+            assert any(
+                keyword.lower() in error_message for keyword in test_case["expected_keywords"]
+            ), f"Expected one of {test_case['expected_keywords']} in error message: {error_message}"
