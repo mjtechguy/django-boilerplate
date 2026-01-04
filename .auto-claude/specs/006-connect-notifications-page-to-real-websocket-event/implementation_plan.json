@@ -53,8 +53,9 @@
           "files": [
             "frontend/src/routes/app/_layout/notifications/index.tsx"
           ],
-          "status": "pending",
-          "notes": ""
+          "status": "completed",
+          "notes": "Successfully wired the 'Mark as read' button to the markAsRead(id) method from WebSocket context. The button now calls markAsRead(notification.id) when clicked, properly updating the notification's read status. Implementation follows existing code patterns and includes proper TypeScript typing.",
+          "updated_at": "2026-01-04T19:15:42.756882+00:00"
         },
         {
           "id": "2.2",
@@ -139,5 +140,5 @@
   },
   "final_acceptance": [],
   "estimated_effort": "2-3 hours",
-  "last_updated": "2026-01-04T19:13:51.756606+00:00"
+  "last_updated": "2026-01-04T19:15:42.756893+00:00"
 }

@@ -74,7 +74,7 @@ function mapNotificationForUI(notification: {
 }
 
 function NotificationsPage() {
-  const { notifications, unreadCount, notificationStatus, markAsRead } = useWebSocket();
+  const { notifications, unreadCount, notificationStatus, markAsRead, markAllAsRead } = useWebSocket();
 
   // Map notifications from WebSocket format to UI format
   const uiNotifications = notifications.map(mapNotificationForUI);
@@ -86,7 +86,7 @@ function NotificationsPage() {
         description="Stay updated with your latest activity"
         actions={
           <div className="flex gap-2">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={markAllAsRead}>
               <CheckCheck className="mr-2 h-4 w-4" />
               Mark all read
             </Button>
