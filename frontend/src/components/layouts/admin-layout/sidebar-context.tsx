@@ -1,43 +1,9 @@
-import { createContext, useContext, type ReactNode } from "react";
-import { useSidebar } from "@/hooks/use-sidebar";
+import { createSidebarContext } from "@/components/shared/sidebar-context";
 
-interface SidebarContextType {
-  isCollapsed: boolean;
-  width: number;
-  expandedWidth: number;
-  toggle: () => void;
-  collapse: () => void;
-  expand: () => void;
-  setWidth: (width: number) => void;
-  minWidth: number;
-  maxWidth: number;
-  collapsedWidth: number;
-}
+// Create admin-specific sidebar context with 'admin-sidebar' storage key
+const { Provider, useSidebarContext: useAdminSidebarContext } =
+  createSidebarContext("admin-sidebar");
 
-const SidebarContext = createContext<SidebarContextType | null>(null);
-
-export function useSidebarContext() {
-  const context = useContext(SidebarContext);
-  if (!context) {
-    throw new Error("useSidebarContext must be used within SidebarProvider");
-  }
-  return context;
-}
-
-interface SidebarProviderProps {
-  children: ReactNode;
-  storageKey?: string;
-}
-
-export function SidebarProvider({
-  children,
-  storageKey = "admin-sidebar",
-}: SidebarProviderProps) {
-  const sidebar = useSidebar(storageKey);
-
-  return (
-    <SidebarContext.Provider value={sidebar}>
-      {children}
-    </SidebarContext.Provider>
-  );
-}
+// Export with backward-compatible names for existing consumers
+export const SidebarProvider = Provider;
+export const useSidebarContext = useAdminSidebarContext;

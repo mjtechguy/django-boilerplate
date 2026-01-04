@@ -1,25 +1,25 @@
 {
   "active": true,
-  "spec": "019-create-reusable-header-component-to-reduce-layout-",
+  "spec": "016-extract-duplicated-sidebar-context-into-shared-gen",
   "state": "building",
   "subtasks": {
-    "completed": 0,
-    "total": 0,
+    "completed": 4,
+    "total": 9,
     "in_progress": 1,
     "failed": 0
   },
   "phase": {
-    "current": "",
-    "id": 0,
-    "total": 0
+    "current": "Migrate Org Layout to Shared Context",
+    "id": null,
+    "total": 2
   },
   "workers": {
     "active": 0,
     "max": 1
   },
   "session": {
-    "number": 11,
-    "started_at": "2026-01-04T14:37:20.265503"
+    "number": 6,
+    "started_at": "2026-01-04T14:37:24.998085"
   },
   "last_update": "2026-01-04T14:58:33.883907"
 }
