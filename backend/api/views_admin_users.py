@@ -16,7 +16,7 @@ from rest_framework.views import APIView
 
 from api.models_local_auth import LocalUserProfile
 from api.permissions import IsPlatformAdmin
-from api.serializers_admin import (
+from api.serializers_admin_users import (
     UserCreateSerializer,
     UserInviteSerializer,
     UserListSerializer,
@@ -364,7 +364,7 @@ class AdminUserMembershipsView(APIView):
             user_id=str(user_id),
         )
 
-        from api.serializers_admin import UserMembershipSerializer
+        from api.serializers_admin_users import UserMembershipSerializer
 
         memberships = user.memberships.select_related("org", "team").all()
         serializer = UserMembershipSerializer(memberships, many=True)
