@@ -1,6 +1,6 @@
 # Build Progress: Connect Notifications Page to Real WebSocket Events
 
-## Status: Phase 1 Complete - Connected to WebSocket Context
+## Status: Phase 3 In Progress - Connection Status & Empty States
 
 ## Overview
 Replace mock notification data in the Notifications page with real-time updates from the existing WebSocket infrastructure.
@@ -33,12 +33,12 @@ Replace mock notification data in the Notifications page with real-time updates 
 - [x] 1.2: Map notification format (body→message), add relative timestamps
 
 ### Phase 2: Wire Up Action Buttons
-- [ ] 2.1: Connect individual "Mark as read" buttons
-- [ ] 2.2: Connect "Mark all read" header button
-- [ ] 2.3: Add delete notification functionality (new method in ws-context)
+- [x] 2.1: Connect individual "Mark as read" buttons
+- [x] 2.2: Connect "Mark all read" header button
+- [x] 2.3: Add delete notification functionality (new method in ws-context)
 
 ### Phase 3: Connection Status & Empty States
-- [ ] 3.1: Add connection status indicator
+- [x] 3.1: Add connection status indicator
 - [ ] 3.2: Handle empty notifications state
 
 ### Phase 4: Testing
