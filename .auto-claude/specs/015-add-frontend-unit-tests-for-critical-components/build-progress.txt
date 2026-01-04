@@ -1,0 +1,79 @@
+# Build Progress: Add Frontend Unit Tests for Critical Components
+
+## Overview
+Setting up testing infrastructure and adding comprehensive unit tests for critical frontend components including auth, utilities, hooks, and API clients.
+
+## Current Status: Phase 1 - Testing Infrastructure Setup (In Progress)
+
+### Phase Summary
+| Phase | Name | Subtasks | Status |
+|-------|------|----------|--------|
+| 1 | Testing Infrastructure Setup | 5 | 4/5 Complete |
+| 2 | Pure Utility Function Tests | 4 | Pending |
+| 3 | Custom Hook Tests | 2 | Pending |
+| 4 | Auth Hook Tests | 1 | Pending |
+| 5 | Auth Component Tests | 3 | Pending |
+| 6 | API Client Tests | 1 | Pending |
+| 7 | Verification and Documentation | 2 | Pending |
+
+**Total Subtasks: 16 (4 completed, 12 remaining)**
+
+## Codebase Analysis
+
+### Frontend Technology Stack
+- React 19.2.0 with TypeScript
+- Vite 7.2.4 build tool
+- TanStack Router + React Query
+- React Hook Form + Zod validation
+- Tailwind CSS 4 + shadcn/ui components
+- ky HTTP client
+- oidc-client-ts for OIDC auth
+
+### Critical Components Identified for Testing
+
+#### 1. Pure Utilities (easiest to test)
+- `lib/color-utils.ts` - Color conversion (hex to oklch, lightness adjustment)
+- `lib/auth/parse-user.ts` - User parsing, role checking functions
+- `lib/auth/local-storage.ts` - Token storage, JWT parsing, expiration checks
+- `lib/utils/cn.ts` - Class name merging utility
+
+#### 2. Custom Hooks
+- `hooks/use-debounce.ts` - Value debouncing
+- `hooks/use-local-storage.ts` - Persistent storage with React state
+
+#### 3. Auth Hooks
+- `lib/auth/use-auth.ts` - useAuth, useUser, useHasRole, etc.
+
+#### 4. Auth Components
+- `components/auth/login-form.tsx` - Login with validation
+- `components/auth/register-form.tsx` - Registration with validation
+- `components/shared/require-role.tsx` - Role-based rendering
+
+#### 5. API Client
+- `lib/api/client.ts` - API helpers with auth injection
+
+### Testing Stack (To Be Installed)
+- Vitest - Test runner (Vite-native)
+- @testing-library/react - Component testing
+- @testing-library/jest-dom - DOM matchers
+- @testing-library/user-event - User interaction simulation
+- jsdom - Browser environment simulation
+
+---
+
+## Progress Log
+
+### 2026-01-04
+
+#### Phase 1: Testing Infrastructure Setup
+- [x] 1.1 - Install testing dependencies (vitest, @testing-library/react, jsdom, etc.)
+- [x] 1.2 - Configure Vitest with vitest.config.ts
+- [x] 1.3 - Create test setup file (frontend/src/test/setup.ts)
+- [x] 1.4 - Create reusable test utilities
+  - Created `frontend/src/test/test-utils.tsx` with `renderWithProviders` helper
+  - Created `frontend/src/test/mocks/auth.ts` with comprehensive mock auth utilities
+  - Created `frontend/src/test/test-utils.test.tsx` to verify utilities work correctly
+  - All utilities are type-safe and follow TypeScript best practices
+- [ ] 1.5 - Add test scripts to package.json
+
+**Next:** Complete subtask 1.5 to finish Phase 1
