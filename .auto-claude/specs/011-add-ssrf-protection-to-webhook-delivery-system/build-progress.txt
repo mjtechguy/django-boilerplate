@@ -1,288 +1,82 @@
-# Build Progress: Add SSRF Protection to Webhook Delivery System
-
-## Status: Planning Complete
-
-### 2026-01-04 - Implementation Plan Created
-
-**Summary:**
-Created comprehensive implementation plan for adding SSRF (Server-Side Request Forgery) protection to the webhook delivery system.
-
-**Problem Identified:**
-The `deliver_webhook` task in `backend/api/tasks.py` makes HTTP POST requests to user-controlled URLs (`endpoint.url`) without validation against internal/private IP ranges. This vulnerability could allow attackers to:
-- Access internal services (Redis, PostgreSQL, etc.)
-- Read cloud metadata endpoints (169.254.169.254 for AWS/GCP credentials)
-- Bypass firewall protections
-- Perform internal network reconnaissance
-
-**Implementation Approach:**
-1. Create a standalone SSRF protection module (`backend/api/ssrf.py`)
-2. Validate URLs at two points:
-   - At webhook configuration time (serializer validation)
-   - At delivery time with DNS rebinding protection
-3. Block all private IP ranges (IPv4 and IPv6)
-4. Block cloud metadata endpoints
-5. Add comprehensive tests
-
-**Phases:**
-- Phase 1: Core SSRF Protection Module (3 subtasks)
-- Phase 2: Integration with Webhook System (3 subtasks)
-- Phase 3: Comprehensive Testing (3 subtasks)
-- Phase 4: Security Check Integration (1 subtask)
-
-**Estimated Total Hours:** 11.5
-
-**Next Steps:**
-Begin implementation starting with Phase 1 (Core SSRF Protection Module).
-
-
-## 2026-01-04 20:33:00 - Subtask 1.1 and 1.3 Completed
-
-### Completed:
-- Created backend/api/ssrf.py with comprehensive SSRF protection utilities
-- Implemented URL parsing and scheme validation
-- Added hostname resolution to IP addresses using socket.getaddrinfo
-- Implemented private/internal IP detection for IPv4 and IPv6
-- Added cloud metadata endpoint blocking
-- Implemented DNS rebinding protection
-- Created custom exception classes
-- Implemented safe_request wrapper function
-
-### File Created:
-- backend/api/ssrf.py (429 lines)
-
-### Verification:
-- Python syntax validation: PASSED
-
-### Commit:
-- Hash: 80620b2
-
-### Next Steps:
-- Subtask 1.2: Add SSRF configuration settings
-- Subtask 2.1: Integrate into deliver_webhook task
-
-
-## 2026-01-04 21:00:00 - Subtask 1.2 Completed
-
-### Completed:
-- Added SSRF protection configuration settings to backend/config/settings/base.py
-- Implemented all required settings with environment-variable driven defaults:
-  - WEBHOOK_SSRF_PROTECTION_ENABLED (default: True)
-  - WEBHOOK_BLOCK_PRIVATE_IPS (default: True)
-  - WEBHOOK_REQUEST_TIMEOUT (default: 30 seconds)
-  - WEBHOOK_ALLOWED_SCHEMES (default: ['https'])
-  - WEBHOOK_BLOCKED_HOSTS (additional blocked hostnames, default: empty)
-  - WEBHOOK_ALLOWED_HOSTS (optional allowlist for testing, default: empty)
-
-### Files Modified:
-- backend/config/settings/base.py (+19 lines)
-
-### Verification:
-- Settings follow existing code patterns: PASSED
-- All required settings present: PASSED
-- Environment-variable driven: PASSED
-
-### Commit:
-- Hash: a7f4c53
-
-### Phase 1 Status:
-- Subtask 1.1: ✅ Completed
-- Subtask 1.2: ✅ Completed
-- Subtask 1.3: ✅ Completed (completed with 1.1)
-
-### Next Steps:
-- Phase 1 is now complete
-- Begin Phase 2: Integration with Webhook System
-- Next subtask: 2.1 - Add URL validation to deliver_webhook task
-
-
-## 2026-01-04 21:15:00 - Subtask 2.1 Completed
-
-### Completed:
-- Modified deliver_webhook task in backend/api/tasks.py to integrate SSRF protection
-- Imported SSRFProtectionError and safe_request from api.ssrf module
-- Replaced direct requests.post() call with safe_request() wrapper
-- Added comprehensive SSRF exception handling
-- Implemented security logging for SSRF violations with security_event flag
-- Set delivery status to FAILED with clear error messages when SSRF is detected
-
-### Implementation Details:
-- safe_request() automatically performs:
-  1. URL scheme validation
-  2. Hostname resolution to IP addresses
-  3. Validation that resolved IPs are not private/internal
-  4. Request to resolved IP with original Host header (prevents DNS rebinding)
-- SSRF violations do not trigger Celery retries (permanent failure)
-- Error messages include exception type and details for debugging
-- Security events are flagged for monitoring systems
-
-### Files Modified:
-- backend/api/tasks.py (+33 lines, -3 lines)
-
-### Verification:
-- Import statements correct: PASSED
-- safe_request usage follows module API: PASSED
-- Exception handling preserves existing error handling: PASSED
-- Security logging includes required fields: PASSED
-
-### Commit:
-- Hash: fbcf4da
-
-### Phase 2 Status:
-- Subtask 2.1: ✅ Completed
-- Subtask 2.2: ⏳ Pending
-- Subtask 2.3: ⏳ Pending
-
-### Next Steps:
-- Subtask 2.2: Add URL validation to webhook serializer
-- Subtask 2.3: Add safe HTTP request utility (partially done - safe_request already exists)
-
-
-## 2026-01-04 21:30:00 - Subtask 2.2 Completed
-
-### Completed:
-- Added URL validation to WebhookEndpointSerializer in backend/api/serializers_webhooks.py
-- Implemented validate_url method that calls validate_webhook_url from ssrf module
-- Converts SSRF exceptions to DRF ValidationError for proper API error responses
-- Provides early feedback to users when configuring webhook endpoints
-- Blocks private IPs, metadata endpoints, blocked hosts, and invalid schemes at creation time
-
-### Files Modified:
-- backend/api/serializers_webhooks.py
-
-### Commit:
-- Hash: (committed earlier)
-
-### Phase 2 Status:
-- Subtask 2.1: ✅ Completed
-- Subtask 2.2: ✅ Completed
-- Subtask 2.3: ⏳ Pending verification
-
-
-## 2026-01-04 - Subtask 2.3 Already Complete
-
-### Verification:
-Upon inspection of the codebase, subtask 2.3 was already fully implemented as part of subtask 2.1:
-
-**safe_request Function (backend/api/ssrf.py, lines 334-429):**
-- ✅ Validates the URL by calling validate_webhook_url(url)
-- ✅ Resolves DNS and validates IP addresses (done by validate_webhook_url)
-- ✅ Makes request to resolved IP with original Host header (lines 390-428)
-  - Extracts first resolved IP address (line 390)
-  - Replaces hostname with IP in URL (lines 392-406)
-  - Sets Host header to original hostname for virtual hosting (line 411)
-  - Makes request to IP address (lines 422-429)
-- ✅ Properly handles all SSRF exceptions (raises SSRFProtectionError)
-
-**deliver_webhook Integration (backend/api/tasks.py, line 330):**
-- ✅ Already using safe_request() wrapper
-- ✅ Proper exception handling for SSRFProtectionError (lines 372-396)
-- ✅ Security logging with security_event flag
-- ✅ Sets delivery status to FAILED with descriptive error messages
-
-### Status:
-Subtask marked as completed. This was implemented as part of the original ssrf.py module creation and deliver_webhook integration.
-
-### Phase 2 Status:
-- Subtask 2.1: ✅ Completed
-- Subtask 2.2: ✅ Completed
-- Subtask 2.3: ✅ Completed (verified already implemented)
-
-### Next Steps:
-- Phase 2 is now complete
-- Begin Phase 3: Comprehensive Testing
-- Next subtask: 3.1 - Create SSRF protection unit tests
-
-
-## 2026-01-04 21:50:00 - Subtask 3.1 Completed
-
-### Completed:
-- Created backend/api/tests/test_ssrf.py with comprehensive SSRF protection test suite
-- Implemented 100+ test cases organized into logical test classes
-- All tests follow existing project patterns (pytest, fixtures, mocking)
-
-### Test Coverage:
-
-**TestIsPrivateIP:**
-- Tests for all private IPv4 ranges (10.x, 172.16-31.x, 192.168.x, 127.x, 169.254.x, etc.)
-- Tests for all private IPv6 ranges (::1, ::/128, fc00::/7, fe80::/10, ff00::/8)
-- Tests for public IPv4 and IPv6 addresses (should be allowed)
-- Tests for invalid IP address handling (treated as private for safety)
-
-**TestIsBlockedHostname:**
-- Tests for default blocked hostnames (metadata.google.internal, 169.254.169.254, localhost)
-- Tests for custom blocklist functionality via WEBHOOK_BLOCKED_HOSTS
-- Tests for case-insensitive hostname matching
-
-**TestValidateUrlScheme:**
-- Tests HTTPS-only enforcement by default
-- Tests HTTP blocking when not in allowed schemes
-- Tests for other scheme blocking (ftp, file, gopher)
-- Tests for configurable allowed schemes
-
-**TestResolveHostname:**
-- Tests DNS resolution to IP addresses
-- Tests IPv6 resolution
-- Tests IP address deduplication
-- Tests DNS failure handling (raises DNSResolutionError)
-- Tests empty response handling
-
-**TestValidateIPAddresses:**
-- Tests public IP addresses are allowed
-- Tests private IPv4/IPv6 blocking
-- Tests localhost blocking
-- Tests metadata endpoint IP blocking
-- Tests that ANY private IP in results blocks the request
-
-**TestValidateWebhookUrl:**
-- Tests comprehensive URL validation flow
-- Tests public URL validation success
-- Tests HTTP scheme blocking
-- Tests metadata hostname blocking
-- Tests localhost blocking
-- Tests DNS rebinding protection (URL resolves to private IP)
-- Tests custom blocklist functionality
-- Tests allowlist override functionality (bypasses all checks)
-- Tests disabled SSRF protection mode
-- Tests disabled private IP blocking mode
-
-**TestSafeRequest:**
-- Tests HTTP request to resolved IP with original Host header
-- Tests DNS rebinding protection (request to IP, not hostname)
-- Tests timeout configuration
-- Tests URL path and query parameter preservation
-- Tests port preservation in URLs
-- Tests custom header merging
-- Tests allowlist bypass (direct request)
-- Tests disabled protection mode (direct request)
-- Tests different HTTP methods
-
-**TestExceptionHierarchy:**
-- Tests all exceptions inherit from SSRFProtectionError
-- Tests exceptions are catchable as base class
-
-**TestSSRFProtectionSettings:**
-- Tests all required Django settings are present
-- Tests secure default values
-- Tests setting types
-
-### Files Created:
-- backend/api/tests/test_ssrf.py (718 lines)
-
-### Verification:
-- Python syntax validation: PASSED
-- Import statements correct: PASSED
-- Test structure follows project patterns: PASSED
-
-### Commit:
-- Hash: 7ca7e0a
-
-### Phase 3 Status:
-- Subtask 3.1: ✅ Completed
-- Subtask 3.2: ⏳ Pending
-- Subtask 3.3: ⏳ Pending
-
-### Next Steps:
-- Subtask 3.2: Add SSRF integration tests for webhook delivery
-- Subtask 3.3: Add API validation tests
-- Phase 4: Security check script updates
-
+# Build Progress: Subtask 3.2 - SSRF Integration Tests for Webhook Delivery
+
+## Status: ✅ COMPLETED
+
+## Summary
+Added comprehensive integration tests to `backend/api/tests/test_webhooks.py` to verify SSRF protection in the webhook delivery system.
+
+## Tests Added (8 total)
+
+### 1. `test_deliver_webhook_blocks_private_ip`
+- Mocks DNS resolution to return private IP (192.168.1.100)
+- Verifies delivery fails with SSRF error
+- Checks delivery status set to FAILED
+- Validates error message includes IP address
+
+### 2. `test_deliver_webhook_blocks_localhost`
+- Mocks DNS resolution to return localhost IP (127.0.0.1)
+- Verifies delivery fails with SSRF error
+- Checks delivery status set to FAILED
+- Validates error message includes IP address
+
+### 3. `test_deliver_webhook_blocks_metadata_endpoint`
+- Mocks DNS resolution to return metadata IP (169.254.169.254)
+- Verifies delivery fails with SSRF error
+- Checks delivery status set to FAILED
+- Validates error message includes IP address
+
+### 4. `test_deliver_webhook_succeeds_for_valid_public_url`
+- Mocks DNS resolution to return public IP (93.184.216.34)
+- Mocks successful HTTP response
+- Verifies delivery succeeds
+- Validates DNS rebinding protection (request to IP, Host header preserved)
+
+### 5. `test_deliver_webhook_logs_ssrf_attempts`
+- Verifies SSRF attempts logged with security_event=True flag
+- Checks proper structured logging
+- Ensures security monitoring integration
+
+### 6. `test_deliver_webhook_ssrf_sets_failed_status`
+- Tests multiple private IPs (172.16.0.1, 172.16.0.2)
+- Verifies delivery status progression (PENDING → FAILED)
+- Checks attempts counter incremented
+- Validates last_attempt_at timestamp set
+
+### 7. `test_deliver_webhook_blocks_localhost_hostname_directly`
+- Tests direct localhost hostname blocking (no DNS resolution)
+- Verifies "localhost" is blocked before DNS lookup
+- Checks error message includes hostname
+
+### 8. `test_deliver_webhook_blocks_metadata_hostname_directly`
+- Tests direct metadata hostname blocking (metadata.google.internal)
+- Verifies metadata hostnames blocked before DNS lookup
+- Checks error message includes hostname
+
+## Test Coverage
+
+✅ All required scenarios covered:
+1. ✅ Private IP URLs blocked
+2. ✅ Localhost URLs blocked
+3. ✅ Metadata endpoint URLs blocked
+4. ✅ Valid public URLs succeed (mocked)
+5. ✅ Proper error logging for SSRF attempts
+6. ✅ Delivery status correctly set to FAILED
+
+## Technical Details
+
+- All tests use `@pytest.mark.django_db` for database access
+- DNS resolution properly mocked using `@patch("api.ssrf.resolve_hostname")`
+- HTTP requests mocked using `@patch("requests.request")`
+- Logger mocked to verify security event logging
+- Tests follow existing code patterns from test_webhooks.py
+- No actual network requests made during tests
+
+## Files Modified
+- `backend/api/tests/test_webhooks.py` - Added new TestWebhookSSRFProtection class with 8 tests
+
+## Commits
+- c760e02: auto-claude: 3.2 - Add SSRF protection integration tests for webhook delivery
+- 9e0ac19: Update implementation plan: Mark subtask 3.2 as completed
+
+## Next Steps
+Subtask 3.3: Add API validation tests for webhook endpoint URL validation
