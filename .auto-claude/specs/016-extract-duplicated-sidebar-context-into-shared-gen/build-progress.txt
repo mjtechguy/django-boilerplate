@@ -1,6 +1,6 @@
 # Build Progress: Extract Duplicated Sidebar Context into Shared Generic Component
 
-## Status: In Progress - Phase 1
+## Status: In Progress - Phase 2
 **Last Updated:** 2026-01-04
 
 ---
@@ -17,10 +17,10 @@ Create a `createSidebarContext` factory function in the shared components direct
 
 ### Phase 1: Create Shared Sidebar Context Factory
 - [x] 1.1 Create shared sidebar context factory module ✓
-- [ ] 1.2 Add barrel export for shared sidebar context
+- [x] 1.2 Add barrel export for shared sidebar context ✓
 
 ### Phase 2: Migrate Admin Layout to Shared Context
-- [ ] 2.1 Update admin-layout sidebar-context.tsx to use shared factory
+- [x] 2.1 Update admin-layout sidebar-context.tsx to use shared factory ✓
 - [ ] 2.2 Verify admin layout components still work
 
 ### Phase 3: Migrate Org Layout to Shared Context
@@ -82,4 +82,19 @@ Factory pattern allows each layout to have isolated React context while sharing 
 - Follows existing code patterns from admin-layout and org-layout
 - Committed: 9019aa9
 
-**Ready for subtask 1.2.**
+**Subtask 1.2: Add barrel export for shared sidebar context ✓**
+- Created `frontend/src/components/shared/index.ts`
+- Added barrel exports for `createSidebarContext` and `SidebarContextType`
+- Follows existing pattern from providers/index.ts
+
+**Subtask 2.1: Update admin-layout sidebar-context.tsx to use shared factory ✓**
+- Refactored `frontend/src/components/layouts/admin-layout/sidebar-context.tsx`
+- Imports `createSidebarContext` from `@/components/shared/sidebar-context`
+- Uses factory with 'admin-sidebar' storage key
+- Maintains backward-compatible exports: `SidebarProvider` and `useSidebarContext`
+- Removed duplicate `SidebarContextType` interface definition
+- Reduced file from 43 lines to 9 lines (41 lines of duplicate code eliminated)
+- Verified all consumer imports remain unchanged (admin-sidebar.tsx, sidebar-nav.tsx, sidebar-resize-handle.tsx, sidebar-user.tsx, index.tsx)
+- Committed: 3f0ddce
+
+**Ready for subtask 2.2.**

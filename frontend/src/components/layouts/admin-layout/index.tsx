@@ -6,7 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function AdminLayout() {
   return (
-    <SidebarProvider storageKey="admin-sidebar">
+    <SidebarProvider>
       <div className="flex h-screen overflow-hidden bg-background">
         {/* Sidebar */}
         <AdminSidebar />

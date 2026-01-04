@@ -1,0 +1,34 @@
+{
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true
+  },
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "Read(./**)",
+      "Write(./**)",
+      "Edit(./**)",
+      "Glob(./**)",
+      "Grep(./**)",
+      "Read(/Users/mj/mjcode/ai-products/django-boilerplate/.worktrees/016-extract-duplicated-sidebar-context-into-shared-gen/**)",
+      "Write(/Users/mj/mjcode/ai-products/django-boilerplate/.worktrees/016-extract-duplicated-sidebar-context-into-shared-gen/**)",
+      "Edit(/Users/mj/mjcode/ai-products/django-boilerplate/.worktrees/016-extract-duplicated-sidebar-context-into-shared-gen/**)",
+      "Glob(/Users/mj/mjcode/ai-products/django-boilerplate/.worktrees/016-extract-duplicated-sidebar-context-into-shared-gen/**)",
+      "Grep(/Users/mj/mjcode/ai-products/django-boilerplate/.worktrees/016-extract-duplicated-sidebar-context-into-shared-gen/**)",
+      "Read(/Users/mj/mjcode/ai-products/django-boilerplate/.worktrees/016-extract-duplicated-sidebar-context-into-shared-gen/.auto-claude/specs/016-extract-duplicated-sidebar-context-into-shared-gen/**)",
+      "Write(/Users/mj/mjcode/ai-products/django-boilerplate/.worktrees/016-extract-duplicated-sidebar-context-into-shared-gen/.auto-claude/specs/016-extract-duplicated-sidebar-context-into-shared-gen/**)",
+      "Edit(/Users/mj/mjcode/ai-products/django-boilerplate/.worktrees/016-extract-duplicated-sidebar-context-into-shared-gen/.auto-claude/specs/016-extract-duplicated-sidebar-context-into-shared-gen/**)",
+      "Bash(*)",
+      "WebFetch(*)",
+      "WebSearch(*)",
+      "mcp__context7__resolve-library-id(*)",
+      "mcp__context7__get-library-docs(*)",
+      "mcp__graphiti-memory__search_nodes(*)",
+      "mcp__graphiti-memory__search_facts(*)",
+      "mcp__graphiti-memory__add_episode(*)",
+      "mcp__graphiti-memory__get_episodes(*)",
+      "mcp__graphiti-memory__get_entity_edge(*)"
+    ]
+  }
+}
