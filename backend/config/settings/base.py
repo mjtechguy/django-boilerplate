@@ -355,6 +355,25 @@ CELERY_TASK_DEFAULT_ROUTING_KEY = "default"
 # Task deduplication TTL (in Redis)
 CELERY_TASK_DEDUP_TTL = int(os.getenv("CELERY_TASK_DEDUP_TTL", "3600"))  # 1 hour default
 
+# Webhook SSRF Protection
+# Server-Side Request Forgery protection for webhook delivery system
+WEBHOOK_SSRF_PROTECTION_ENABLED = (
+    os.getenv("WEBHOOK_SSRF_PROTECTION_ENABLED", "true").lower() == "true"
+)
+WEBHOOK_BLOCK_PRIVATE_IPS = os.getenv("WEBHOOK_BLOCK_PRIVATE_IPS", "true").lower() == "true"
+WEBHOOK_REQUEST_TIMEOUT = int(os.getenv("WEBHOOK_REQUEST_TIMEOUT", "30"))  # seconds
+WEBHOOK_ALLOWED_SCHEMES = [
+    s.strip() for s in os.getenv("WEBHOOK_ALLOWED_SCHEMES", "https").split(",") if s.strip()
+]
+# Additional hostnames to block (comma-separated, e.g., "internal.local,admin.local")
+WEBHOOK_BLOCKED_HOSTS = [
+    h.strip() for h in os.getenv("WEBHOOK_BLOCKED_HOSTS", "").split(",") if h.strip()
+]
+# Optional allowlist for testing (comma-separated, overrides other checks when non-empty)
+WEBHOOK_ALLOWED_HOSTS = [
+    h.strip() for h in os.getenv("WEBHOOK_ALLOWED_HOSTS", "").split(",") if h.strip()
+]
+
 # Django-Axes (Brute Force Protection)
 # Required for axes.middleware.AxesMiddleware
 AUTHENTICATION_BACKENDS = [
