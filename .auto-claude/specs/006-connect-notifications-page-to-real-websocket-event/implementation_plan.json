@@ -64,8 +64,9 @@
           "files": [
             "frontend/src/routes/app/_layout/notifications/index.tsx"
           ],
-          "status": "pending",
-          "notes": ""
+          "status": "completed",
+          "notes": "Successfully wired the 'Mark all read' header button to the markAllAsRead() method from WebSocket context. Added markAllAsRead to the destructured values from useWebSocket() hook and added onClick={markAllAsRead} to the button. The button now properly marks all notifications as read when clicked.",
+          "updated_at": "2026-01-04T19:17:02.118331+00:00"
         },
         {
           "id": "2.3",
@@ -75,8 +76,9 @@
             "frontend/src/lib/websocket/ws-context.tsx",
             "frontend/src/routes/app/_layout/notifications/index.tsx"
           ],
-          "status": "pending",
-          "notes": ""
+          "status": "completed",
+          "notes": "Successfully implemented removeNotification method in ws-context.tsx and wired it to the trash button in the notifications page. The method uses useCallback and filters the notifications array to remove the notification with the matching ID. The trash button now properly removes individual notifications when clicked.",
+          "updated_at": "2026-01-04T19:18:44.393730+00:00"
         }
       ]
     },
@@ -92,8 +94,9 @@
           "files": [
             "frontend/src/routes/app/_layout/notifications/index.tsx"
           ],
-          "status": "pending",
-          "notes": ""
+          "status": "completed",
+          "notes": "Successfully implemented ConnectionStatusBadge component that displays WebSocket connection status with 4 states: connected (green with Wifi icon), connecting (pulsing with spinning Loader2 icon), disconnected (outline with WifiOff icon), and error (destructive with AlertCircle icon). The badge is positioned in the stats section for easy visibility and follows existing UI patterns from the monitoring page.",
+          "updated_at": "2026-01-04T19:20:26.349629+00:00"
         },
         {
           "id": "3.2",
@@ -140,5 +143,5 @@
   },
   "final_acceptance": [],
   "estimated_effort": "2-3 hours",
-  "last_updated": "2026-01-04T19:15:42.756893+00:00"
+  "last_updated": "2026-01-04T19:20:26.349639+00:00"
 }

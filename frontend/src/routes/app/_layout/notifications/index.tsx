@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import {
   Bell,
+  BellOff,
   Check,
   CheckCheck,
   Info,
@@ -16,6 +17,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/shared/empty-state";
 import { useWebSocket } from "@/lib/websocket/ws-context";
 
 export const Route = createFileRoute("/app/_layout/notifications/")({
@@ -161,23 +163,33 @@ function NotificationsPage() {
       </div>
 
       {/* Notifications List */}
-      <Card>
-        <CardContent className="p-0 divide-y">
-          {uiNotifications.map((notification) => (
-            <NotificationItem
-              key={notification.id}
-              notification={notification}
-              onMarkAsRead={markAsRead}
-              onRemove={removeNotification}
-            />
-          ))}
-        </CardContent>
-      </Card>
+      {uiNotifications.length === 0 ? (
+        <EmptyState
+          icon={<BellOff className="h-6 w-6 text-muted-foreground" />}
+          title="No notifications yet"
+          description="You're all caught up! Notifications will appear here when there's new activity."
+        />
+      ) : (
+        <>
+          <Card>
+            <CardContent className="p-0 divide-y">
+              {uiNotifications.map((notification) => (
+                <NotificationItem
+                  key={notification.id}
+                  notification={notification}
+                  onMarkAsRead={markAsRead}
+                  onRemove={removeNotification}
+                />
+              ))}
+            </CardContent>
+          </Card>
 
-      {/* Load More */}
-      <div className="flex justify-center">
-        <Button variant="outline">Load More</Button>
-      </div>
+          {/* Load More */}
+          <div className="flex justify-center">
+            <Button variant="outline">Load More</Button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

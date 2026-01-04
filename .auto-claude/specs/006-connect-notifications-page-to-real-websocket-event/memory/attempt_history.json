@@ -35,11 +35,47 @@
         }
       ],
       "status": "completed"
+    },
+    "2.2": {
+      "attempts": [
+        {
+          "session": 5,
+          "timestamp": "2026-01-04T14:17:11.715338",
+          "approach": "Implemented: Wire the 'Mark all read' header button to the markAllAsRead() method from WebSocket context",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "2.3": {
+      "attempts": [
+        {
+          "session": 6,
+          "timestamp": "2026-01-04T14:18:52.477899",
+          "approach": "Implemented: Implement removeNotification method in ws-context.tsx and wire the trash button to remove individual",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "3.1": {
+      "attempts": [
+        {
+          "session": 7,
+          "timestamp": "2026-01-04T14:20:55.104801",
+          "approach": "Implemented: Show a small status badge indicating WebSocket connection state (connected/connecting/disconnected/e",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
     }
   },
   "stuck_subtasks": [],
   "metadata": {
     "created_at": "2026-01-04T14:07:19.256724",
-    "last_updated": "2026-01-04T14:15:51.455896"
+    "last_updated": "2026-01-04T14:20:55.104822"
   }
 }

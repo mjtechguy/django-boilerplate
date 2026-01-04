@@ -3,23 +3,23 @@
   "spec": "006-connect-notifications-page-to-real-websocket-event",
   "state": "building",
   "subtasks": {
-    "completed": 3,
+    "completed": 6,
     "total": 9,
     "in_progress": 1,
     "failed": 0
   },
   "phase": {
-    "current": "Wire Up Action Buttons",
+    "current": "Connection Status & Empty States",
     "id": null,
-    "total": 3
+    "total": 2
   },
   "workers": {
     "active": 0,
     "max": 1
   },
   "session": {
-    "number": 5,
+    "number": 8,
     "started_at": "2026-01-04T14:07:19.257073"
   },
-  "last_update": "2026-01-04T14:15:56.913290"
+  "last_update": "2026-01-04T14:21:01.545826"
 }
