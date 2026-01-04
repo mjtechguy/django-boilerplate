@@ -394,18 +394,14 @@ class TeamCreateSerializer(NameValidationMixin, serializers.ModelSerializer):
         return data
 
 
-class TeamUpdateSerializer(serializers.ModelSerializer):
+class TeamUpdateSerializer(NameValidationMixin, serializers.ModelSerializer):
     """Serializer for updating a Team."""
+
+    name_entity_type = "Team"
 
     class Meta:
         model = Team
         fields = ["name", "division"]
-
-    def validate_name(self, value: str) -> str:
-        """Validate team name is not empty."""
-        if not value or not value.strip():
-            raise serializers.ValidationError("Team name cannot be empty.")
-        return value.strip()
 
     def validate_division(self, value):
         """Validate division belongs to the team's org."""
