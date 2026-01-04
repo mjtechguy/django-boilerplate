@@ -13,59 +13,14 @@ import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useWebSocket } from "@/lib/websocket/ws-context";
 
 export const Route = createFileRoute("/app/_layout/notifications/")({
   component: NotificationsPage,
 });
 
-// Mock data - replace with API calls
-const notifications = [
-  {
-    id: "1",
-    type: "info",
-    title: "Welcome to the platform!",
-    message: "Thanks for joining. Get started by completing your profile.",
-    time: "Just now",
-    read: false,
-  },
-  {
-    id: "2",
-    type: "warning",
-    title: "Profile incomplete",
-    message:
-      "Complete your profile to unlock all features and improve your experience.",
-    time: "5 min ago",
-    read: false,
-  },
-  {
-    id: "3",
-    type: "success",
-    title: "Email verified",
-    message: "Your email address has been successfully verified.",
-    time: "1 hour ago",
-    read: true,
-  },
-  {
-    id: "4",
-    type: "info",
-    title: "New login detected",
-    message: "A new login was detected from Chrome on macOS.",
-    time: "2 hours ago",
-    read: true,
-  },
-  {
-    id: "5",
-    type: "info",
-    title: "Security tip",
-    message:
-      "Enable two-factor authentication for enhanced security on your account.",
-    time: "Yesterday",
-    read: true,
-  },
-];
-
 function NotificationsPage() {
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const { notifications, unreadCount, notificationStatus } = useWebSocket();
 
   return (
     <div className="space-y-6 max-w-3xl">
