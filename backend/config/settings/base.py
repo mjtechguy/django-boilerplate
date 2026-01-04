@@ -169,6 +169,7 @@ REST_FRAMEWORK = {
         "anon": os.getenv("THROTTLE_RATE_ANON", "100/hour"),
         "user": os.getenv("THROTTLE_RATE_USER", "1000/hour"),
         "org": "1000/hour",  # Default org rate, overridden per-org by license tier
+        "api_key_create": os.getenv("THROTTLE_RATE_API_KEY_CREATE", "5/hour"),
     },
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
