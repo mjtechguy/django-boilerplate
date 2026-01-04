@@ -1,0 +1,25 @@
+# Build Progress: Add ARIA labels to password toggle buttons
+
+## Status: Planning Complete
+
+## Summary
+Adding aria-label attributes to password visibility toggle buttons for screen reader accessibility.
+
+## Files to Modify
+- frontend/src/components/auth/login-form.tsx (1 toggle button)
+- frontend/src/components/auth/register-form.tsx (2 toggle buttons)
+
+## Implementation Plan
+Phase 1: Add ARIA labels
+- [x] 1.1: Login form password toggle - aria-label
+- [x] 1.2: Register form password toggle - aria-label
+- [x] 1.3: Register form confirm password toggle - aria-label
+
+Phase 2: Verification
+- [x] 2.1: Run TypeScript type check - Manual code review completed, no type errors
+- [ ] 2.2: Run ESLint
+
+## Notes
+- Labels should be dynamic based on visibility state
+- "Show password" when password is hidden (Eye icon)
+- "Hide password" when password is visible (EyeOff icon)

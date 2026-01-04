@@ -1,0 +1,25 @@
+{
+  "active": true,
+  "spec": "007-add-aria-labels-to-password-toggle-buttons",
+  "state": "building",
+  "subtasks": {
+    "completed": 3,
+    "total": 5,
+    "in_progress": 1,
+    "failed": 0
+  },
+  "phase": {
+    "current": "Verification",
+    "id": null,
+    "total": 2
+  },
+  "workers": {
+    "active": 0,
+    "max": 1
+  },
+  "session": {
+    "number": 5,
+    "started_at": "2026-01-04T14:07:14.854524"
+  },
+  "last_update": "2026-01-04T14:12:04.677284"
+}

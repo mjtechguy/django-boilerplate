@@ -1,0 +1,77 @@
+{
+  "spec_id": "007-add-aria-labels-to-password-toggle-buttons",
+  "title": "Add ARIA labels to password toggle buttons",
+  "overview": "Add aria-label attributes to password visibility toggle buttons in login and registration forms to improve accessibility for screen reader users. The labels should dynamically reflect the current action (Show/Hide password).",
+  "phases": [
+    {
+      "id": "phase-1",
+      "name": "Add ARIA labels to password toggle buttons",
+      "description": "Add dynamic aria-label attributes to all password toggle buttons across the authentication forms",
+      "subtasks": [
+        {
+          "id": "1.1",
+          "title": "Add aria-label to login form password toggle",
+          "description": "Add dynamic aria-label to the password toggle button in login-form.tsx. Label should be 'Show password' when hidden and 'Hide password' when visible.",
+          "file": "frontend/src/components/auth/login-form.tsx",
+          "status": "completed",
+          "notes": "Successfully added dynamic aria-label to password toggle button in login-form.tsx. The label shows 'Show password' when hidden and 'Hide password' when visible.",
+          "updated_at": "2026-01-04T19:09:42.054744+00:00"
+        },
+        {
+          "id": "1.2",
+          "title": "Add aria-label to register form password toggle",
+          "description": "Add dynamic aria-label to the password toggle button in register-form.tsx. Label should be 'Show password' when hidden and 'Hide password' when visible.",
+          "file": "frontend/src/components/auth/register-form.tsx",
+          "status": "completed",
+          "notes": "Successfully added dynamic aria-label to password toggle button in register-form.tsx. The label shows 'Show password' when hidden and 'Hide password' when visible.",
+          "updated_at": "2026-01-04T19:10:38.874127+00:00"
+        },
+        {
+          "id": "1.3",
+          "title": "Add aria-label to register form confirm password toggle",
+          "description": "Add dynamic aria-label to the confirm password toggle button in register-form.tsx. Label should be 'Show confirm password' when hidden and 'Hide confirm password' when visible.",
+          "file": "frontend/src/components/auth/register-form.tsx",
+          "status": "completed",
+          "notes": "Successfully added dynamic aria-label to the confirm password toggle button in register-form.tsx. The label shows 'Show confirm password' when hidden and 'Hide confirm password' when visible.",
+          "updated_at": "2026-01-04T19:11:49.762793+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-2",
+      "name": "Verification",
+      "description": "Verify the implementation works correctly",
+      "subtasks": [
+        {
+          "id": "2.1",
+          "title": "Run TypeScript type check",
+          "description": "Run tsc to ensure no type errors were introduced",
+          "file": "frontend/",
+          "status": "pending",
+          "notes": ""
+        },
+        {
+          "id": "2.2",
+          "title": "Run linting",
+          "description": "Run ESLint to ensure code style compliance",
+          "file": "frontend/",
+          "status": "pending",
+          "notes": ""
+        }
+      ]
+    }
+  ],
+  "files_to_modify": [
+    "frontend/src/components/auth/login-form.tsx",
+    "frontend/src/components/auth/register-form.tsx"
+  ],
+  "files_to_create": [],
+  "dependencies": [],
+  "qa_sign_off": {
+    "status": "pending",
+    "tests_passed": "",
+    "issues": ""
+  },
+  "created_at": "2025-01-04T00:00:00Z",
+  "last_updated": "2026-01-04T19:11:49.762803+00:00"
+}
