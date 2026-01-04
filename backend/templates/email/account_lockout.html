@@ -1,0 +1,94 @@
+{% extends "email/base.html" %}
+
+{% block content %}
+<tr>
+    <td style="padding-bottom: 20px;">
+        <h1 style="color: #dc2626; margin: 0;">🔒 Account Temporarily Locked</h1>
+    </td>
+</tr>
+<tr>
+    <td style="padding-bottom: 20px; color: #666;">
+        <p>Hi {{ user.first_name|default:user.email }},</p>
+        <p>Your account has been temporarily locked due to multiple failed login attempts.</p>
+    </td>
+</tr>
+<tr>
+    <td style="padding-bottom: 20px;">
+        <table width="100%" cellpadding="12" cellspacing="0" style="background: #fef2f2; border-left: 4px solid #dc2626; border-radius: 4px;">
+            <tr>
+                <td style="color: #666;">
+                    <p style="margin: 0; font-weight: 600; color: #991b1b;">Security Details:</p>
+                    <p style="margin: 8px 0 0 0;"><strong>Lockout Duration:</strong> {{ lockout_duration }}</p>
+                    <p style="margin: 4px 0 0 0;"><strong>Failed Attempts:</strong> {{ failure_count }}</p>
+                    {% if ip_address %}
+                    <p style="margin: 4px 0 0 0;"><strong>IP Address:</strong> {{ ip_address }}</p>
+                    {% endif %}
+                    {% if lockout_time %}
+                    <p style="margin: 4px 0 0 0;"><strong>Time:</strong> {{ lockout_time }}</p>
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
+    </td>
+</tr>
+<tr>
+    <td style="padding-bottom: 20px; color: #666;">
+        <h2 style="color: #333; font-size: 18px; margin: 0 0 12px 0;">What this means:</h2>
+        <p>Your account will be automatically unlocked after the cooldown period. You can try logging in again after {{ unlock_time }}.</p>
+    </td>
+</tr>
+<tr>
+    <td style="padding-bottom: 20px; color: #666;">
+        <h2 style="color: #333; font-size: 18px; margin: 0 0 12px 0;">⚠️ Was this you?</h2>
+        <p><strong>If you recognize these login attempts:</strong></p>
+        <ul style="margin: 8px 0; padding-left: 20px;">
+            <li>Wait for the lockout period to expire and try again</li>
+            <li>Make sure you're using the correct password</li>
+            <li>Check if Caps Lock is enabled</li>
+        </ul>
+        <p style="margin-top: 16px;"><strong>If you don't recognize these attempts:</strong></p>
+        <ul style="margin: 8px 0; padding-left: 20px;">
+            <li>Someone may be trying to access your account</li>
+            <li>We strongly recommend changing your password immediately</li>
+            <li>Review your account activity for any suspicious actions</li>
+        </ul>
+    </td>
+</tr>
+{% if reset_password_url %}
+<tr>
+    <td style="padding-bottom: 30px; text-align: center;">
+        <a href="{{ reset_password_url }}" style="display: inline-block; padding: 14px 32px; background: linear-gradient(to right, #dc2626, #b91c1c); color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">
+            Reset Password Now
+        </a>
+    </td>
+</tr>
+<tr>
+    <td style="padding-bottom: 20px; color: #666;">
+        <p>If the button doesn't work, copy and paste this link into your browser:</p>
+        <p style="word-break: break-all; color: #dc2626;">{{ reset_password_url }}</p>
+    </td>
+</tr>
+{% endif %}
+<tr>
+    <td style="padding-bottom: 20px;">
+        <table width="100%" cellpadding="12" cellspacing="0" style="background: #f0fdf4; border-left: 4px solid #10b981; border-radius: 4px;">
+            <tr>
+                <td style="color: #666;">
+                    <p style="margin: 0; font-weight: 600; color: #065f46;">💡 Security Best Practices:</p>
+                    <ul style="margin: 8px 0 0 0; padding-left: 20px;">
+                        <li>Use a strong, unique password for your account</li>
+                        <li>Enable two-factor authentication if available</li>
+                        <li>Never share your password with anyone</li>
+                        <li>Be cautious of phishing attempts</li>
+                    </ul>
+                </td>
+            </tr>
+        </table>
+    </td>
+</tr>
+<tr>
+    <td style="color: #999; font-size: 12px;">
+        <p>This is an automated security notification. If you have any concerns about your account security, please contact our support team immediately.</p>
+    </td>
+</tr>
+{% endblock %}
