@@ -201,6 +201,14 @@ CSP_FORM_ACTION = ("'self'",)
 CSP_BASE_URI = ("'self'",)
 CSP_OBJECT_SRC = ("'none'",)
 
+# Exclude admin interfaces from CSP enforcement
+# Django admin and Wagtail CMS rely on inline styles that cannot be modified.
+# This is an acceptable trade-off because:
+# 1. Admin access is restricted by authentication
+# 2. Admin can be separated to a different hostname via ADMIN_HOSTNAME
+# 3. Main application endpoints remain fully protected with strict CSP
+CSP_EXCLUDE_URL_PREFIXES = ("/admin/", "/cms/")
+
 USE_S3 = os.getenv("USE_S3", "false").lower() == "true"
 if USE_S3:
     STORAGES = {
