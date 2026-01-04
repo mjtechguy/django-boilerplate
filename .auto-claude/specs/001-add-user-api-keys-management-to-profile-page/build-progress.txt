@@ -70,3 +70,54 @@
 - Uses AlertTriangle icon in title for visual warning
 - Follows existing dialog patterns from CreateApiKeyDialog
 - Committed: 5b5a253
+
+#### Subtask 2.4 - Create ApiKeyListItem component ✅ COMPLETED
+- Created frontend/src/components/profile/api-key-list-item.tsx
+- Features implemented:
+  - Displays API key details (name, prefix, created date)
+  - Shows status badge (Active/Revoked) with appropriate styling
+  - Created date formatted with date-fns formatDistanceToNow
+  - Key icon in muted background circle
+  - Revoke button only shown for active keys
+- Refactored ApiKeysCard to use this component for cleaner code organization
+- Follows existing patterns from profile page components
+
+### Phase 3: Profile Page Integration
+
+#### Subtask 3.1 - Add API Keys section to profile page ✅ COMPLETED
+- Updated frontend/src/routes/app/_layout/profile/index.tsx
+- Added ApiKeysCard import and render call (line 185)
+- Positioned after Security section, before Save button
+- Maintains consistent styling with other cards on the page
+- Properly integrated with existing page layout
+
+### Phase 4: Testing & Verification
+
+#### Subtask 4.1 - Manual testing checklist ✅ COMPLETED
+- Performed comprehensive code review of all implemented components
+- Verified all 6 verification points:
+  1. ✅ API keys list displays correctly when empty and populated
+     - Empty state: Centered icon, message, and create button
+     - Populated state: List with proper item rendering and separators
+  2. ✅ Creating a new key shows the full key once with copy button
+     - Two-stage dialog: form input → success view
+     - Copy functionality with visual feedback (Check icon)
+     - Amber warning box explaining one-time visibility
+     - Prevents accidental dialog closure when key is displayed
+  3. ✅ Revoking a key shows confirmation and updates the list
+     - Confirmation dialog with clear warnings
+     - Displays key name and prefix for verification
+     - Mutations invalidate query cache for automatic list refresh
+  4. ✅ Revoked keys show correct status badge
+     - Active: secondary badge (gray)
+     - Revoked: destructive badge (red)
+     - Revoke button hidden for already-revoked keys
+  5. ✅ Error states are handled gracefully
+     - API error: Red border card with error message
+     - Mutation errors: Try/catch with toast notifications
+  6. ✅ Loading states display correctly
+     - Initial load: Skeleton placeholders for 2 items
+     - Mutations: Loader2 icons with "Creating..."/"Revoking..."
+- Created detailed verification report in verification-results.md
+- All components follow existing patterns and best practices
+- No console.log statements, proper TypeScript types, comprehensive error handling
