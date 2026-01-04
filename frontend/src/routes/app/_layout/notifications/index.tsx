@@ -74,7 +74,7 @@ function mapNotificationForUI(notification: {
 }
 
 function NotificationsPage() {
-  const { notifications, unreadCount, notificationStatus, markAsRead, markAllAsRead } = useWebSocket();
+  const { notifications, unreadCount, notificationStatus, markAsRead, markAllAsRead, removeNotification } = useWebSocket();
 
   // Map notifications from WebSocket format to UI format
   const uiNotifications = notifications.map(mapNotificationForUI);
@@ -122,6 +122,7 @@ function NotificationsPage() {
               key={notification.id}
               notification={notification}
               onMarkAsRead={markAsRead}
+              onRemove={removeNotification}
             />
           ))}
         </CardContent>
@@ -138,9 +139,10 @@ function NotificationsPage() {
 interface NotificationItemProps {
   notification: UINotification;
   onMarkAsRead: (id: string) => void;
+  onRemove: (id: string) => void;
 }
 
-function NotificationItem({ notification, onMarkAsRead }: NotificationItemProps) {
+function NotificationItem({ notification, onMarkAsRead, onRemove }: NotificationItemProps) {
   const typeConfig = {
     info: {
       icon: Info,
@@ -206,7 +208,12 @@ function NotificationItem({ notification, onMarkAsRead }: NotificationItemProps)
           )}
         </div>
       </div>
-      <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8 shrink-0"
+        onClick={() => onRemove(notification.id)}
+      >
         <Trash2 className="h-4 w-4 text-muted-foreground" />
       </Button>
     </div>

@@ -28,6 +28,7 @@ interface WebSocketContextType {
   unreadCount: number;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
+  removeNotification: (id: string) => void;
   clearNotifications: () => void;
 
   // Org events
@@ -178,6 +179,10 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   }, []);
 
+  const removeNotification = useCallback((id: string) => {
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  }, []);
+
   const clearNotifications = useCallback(() => {
     setNotifications([]);
   }, []);
@@ -193,6 +198,7 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
     unreadCount,
     markAsRead,
     markAllAsRead,
+    removeNotification,
     clearNotifications,
     orgEvents,
     clearOrgEvents,
