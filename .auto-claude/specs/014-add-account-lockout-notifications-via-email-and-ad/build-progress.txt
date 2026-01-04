@@ -171,7 +171,56 @@ All signal integration subtasks completed. Both django-axes lockouts and local a
 - Audit log entries for tracking
 - Mass lockout detection for admin alerting
 
+## Phase 3: Mass Lockout Detection - Complete ✓
+
+### Completed Subtasks
+
+#### 3.1 - Implement Redis-based lockout tracking ✓
+- Created `backend/api/lockout_tracking.py` with comprehensive Redis-based tracking utilities
+- Uses Redis sorted sets (ZADD, ZCARD, ZRANGEBYSCORE, ZREMRANGEBYSCORE) for efficient time-based windowing
+- Stores detailed lockout information in Redis hashes for each event
+- Automatic expiry of old entries outside the configured time window
+- Functions implemented:
+  - `increment_lockout_count()` - Adds lockout events to sliding window counter
+  - `get_lockout_count()` - Returns count of lockouts in time window with automatic cleanup
+  - `get_affected_accounts()` - Retrieves detailed account information for admin alerts
+  - `get_ip_summary()` - Aggregates lockouts by IP address to identify attack patterns
+  - `clear_lockout_tracking()` - Utility for testing and manual incident response
+
+#### 3.2 - Add mass lockout check to signal handler ✓
+- Updated `signals_lockout.py` to use proper tracking utilities:
+  - Replaced simple counter with `increment_lockout_count()` from lockout_tracking.py
+  - Uses Redis sorted set tracking with username, email, IP, and source='django-axes'
+  - Triggers check_mass_lockout_task without parameters (gets data from Redis)
+- Updated `tasks_lockout.py` - check_mass_lockout_task:
+  - Removed current_count parameter - now gets count from Redis tracking
+  - Uses `get_lockout_count()`, `get_affected_accounts()`, `get_ip_summary()` from lockout_tracking
+  - Retrieves real-time lockout count from Redis sorted sets
+  - When threshold exceeded, collects detailed affected account and IP data
+  - Passes complete data to send_admin_lockout_alert_task (not empty placeholders)
+  - Maintains debouncing to prevent alert spam (one alert per window)
+- Updated `models_local_auth.py`:
+  - Updated `_send_lockout_notification()` to use `increment_lockout_count()`
+  - Passes username, email, IP, and source='local-auth' to tracking
+  - Triggers check_mass_lockout_task consistently with axes integration
+- All acceptance criteria met:
+  ✓ Checks lockout count after each event
+  ✓ Triggers admin alert when threshold exceeded
+  ✓ Uses debounce to prevent alert spam
+  ✓ Includes all affected accounts in alert
+
+### Mass Lockout Detection Features
+- Time-windowed counting using Redis sorted sets for accurate sliding window
+- Automatic cleanup of expired events outside time window
+- Detailed account information including username, email, lockout time, IP, and source
+- IP address aggregation to identify attack patterns
+- Consistent behavior across django-axes and local auth lockouts
+- Comprehensive structured logging throughout all operations
+- Error handling prevents tracking failures from blocking lockouts
+
 ## Next Steps
-- Begin Phase 3: Mass Lockout Detection
-- Implement Redis-based lockout tracking utilities (3.1)
-- Add mass lockout check to signal handler (3.2)
+- Begin Phase 4: Testing
+- Write unit tests for lockout tracking (4.1)
+- Write unit tests for lockout signals (4.2)
+- Write unit tests for lockout tasks (4.3)
+- Write integration tests for lockout flow (4.4)
