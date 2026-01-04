@@ -192,7 +192,7 @@ CORS_ALLOW_CREDENTIALS = True
 # See: https://django-csp.readthedocs.io/
 CSP_DEFAULT_SRC = ("'self'",)
 CSP_SCRIPT_SRC = ("'self'",)
-CSP_STYLE_SRC = ("'self'", "'unsafe-inline'")  # unsafe-inline needed for some admin styles
+CSP_STYLE_SRC = ("'self'",)  # Admin paths (/admin/, /cms/) excluded via CSP_EXCLUDE_URL_PREFIXES
 CSP_IMG_SRC = ("'self'", "data:")
 CSP_FONT_SRC = ("'self'",)
 CSP_CONNECT_SRC = ("'self'",)
