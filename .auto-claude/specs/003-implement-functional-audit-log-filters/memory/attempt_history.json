@@ -1,0 +1,57 @@
+{
+  "subtasks": {
+    "1.1": {
+      "attempts": [
+        {
+          "session": 2,
+          "timestamp": "2026-01-04T13:31:16.300844",
+          "approach": "Implemented: Install @radix-ui/react-popover package to the frontend project",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "1.2": {
+      "attempts": [
+        {
+          "session": 3,
+          "timestamp": "2026-01-04T13:32:49.043097",
+          "approach": "Implemented: Create a reusable Popover component using Radix UI, following the existing shadcn/ui patterns in the",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "2.1": {
+      "attempts": [
+        {
+          "session": 4,
+          "timestamp": "2026-01-04T13:34:30.028218",
+          "approach": "Implemented: Build a reusable filter popover component containing: action type select, resource type select, acto",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "2.2": {
+      "attempts": [
+        {
+          "session": 5,
+          "timestamp": "2026-01-04T13:38:06.855498",
+          "approach": "Implemented: Create a custom hook useAuditFilters to manage filter state with URL sync for shareable filtered vie",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    }
+  },
+  "stuck_subtasks": [],
+  "metadata": {
+    "created_at": "2026-01-04T13:26:03.988917",
+    "last_updated": "2026-01-04T13:38:06.855514"
+  }
+}

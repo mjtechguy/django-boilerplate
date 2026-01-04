@@ -6,8 +6,15 @@ import { PageHeader } from "@/components/shared/page-header";
 import { DataTable, DataTableColumnHeader } from "@/components/shared/data-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useAuditLogs, type AuditLog, getAuditExportUrl } from "@/lib/api/audit";
 import { EmptyState } from "@/components/shared/empty-state";
+import { AuditLogFilters } from "./-components/audit-log-filters";
+import { useAuditFilters } from "./-hooks/use-audit-filters";
 
 export const Route = createFileRoute("/admin/_layout/audit/")({
   component: AuditLogsPage,
@@ -84,10 +91,18 @@ const columns: ColumnDef<AuditLog>[] = [
 ];
 
 function AuditLogsPage() {
-  const { data, isLoading } = useAuditLogs();
+  const {
+    draftFilters,
+    setDraftFilters,
+    appliedFilters,
+    applyFilters,
+    clearFilters,
+  } = useAuditFilters();
+
+  const { data, isLoading } = useAuditLogs(appliedFilters);
 
   const handleExport = () => {
-    window.open(getAuditExportUrl(), "_blank");
+    window.open(getAuditExportUrl(appliedFilters), "_blank");
   };
 
   return (
@@ -97,10 +112,22 @@ function AuditLogsPage() {
         description="View system-wide audit trail and activity logs"
         actions={
           <div className="flex gap-2">
-            <Button variant="outline">
-              <Filter className="mr-2 h-4 w-4" />
-              Filter
-            </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline">
+                  <Filter className="mr-2 h-4 w-4" />
+                  Filter
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-80">
+                <AuditLogFilters
+                  filters={draftFilters}
+                  onFiltersChange={setDraftFilters}
+                  onApply={applyFilters}
+                  onClear={clearFilters}
+                />
+              </PopoverContent>
+            </Popover>
             <Button variant="outline" onClick={handleExport}>
               <Download className="mr-2 h-4 w-4" />
               Export
