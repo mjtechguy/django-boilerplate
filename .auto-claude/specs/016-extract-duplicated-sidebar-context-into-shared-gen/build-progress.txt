@@ -1,0 +1,85 @@
+# Build Progress: Extract Duplicated Sidebar Context into Shared Generic Component
+
+## Status: In Progress - Phase 1
+**Last Updated:** 2026-01-04
+
+---
+
+## Summary
+Eliminate code duplication between admin-layout and org-layout sidebar context implementations by creating a shared, generic sidebar context factory.
+
+## Approach
+Create a `createSidebarContext` factory function in the shared components directory that generates unique context, provider, and hook for each layout. Both admin-layout and org-layout will use this factory while maintaining backward-compatible exports.
+
+---
+
+## Phase Progress
+
+### Phase 1: Create Shared Sidebar Context Factory
+- [x] 1.1 Create shared sidebar context factory module ✓
+- [ ] 1.2 Add barrel export for shared sidebar context
+
+### Phase 2: Migrate Admin Layout to Shared Context
+- [ ] 2.1 Update admin-layout sidebar-context.tsx to use shared factory
+- [ ] 2.2 Verify admin layout components still work
+
+### Phase 3: Migrate Org Layout to Shared Context
+- [ ] 3.1 Update org-layout sidebar-context.tsx to use shared factory
+- [ ] 3.2 Verify org layout components still work
+
+### Phase 4: Verification and Cleanup
+- [ ] 4.1 Run TypeScript compiler check
+- [ ] 4.2 Build the application
+- [ ] 4.3 Manual verification of sidebar functionality
+
+---
+
+## Files to Create
+- frontend/src/components/shared/sidebar-context.tsx
+
+## Files to Modify
+- frontend/src/components/layouts/admin-layout/sidebar-context.tsx
+- frontend/src/components/layouts/org-layout/sidebar-context.tsx
+
+---
+
+## Key Findings from Codebase Analysis
+
+### Current Duplication
+1. **Identical Interface**: Both files define `SidebarContextType` with 10 properties
+2. **Identical Logic**: Both use `useSidebar` hook from `@/hooks/use-sidebar`
+3. **Different Names Only**:
+   - Admin: `SidebarContext`, `SidebarProvider`, `useSidebarContext`
+   - Org: `OrgSidebarContext`, `OrgSidebarProvider`, `useOrgSidebarContext`
+4. **Different Storage Keys**: `"admin-sidebar"` vs `"org-sidebar"`
+
+### Consumer Files
+- Admin Layout: admin-sidebar.tsx, sidebar-nav.tsx, sidebar-resize-handle.tsx, sidebar-user.tsx
+- Org Layout: org-sidebar.tsx, sidebar-nav.tsx, sidebar-resize-handle.tsx, sidebar-user.tsx
+
+### Strategy
+Factory pattern allows each layout to have isolated React context while sharing the implementation. Backward-compatible re-exports ensure no breaking changes to existing imports.
+
+---
+
+## Session Log
+
+### 2026-01-04 - Planning Session
+- Analyzed spec.md and identified scope
+- Explored codebase to find all duplicated sidebar context files
+- Analyzed consumer components and their import patterns
+- Created detailed implementation plan with 4 phases, 9 subtasks
+- Estimated complexity: Medium
+
+### 2026-01-04 - Implementation Session 1
+**Subtask 1.1: Create shared sidebar context factory module ✓**
+- Created `frontend/src/components/shared/sidebar-context.tsx`
+- Exported `SidebarContextType` interface with all 10 required properties
+- Implemented `createSidebarContext(storageKey: string)` factory function
+- Factory returns `{Provider, useSidebarContext}` tuple for isolated context
+- Provider uses `useSidebar` hook with provided storage key
+- Hook throws descriptive error when used outside provider
+- Follows existing code patterns from admin-layout and org-layout
+- Committed: 9019aa9
+
+**Ready for subtask 1.2.**
