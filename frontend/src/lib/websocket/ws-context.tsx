@@ -82,19 +82,12 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
         ...prev,
       ]);
     }
-    // Handle connection established
-    if (message.type === "connection.established") {
-      console.log("Notification WebSocket connected:", message);
-    }
   }, []);
 
   // Handle org event messages
   const handleOrgEventMessage = useCallback((message: WSMessage) => {
     if (message.type === "event") {
       setOrgEvents((prev) => [message, ...prev.slice(0, 99)]); // Keep last 100 events
-    }
-    if (message.type === "connection.established") {
-      console.log("Org events WebSocket connected:", message);
     }
   }, []);
 

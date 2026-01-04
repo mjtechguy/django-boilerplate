@@ -71,11 +71,35 @@
         }
       ],
       "status": "completed"
+    },
+    "3.2": {
+      "attempts": [
+        {
+          "session": 8,
+          "timestamp": "2026-01-04T14:23:03.767969",
+          "approach": "Implemented: Show a friendly empty state when there are no notifications, with appropriate messaging",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "4.1": {
+      "attempts": [
+        {
+          "session": 9,
+          "timestamp": "2026-01-04T14:26:36.940572",
+          "approach": "Implemented: Create tests that verify: rendering with mock WebSocket context, mark as read functionality, mark al",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
     }
   },
   "stuck_subtasks": [],
   "metadata": {
     "created_at": "2026-01-04T14:07:19.256724",
-    "last_updated": "2026-01-04T14:20:55.104822"
+    "last_updated": "2026-01-04T14:26:36.940590"
   }
 }
