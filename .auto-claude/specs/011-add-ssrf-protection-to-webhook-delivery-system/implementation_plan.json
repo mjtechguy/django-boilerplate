@@ -1,0 +1,217 @@
+{
+  "feature": "Add SSRF Protection to Webhook Delivery System",
+  "description": "Implement Server-Side Request Forgery (SSRF) protection for the webhook delivery system to prevent attackers from using webhook endpoints to access internal services, cloud metadata endpoints, or other sensitive network resources.",
+  "created_at": "2026-01-04T18:25:06.756Z",
+  "updated_at": "2026-01-04T20:33:00Z",
+  "status": "in_progress",
+  "planStatus": "complete",
+  "workflow_type": "development",
+  "services_involved": [
+    "backend"
+  ],
+  "spec_file": "spec.md",
+  "phases": [
+    {
+      "phase_id": "phase-1",
+      "name": "Core SSRF Protection Module",
+      "description": "Create the core SSRF protection utility module with URL validation, IP resolution, and private network detection",
+      "subtasks": [
+        {
+          "subtask_id": "1.1",
+          "title": "Create SSRF protection utility module",
+          "description": "Create backend/api/ssrf.py with URL validation utilities including: URL parsing, hostname resolution to IP addresses, private/internal IP detection covering IPv4 (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 127.0.0.0/8, 169.254.0.0/16) and IPv6 (::1, fc00::/7, fe80::/10), cloud metadata endpoint blocking (169.254.169.254, metadata.google.internal, etc.), and DNS rebinding protection by resolving hostnames before making requests.",
+          "estimated_hours": 2,
+          "status": "completed",
+          "files_to_modify": [
+            "backend/api/ssrf.py"
+          ],
+          "dependencies": [],
+          "notes": "Core module with comprehensive IP validation logic",
+          "completed_at": "2026-01-04T20:33:00Z"
+        },
+        {
+          "subtask_id": "1.2",
+          "title": "Add SSRF configuration settings",
+          "description": "Add SSRF protection configuration to backend/config/settings/base.py including: WEBHOOK_SSRF_PROTECTION_ENABLED (default True), WEBHOOK_ALLOWED_SCHEMES (default ['https']), WEBHOOK_BLOCKED_HOSTS (additional blocked hostnames), WEBHOOK_ALLOWED_HOSTS (optional allowlist for testing), WEBHOOK_REQUEST_TIMEOUT (default 30 seconds), and WEBHOOK_BLOCK_PRIVATE_IPS (default True).",
+          "estimated_hours": 0.5,
+          "status": "completed",
+          "files_to_modify": [
+            "backend/config/settings/base.py"
+          ],
+          "dependencies": [],
+          "notes": "Added all SSRF protection configuration settings with environment-variable driven defaults",
+          "completed_at": "2026-01-04T21:00:00Z"
+        },
+        {
+          "subtask_id": "1.3",
+          "title": "Add custom exception classes",
+          "description": "Create SSRFProtectionError and related exception classes in the ssrf module for clear error handling: SSRFProtectionError (base), BlockedHostError (for blocked IPs/hostnames), PrivateIPError (for private network access), DNSResolutionError (for DNS failures), InvalidSchemeError (for non-HTTPS URLs).",
+          "estimated_hours": 0.5,
+          "status": "completed",
+          "files_to_modify": [
+            "backend/api/ssrf.py"
+          ],
+          "dependencies": [
+            "1.1"
+          ],
+          "notes": "Completed as part of subtask 1.1 - exception classes included in ssrf.py",
+          "completed_at": "2026-01-04T20:33:00Z"
+        }
+      ]
+    },
+    {
+      "phase_id": "phase-2",
+      "name": "Integration with Webhook System",
+      "description": "Integrate SSRF protection into the webhook delivery task and serializers",
+      "subtasks": [
+        {
+          "subtask_id": "2.1",
+          "title": "Add URL validation to deliver_webhook task",
+          "description": "Modify the deliver_webhook task in backend/api/tasks.py to: 1) Import and use SSRF validation before making HTTP requests, 2) Resolve the hostname to IP and validate before connecting, 3) Use the resolved IP address for the actual request to prevent DNS rebinding, 4) Log SSRF violations with appropriate security logging, 5) Update delivery status to FAILED with clear error message when SSRF detected.",
+          "estimated_hours": 1.5,
+          "status": "completed",
+          "files_to_modify": [
+            "backend/api/tasks.py"
+          ],
+          "dependencies": [
+            "1.1",
+            "1.3"
+          ],
+          "notes": "Completed SSRF protection integration in deliver_webhook task. Task now uses safe_request wrapper which validates URLs, resolves DNS, checks for private IPs, and prevents DNS rebinding attacks. SSRF violations are logged with security_event flag and delivery status is set to FAILED with descriptive error messages.",
+          "completed_at": "2026-01-04T21:15:00Z"
+        },
+        {
+          "subtask_id": "2.2",
+          "title": "Add URL validation to webhook serializer",
+          "description": "Add URL validation in WebhookEndpointSerializer to validate URLs at creation/update time. This provides early feedback to users when they configure invalid URLs. Import validate_webhook_url from ssrf module and add custom validation in the serializer's validate_url method.",
+          "estimated_hours": 1,
+          "status": "pending",
+          "files_to_modify": [
+            "backend/api/serializers_webhooks.py"
+          ],
+          "dependencies": [
+            "1.1"
+          ],
+          "notes": "Provides user-friendly validation at configuration time"
+        },
+        {
+          "subtask_id": "2.3",
+          "title": "Add safe HTTP request utility",
+          "description": "Create a safe_request function in the ssrf module that wraps requests.post with SSRF protection. This function: 1) Validates the URL, 2) Resolves DNS and validates the IP, 3) Makes the request to the resolved IP with the original Host header, 4) Handles all SSRF exceptions appropriately. Update deliver_webhook to use this safe wrapper.",
+          "estimated_hours": 1,
+          "status": "pending",
+          "files_to_modify": [
+            "backend/api/ssrf.py",
+            "backend/api/tasks.py"
+          ],
+          "dependencies": [
+            "2.1"
+          ],
+          "notes": "Encapsulates all SSRF protection logic in one reusable function"
+        }
+      ]
+    },
+    {
+      "phase_id": "phase-3",
+      "name": "Comprehensive Testing",
+      "description": "Add thorough unit and integration tests for SSRF protection",
+      "subtasks": [
+        {
+          "subtask_id": "3.1",
+          "title": "Create SSRF protection unit tests",
+          "description": "Create backend/api/tests/test_ssrf.py with comprehensive tests: 1) Test blocking of all private IPv4 ranges, 2) Test blocking of IPv6 loopback and link-local, 3) Test blocking of cloud metadata endpoints, 4) Test that valid public URLs are allowed, 5) Test DNS resolution validation, 6) Test scheme validation (block http when configured), 7) Test custom blocklist functionality, 8) Test allowlist override functionality.",
+          "estimated_hours": 2,
+          "status": "pending",
+          "files_to_modify": [
+            "backend/api/tests/test_ssrf.py"
+          ],
+          "dependencies": [
+            "1.1",
+            "1.2",
+            "1.3"
+          ],
+          "notes": "Test all IP ranges and edge cases"
+        },
+        {
+          "subtask_id": "3.2",
+          "title": "Add SSRF integration tests for webhook delivery",
+          "description": "Update backend/api/tests/test_webhooks.py to add integration tests: 1) Test that deliver_webhook fails for private IP URLs, 2) Test that deliver_webhook fails for localhost URLs, 3) Test that deliver_webhook fails for metadata endpoint URLs, 4) Test that deliver_webhook succeeds for valid public URLs (mocked), 5) Test proper error logging for SSRF attempts, 6) Test delivery status is correctly set to FAILED for SSRF violations.",
+          "estimated_hours": 1.5,
+          "status": "pending",
+          "files_to_modify": [
+            "backend/api/tests/test_webhooks.py"
+          ],
+          "dependencies": [
+            "2.1",
+            "2.3"
+          ],
+          "notes": "Tests should mock DNS resolution to test rebinding scenarios"
+        },
+        {
+          "subtask_id": "3.3",
+          "title": "Add API validation tests",
+          "description": "Add tests for webhook API endpoint URL validation: 1) Test that creating a webhook with private IP URL fails with 400, 2) Test that updating webhook URL to private IP fails, 3) Test proper error messages returned to user, 4) Test that valid public URLs succeed.",
+          "estimated_hours": 1,
+          "status": "pending",
+          "files_to_modify": [
+            "backend/api/tests/test_webhooks.py"
+          ],
+          "dependencies": [
+            "2.2"
+          ],
+          "notes": "Validates user-facing API responses"
+        }
+      ]
+    },
+    {
+      "phase_id": "phase-4",
+      "name": "Security Check Integration",
+      "description": "Integrate SSRF protection verification into security checks",
+      "subtasks": [
+        {
+          "subtask_id": "4.1",
+          "title": "Update security check script",
+          "description": "Update scripts/security_check.py to verify SSRF protection is enabled in production: 1) Check WEBHOOK_SSRF_PROTECTION_ENABLED is True, 2) Check WEBHOOK_BLOCK_PRIVATE_IPS is True, 3) Check WEBHOOK_ALLOWED_SCHEMES only includes 'https' in production.",
+          "estimated_hours": 0.5,
+          "status": "pending",
+          "files_to_modify": [
+            "scripts/security_check.py"
+          ],
+          "dependencies": [
+            "1.2"
+          ],
+          "notes": "Ensures SSRF protection is enforced in production deployments"
+        }
+      ]
+    }
+  ],
+  "total_estimated_hours": 11.5,
+  "critical_files": [
+    "backend/api/ssrf.py",
+    "backend/api/tasks.py",
+    "backend/api/serializers_webhooks.py",
+    "backend/config/settings/base.py",
+    "backend/api/tests/test_ssrf.py"
+  ],
+  "architecture_notes": "The SSRF protection is implemented as a standalone module (ssrf.py) that can be reused across the application. It validates URLs at two points: 1) At webhook configuration time (serializer validation) for early user feedback, and 2) At delivery time with DNS rebinding protection. The DNS rebinding protection is critical - we resolve the hostname to an IP address and validate the IP BEFORE making the request, then make the request to the IP directly with the original Host header. This prevents time-of-check-to-time-of-use (TOCTOU) attacks where an attacker's DNS server returns a public IP during validation but a private IP during the actual request.",
+  "security_considerations": [
+    "DNS rebinding attacks: Validate IP after resolution, not hostname",
+    "IPv4 and IPv6 private ranges must both be blocked",
+    "Cloud metadata endpoints vary by provider (AWS, GCP, Azure)",
+    "Logging of SSRF attempts should not leak sensitive information",
+    "Consider rate limiting on SSRF validation failures"
+  ],
+  "final_acceptance": [
+    "All private IP ranges blocked (10.x, 172.16-31.x, 192.168.x, 127.x, 169.254.x)",
+    "Cloud metadata endpoints blocked (169.254.169.254, metadata.google.internal)",
+    "DNS rebinding protection in place",
+    "Validation at both configuration and delivery time",
+    "Comprehensive tests passing",
+    "Security check script updated"
+  ],
+  "qa_status": {
+    "sign_off": "pending",
+    "issues": "",
+    "tests_passed": ""
+  }
+}

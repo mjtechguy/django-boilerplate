@@ -1,0 +1,10 @@
+{
+  "sourceType": "ideation",
+  "ideationType": "security_hardening",
+  "ideaId": "sec-001",
+  "rationale": "Server-Side Request Forgery (SSRF) is a critical vulnerability that could allow attackers to access internal infrastructure, bypass firewalls, read cloud metadata (AWS credentials, etc.), and potentially achieve remote code execution through internal services. The webhook system accepts arbitrary URLs from users, creating a significant attack surface.",
+  "category": "security",
+  "securitySeverity": "critical",
+  "impact": "critical",
+  "priority": "urgent"
+}
