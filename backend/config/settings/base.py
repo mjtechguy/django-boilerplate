@@ -369,6 +369,21 @@ AXES_LOCKOUT_PARAMETERS = ["username", "ip_address"]  # Lock by user and IP comb
 AXES_ENABLE_ACCESS_FAILURE_LOG = True  # Log all failed attempts
 AXES_VERBOSE = DEBUG  # Verbose logging only in debug mode
 
+# Account Lockout Notification Settings
+# Email notifications sent to users when their account is locked due to failed login attempts
+LOCKOUT_NOTIFICATION_ENABLED = os.getenv("LOCKOUT_NOTIFICATION_ENABLED", "true").lower() == "true"
+LOCKOUT_ADMIN_EMAILS = [
+    email.strip()
+    for email in os.getenv("LOCKOUT_ADMIN_EMAILS", "").split(",")
+    if email.strip()
+]
+LOCKOUT_MASS_THRESHOLD = int(
+    os.getenv("LOCKOUT_MASS_THRESHOLD", "10")
+)  # Number of lockouts to trigger admin alert
+LOCKOUT_MASS_WINDOW_MINUTES = int(
+    os.getenv("LOCKOUT_MASS_WINDOW_MINUTES", "5")
+)  # Time window for mass lockout detection
+
 # Security settings (environment-dependent, enforced in production)
 # These are set to safe defaults for development, override in production.py
 SECURE_BROWSER_XSS_FILTER = True
