@@ -12,6 +12,8 @@ from celery import shared_task
 from django.conf import settings
 from django.core.cache import caches
 
+from api.ssrf import SSRFProtectionError, safe_request
+
 logger = structlog.get_logger(__name__)
 
 
@@ -322,9 +324,12 @@ def deliver_webhook(self, delivery_id: str) -> dict:
     delivery.last_attempt_at = timezone.now()
 
     try:
-        # Make the HTTP request
-        response = requests.post(
-            endpoint.url,
+        # Make the HTTP request with SSRF protection
+        # safe_request validates the URL, resolves DNS, checks for private IPs,
+        # and makes the request to the resolved IP to prevent DNS rebinding attacks
+        response = safe_request(
+            url=endpoint.url,
+            method="POST",
             json=delivery.payload,
             headers=headers,
             timeout=30,  # 30 second timeout
@@ -361,6 +366,32 @@ def deliver_webhook(self, delivery_id: str) -> dict:
             else "failed",
             "delivery_id": delivery_id,
             "response_status": response.status_code,
+            "attempts": delivery.attempts,
+        }
+
+    except SSRFProtectionError as e:
+        # SSRF protection triggered - this is a security violation
+        # Do not retry, mark as permanently failed
+        delivery.status = WebhookDelivery.Status.FAILED
+        delivery.response_body = f"SSRF Protection: {str(e)}"[:5000]
+        delivery.save()
+
+        logger.error(
+            "webhook_delivery_ssrf_blocked",
+            delivery_id=delivery_id,
+            endpoint_id=str(endpoint.id),
+            endpoint_url=endpoint.url,
+            error=str(e),
+            error_type=type(e).__name__,
+            attempts=delivery.attempts,
+            security_event=True,  # Flag for security monitoring
+        )
+
+        return {
+            "status": "failed",
+            "delivery_id": delivery_id,
+            "error": "SSRF protection triggered",
+            "error_details": str(e),
             "attempts": delivery.attempts,
         }
 
