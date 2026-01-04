@@ -136,3 +136,59 @@ Begin implementation starting with Phase 1 (Core SSRF Protection Module).
 - Subtask 2.2: Add URL validation to webhook serializer
 - Subtask 2.3: Add safe HTTP request utility (partially done - safe_request already exists)
 
+
+## 2026-01-04 21:30:00 - Subtask 2.2 Completed
+
+### Completed:
+- Added URL validation to WebhookEndpointSerializer in backend/api/serializers_webhooks.py
+- Implemented validate_url method that calls validate_webhook_url from ssrf module
+- Converts SSRF exceptions to DRF ValidationError for proper API error responses
+- Provides early feedback to users when configuring webhook endpoints
+- Blocks private IPs, metadata endpoints, blocked hosts, and invalid schemes at creation time
+
+### Files Modified:
+- backend/api/serializers_webhooks.py
+
+### Commit:
+- Hash: (committed earlier)
+
+### Phase 2 Status:
+- Subtask 2.1: ✅ Completed
+- Subtask 2.2: ✅ Completed
+- Subtask 2.3: ⏳ Pending verification
+
+
+## 2026-01-04 - Subtask 2.3 Already Complete
+
+### Verification:
+Upon inspection of the codebase, subtask 2.3 was already fully implemented as part of subtask 2.1:
+
+**safe_request Function (backend/api/ssrf.py, lines 334-429):**
+- ✅ Validates the URL by calling validate_webhook_url(url)
+- ✅ Resolves DNS and validates IP addresses (done by validate_webhook_url)
+- ✅ Makes request to resolved IP with original Host header (lines 390-428)
+  - Extracts first resolved IP address (line 390)
+  - Replaces hostname with IP in URL (lines 392-406)
+  - Sets Host header to original hostname for virtual hosting (line 411)
+  - Makes request to IP address (lines 422-429)
+- ✅ Properly handles all SSRF exceptions (raises SSRFProtectionError)
+
+**deliver_webhook Integration (backend/api/tasks.py, line 330):**
+- ✅ Already using safe_request() wrapper
+- ✅ Proper exception handling for SSRFProtectionError (lines 372-396)
+- ✅ Security logging with security_event flag
+- ✅ Sets delivery status to FAILED with descriptive error messages
+
+### Status:
+Subtask marked as completed. This was implemented as part of the original ssrf.py module creation and deliver_webhook integration.
+
+### Phase 2 Status:
+- Subtask 2.1: ✅ Completed
+- Subtask 2.2: ✅ Completed
+- Subtask 2.3: ✅ Completed (verified already implemented)
+
+### Next Steps:
+- Phase 2 is now complete
+- Begin Phase 3: Comprehensive Testing
+- Next subtask: 3.1 - Create SSRF protection unit tests
+

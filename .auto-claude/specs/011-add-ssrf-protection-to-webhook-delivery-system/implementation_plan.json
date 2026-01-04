@@ -100,7 +100,7 @@
           "title": "Add safe HTTP request utility",
           "description": "Create a safe_request function in the ssrf module that wraps requests.post with SSRF protection. This function: 1) Validates the URL, 2) Resolves DNS and validates the IP, 3) Makes the request to the resolved IP with the original Host header, 4) Handles all SSRF exceptions appropriately. Update deliver_webhook to use this safe wrapper.",
           "estimated_hours": 1,
-          "status": "pending",
+          "status": "completed",
           "files_to_modify": [
             "backend/api/ssrf.py",
             "backend/api/tasks.py"
@@ -108,7 +108,8 @@
           "dependencies": [
             "2.1"
           ],
-          "notes": "Encapsulates all SSRF protection logic in one reusable function"
+          "notes": "safe_request function already fully implemented in ssrf.py (lines 334-429). Function validates URLs, resolves DNS, validates IPs, and makes requests to resolved IP with original Host header to prevent DNS rebinding attacks. deliver_webhook task already using safe_request (line 330 in tasks.py) with proper SSRFProtectionError exception handling. This was completed as part of subtask 2.1 integration work.",
+          "completed_at": "2026-01-04T21:15:00Z"
         }
       ]
     },
