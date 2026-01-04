@@ -13,6 +13,35 @@ from api.models_local_auth import LocalUserProfile
 User = get_user_model()
 
 
+class NameValidationMixin:
+    """Mixin for validating name fields in serializers.
+
+    Provides a validate_name method that checks for empty/whitespace-only values
+    and returns the stripped value. Error messages can be customized via the
+    name_entity_type class attribute.
+    """
+
+    name_entity_type = "Name"
+
+    def validate_name(self, value: str) -> str:
+        """Validate name is not empty and return stripped value.
+
+        Args:
+            value: The name value to validate
+
+        Returns:
+            The stripped name value
+
+        Raises:
+            ValidationError: If name is empty or whitespace-only
+        """
+        if not value or not value.strip():
+            raise serializers.ValidationError(
+                f"{self.name_entity_type} name cannot be empty."
+            )
+        return value.strip()
+
+
 class OrgSerializer(serializers.ModelSerializer):
     """Serializer for Org model - read operations."""
 
