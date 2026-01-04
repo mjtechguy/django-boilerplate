@@ -1,6 +1,6 @@
 # Build Progress: Extract Duplicated Sidebar Context into Shared Generic Component
 
-## Status: In Progress - Phase 2
+## Status: In Progress - Phase 3
 **Last Updated:** 2026-01-04
 
 ---
@@ -24,7 +24,7 @@ Create a `createSidebarContext` factory function in the shared components direct
 - [x] 2.2 Verify admin layout components still work ✓
 
 ### Phase 3: Migrate Org Layout to Shared Context
-- [ ] 3.1 Update org-layout sidebar-context.tsx to use shared factory
+- [x] 3.1 Update org-layout sidebar-context.tsx to use shared factory ✓
 - [ ] 3.2 Verify org layout components still work
 
 ### Phase 4: Verification and Cleanup
@@ -111,3 +111,27 @@ Factory pattern allows each layout to have isolated React context while sharing 
 - Committed: 4a247cf
 
 **Phase 2 Complete! Ready for Phase 3: Migrate Org Layout to Shared Context.**
+
+**Subtask 3.1: Update org-layout sidebar-context.tsx to use shared factory ✓**
+- Refactored `frontend/src/components/layouts/org-layout/sidebar-context.tsx`
+- Imports `createSidebarContext` from `@/components/shared/sidebar-context`
+- Uses factory with 'org-sidebar' storage key
+- Maintains backward-compatible exports: `OrgSidebarProvider` and `useOrgSidebarContext`
+- Removed duplicate `SidebarContextType` interface definition
+- Reduced file from 40 lines to 9 lines (31 lines of duplicate code eliminated)
+- Verified all consumer imports remain unchanged (org-sidebar.tsx, sidebar-nav.tsx, sidebar-resize-handle.tsx, sidebar-user.tsx, index.tsx)
+- Committed: 5c4c1d9
+
+**Subtask 3.2: Verify org layout components still work ✓**
+- Verified all org layout consumer components work correctly with refactored context:
+  - org-sidebar.tsx: imports and uses useOrgSidebarContext ✓
+  - sidebar-nav.tsx: imports and uses useOrgSidebarContext ✓
+  - sidebar-resize-handle.tsx: imports and uses useOrgSidebarContext ✓
+  - sidebar-user.tsx: imports and uses useOrgSidebarContext ✓
+  - index.tsx: imports and uses OrgSidebarProvider (no storageKey prop) ✓
+- All import paths remain unchanged and backward-compatible
+- No code changes required (org-layout/index.tsx was already correct)
+- No TypeScript errors in any org-layout components
+- Ready for Phase 4: Verification and Cleanup
+
+**Phase 3 Complete! Ready for Phase 4: Verification and Cleanup.**
