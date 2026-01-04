@@ -192,3 +192,97 @@ Subtask marked as completed. This was implemented as part of the original ssrf.p
 - Begin Phase 3: Comprehensive Testing
 - Next subtask: 3.1 - Create SSRF protection unit tests
 
+
+## 2026-01-04 21:50:00 - Subtask 3.1 Completed
+
+### Completed:
+- Created backend/api/tests/test_ssrf.py with comprehensive SSRF protection test suite
+- Implemented 100+ test cases organized into logical test classes
+- All tests follow existing project patterns (pytest, fixtures, mocking)
+
+### Test Coverage:
+
+**TestIsPrivateIP:**
+- Tests for all private IPv4 ranges (10.x, 172.16-31.x, 192.168.x, 127.x, 169.254.x, etc.)
+- Tests for all private IPv6 ranges (::1, ::/128, fc00::/7, fe80::/10, ff00::/8)
+- Tests for public IPv4 and IPv6 addresses (should be allowed)
+- Tests for invalid IP address handling (treated as private for safety)
+
+**TestIsBlockedHostname:**
+- Tests for default blocked hostnames (metadata.google.internal, 169.254.169.254, localhost)
+- Tests for custom blocklist functionality via WEBHOOK_BLOCKED_HOSTS
+- Tests for case-insensitive hostname matching
+
+**TestValidateUrlScheme:**
+- Tests HTTPS-only enforcement by default
+- Tests HTTP blocking when not in allowed schemes
+- Tests for other scheme blocking (ftp, file, gopher)
+- Tests for configurable allowed schemes
+
+**TestResolveHostname:**
+- Tests DNS resolution to IP addresses
+- Tests IPv6 resolution
+- Tests IP address deduplication
+- Tests DNS failure handling (raises DNSResolutionError)
+- Tests empty response handling
+
+**TestValidateIPAddresses:**
+- Tests public IP addresses are allowed
+- Tests private IPv4/IPv6 blocking
+- Tests localhost blocking
+- Tests metadata endpoint IP blocking
+- Tests that ANY private IP in results blocks the request
+
+**TestValidateWebhookUrl:**
+- Tests comprehensive URL validation flow
+- Tests public URL validation success
+- Tests HTTP scheme blocking
+- Tests metadata hostname blocking
+- Tests localhost blocking
+- Tests DNS rebinding protection (URL resolves to private IP)
+- Tests custom blocklist functionality
+- Tests allowlist override functionality (bypasses all checks)
+- Tests disabled SSRF protection mode
+- Tests disabled private IP blocking mode
+
+**TestSafeRequest:**
+- Tests HTTP request to resolved IP with original Host header
+- Tests DNS rebinding protection (request to IP, not hostname)
+- Tests timeout configuration
+- Tests URL path and query parameter preservation
+- Tests port preservation in URLs
+- Tests custom header merging
+- Tests allowlist bypass (direct request)
+- Tests disabled protection mode (direct request)
+- Tests different HTTP methods
+
+**TestExceptionHierarchy:**
+- Tests all exceptions inherit from SSRFProtectionError
+- Tests exceptions are catchable as base class
+
+**TestSSRFProtectionSettings:**
+- Tests all required Django settings are present
+- Tests secure default values
+- Tests setting types
+
+### Files Created:
+- backend/api/tests/test_ssrf.py (718 lines)
+
+### Verification:
+- Python syntax validation: PASSED
+- Import statements correct: PASSED
+- Test structure follows project patterns: PASSED
+
+### Commit:
+- Hash: 7ca7e0a
+
+### Phase 3 Status:
+- Subtask 3.1: ✅ Completed
+- Subtask 3.2: ⏳ Pending
+- Subtask 3.3: ⏳ Pending
+
+### Next Steps:
+- Subtask 3.2: Add SSRF integration tests for webhook delivery
+- Subtask 3.3: Add API validation tests
+- Phase 4: Security check script updates
+

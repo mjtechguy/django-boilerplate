@@ -123,7 +123,7 @@
           "title": "Create SSRF protection unit tests",
           "description": "Create backend/api/tests/test_ssrf.py with comprehensive tests: 1) Test blocking of all private IPv4 ranges, 2) Test blocking of IPv6 loopback and link-local, 3) Test blocking of cloud metadata endpoints, 4) Test that valid public URLs are allowed, 5) Test DNS resolution validation, 6) Test scheme validation (block http when configured), 7) Test custom blocklist functionality, 8) Test allowlist override functionality.",
           "estimated_hours": 2,
-          "status": "pending",
+          "status": "completed",
           "files_to_modify": [
             "backend/api/tests/test_ssrf.py"
           ],
@@ -132,7 +132,8 @@
             "1.2",
             "1.3"
           ],
-          "notes": "Test all IP ranges and edge cases"
+          "notes": "Completed comprehensive test suite with 100+ test cases covering all SSRF protection scenarios including private IP ranges (IPv4 and IPv6), cloud metadata endpoints, DNS rebinding protection, scheme validation, custom blocklists/allowlists, and safe_request wrapper functionality.",
+          "completed_at": "2026-01-04T21:50:00Z"
         },
         {
           "subtask_id": "3.2",
