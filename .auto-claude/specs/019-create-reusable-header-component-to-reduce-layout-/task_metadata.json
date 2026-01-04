@@ -1,0 +1,9 @@
+{
+  "sourceType": "ideation",
+  "ideationType": "code_quality",
+  "ideaId": "cq-005",
+  "rationale": "Duplicated component structures require updating multiple files for common changes like styling updates or feature additions. A shared base component would improve maintainability.",
+  "category": "refactoring",
+  "codeQualitySeverity": "minor",
+  "priority": "medium"
+}

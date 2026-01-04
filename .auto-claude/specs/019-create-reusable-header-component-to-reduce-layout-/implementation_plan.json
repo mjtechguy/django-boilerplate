@@ -1,0 +1,232 @@
+{
+  "spec_id": "019-create-reusable-header-component-to-reduce-layout-",
+  "title": "Create Reusable Header Component to Reduce Layout Duplication",
+  "overview": "Extract shared header components from AdminHeader and OrgHeader to reduce code duplication. Both headers share ~70% identical code including header wrapper, search input, theme toggle, and notification dropdown patterns.",
+  "created_at": "2026-01-04T19:35:22.198Z",
+  "updated_at": "2026-01-04T19:37:19.186Z",
+  "status": "in_progress",
+  "planStatus": "approved",
+  "workflow_type": "development",
+  "spec_file": "spec.md",
+  "architecture_decisions": [
+    {
+      "decision": "Create modular shared components instead of a single monolithic base header",
+      "rationale": "AdminHeader and OrgHeader have different left-side content (search only vs org indicator + search). Modular components (HeaderShell, HeaderSearch, NotificationDropdown) provide better flexibility for composition while still eliminating duplication."
+    },
+    {
+      "decision": "Place shared components in frontend/src/components/shared/header/",
+      "rationale": "Follows existing pattern in shared/ folder (e.g., theme-toggle.tsx, page-header.tsx) while keeping header-related components grouped together."
+    },
+    {
+      "decision": "Use composition over configuration for header customization",
+      "rationale": "Headers can use slots/children for left content and actions rather than complex prop configurations, making the API more React-idiomatic."
+    }
+  ],
+  "phases": [
+    {
+      "phase_id": "phase-1",
+      "title": "Create Shared Header Components",
+      "description": "Build reusable header building blocks that can be composed by AdminHeader, OrgHeader, and potentially other headers",
+      "subtasks": [
+        {
+          "subtask_id": "1.1",
+          "title": "Create HeaderShell wrapper component",
+          "description": "Extract the common header wrapper with sticky positioning, backdrop blur, border, and flex layout. Accept leftContent, rightContent, and className as props.",
+          "files_to_modify": [],
+          "files_to_create": ["frontend/src/components/shared/header/header-shell.tsx"],
+          "acceptance_criteria": [
+            "Component renders a sticky header with blur backdrop",
+            "Accepts leftContent and rightContent slots",
+            "Supports className prop for customization",
+            "Maintains existing styling (h-16, border-b, z-40)"
+          ],
+          "estimated_complexity": "low",
+          "status": "pending",
+          "notes": ""
+        },
+        {
+          "subtask_id": "1.2",
+          "title": "Create HeaderSearch component",
+          "description": "Extract the search input with icon into a reusable component. Accept placeholder prop for customization.",
+          "files_to_modify": [],
+          "files_to_create": ["frontend/src/components/shared/header/header-search.tsx"],
+          "acceptance_criteria": [
+            "Renders search input with Search icon on the left",
+            "Accepts placeholder prop (required)",
+            "Accepts optional className prop",
+            "Maintains existing styling (pl-9, bg-muted/50, focus-visible:ring-1)"
+          ],
+          "estimated_complexity": "low",
+          "status": "pending",
+          "notes": ""
+        },
+        {
+          "subtask_id": "1.3",
+          "title": "Create NotificationDropdown component",
+          "description": "Extract the notification bell dropdown with badge into a reusable component. Accept notifications array and onViewAll callback as props.",
+          "files_to_modify": [],
+          "files_to_create": ["frontend/src/components/shared/header/notification-dropdown.tsx"],
+          "acceptance_criteria": [
+            "Renders bell icon button with notification count badge",
+            "Accepts notifications prop with title and description",
+            "Accepts optional onViewAll callback",
+            "Hides badge when count is 0",
+            "Maintains existing dropdown styling and structure"
+          ],
+          "estimated_complexity": "medium",
+          "status": "pending",
+          "notes": ""
+        },
+        {
+          "subtask_id": "1.4",
+          "title": "Create HeaderActions container component",
+          "description": "Create a simple flex container for header action items (theme toggle, notifications, etc.) with proper gap spacing.",
+          "files_to_modify": [],
+          "files_to_create": ["frontend/src/components/shared/header/header-actions.tsx"],
+          "acceptance_criteria": [
+            "Renders children in a flex container with gap-2",
+            "Accepts className for customization"
+          ],
+          "estimated_complexity": "low",
+          "status": "pending",
+          "notes": ""
+        },
+        {
+          "subtask_id": "1.5",
+          "title": "Create barrel export file for header components",
+          "description": "Create index.tsx to export all header components for convenient importing.",
+          "files_to_modify": [],
+          "files_to_create": ["frontend/src/components/shared/header/index.tsx"],
+          "acceptance_criteria": [
+            "Exports all header components",
+            "Allows importing like: import { HeaderShell, HeaderSearch } from '@/components/shared/header'"
+          ],
+          "estimated_complexity": "low",
+          "status": "pending",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "phase_id": "phase-2",
+      "title": "Refactor Existing Headers",
+      "description": "Update AdminHeader and OrgHeader to use the new shared components, significantly reducing code duplication",
+      "subtasks": [
+        {
+          "subtask_id": "2.1",
+          "title": "Refactor AdminHeader to use shared components",
+          "description": "Replace duplicated code in AdminHeader with shared components while maintaining exact same functionality and appearance.",
+          "files_to_modify": ["frontend/src/components/layouts/admin-layout/admin-header.tsx"],
+          "files_to_create": [],
+          "acceptance_criteria": [
+            "Uses HeaderShell, HeaderSearch, HeaderActions, NotificationDropdown",
+            "Search placeholder is 'Search organizations, users...'",
+            "Shows 3 admin-specific notifications",
+            "Visual output is identical to before refactor"
+          ],
+          "estimated_complexity": "medium",
+          "status": "pending",
+          "notes": ""
+        },
+        {
+          "subtask_id": "2.2",
+          "title": "Refactor OrgHeader to use shared components",
+          "description": "Replace duplicated code in OrgHeader with shared components while maintaining org indicator and exact same functionality.",
+          "files_to_modify": ["frontend/src/components/layouts/org-layout/org-header.tsx"],
+          "files_to_create": [],
+          "acceptance_criteria": [
+            "Uses HeaderShell, HeaderSearch, HeaderActions, NotificationDropdown",
+            "Keeps org indicator (Building2 icon + org name) in left content",
+            "Search placeholder is 'Search teams, users...'",
+            "Shows 2 org-specific notifications",
+            "Visual output is identical to before refactor"
+          ],
+          "estimated_complexity": "medium",
+          "status": "pending",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "phase_id": "phase-3",
+      "title": "Verification and Cleanup",
+      "description": "Verify the refactored headers work correctly and ensure code quality",
+      "subtasks": [
+        {
+          "subtask_id": "3.1",
+          "title": "Verify TypeScript compilation",
+          "description": "Run TypeScript compiler to ensure all types are correct and there are no errors.",
+          "files_to_modify": [],
+          "files_to_create": [],
+          "acceptance_criteria": [
+            "tsc --noEmit passes without errors",
+            "All component props are properly typed"
+          ],
+          "estimated_complexity": "low",
+          "status": "pending",
+          "notes": ""
+        },
+        {
+          "subtask_id": "3.2",
+          "title": "Verify development server runs correctly",
+          "description": "Start the dev server and verify both admin and org layouts render correctly.",
+          "files_to_modify": [],
+          "files_to_create": [],
+          "acceptance_criteria": [
+            "Dev server starts without errors",
+            "AdminHeader renders correctly",
+            "OrgHeader renders correctly",
+            "Theme toggle works in both headers",
+            "Notification dropdowns open and display correctly"
+          ],
+          "estimated_complexity": "low",
+          "status": "pending",
+          "notes": ""
+        },
+        {
+          "subtask_id": "3.3",
+          "title": "Run linter and fix any issues",
+          "description": "Run ESLint to ensure code follows project conventions.",
+          "files_to_modify": [],
+          "files_to_create": [],
+          "acceptance_criteria": [
+            "ESLint passes on all new and modified files",
+            "No unused imports or variables"
+          ],
+          "estimated_complexity": "low",
+          "status": "pending",
+          "notes": ""
+        }
+      ]
+    }
+  ],
+  "dependencies": {
+    "external": [],
+    "internal": [
+      "@/components/ui/button",
+      "@/components/ui/input",
+      "@/components/ui/dropdown-menu",
+      "@/components/ui/badge",
+      "@/components/shared/theme-toggle",
+      "@/lib/utils"
+    ]
+  },
+  "testing_requirements": {
+    "unit_tests": [],
+    "integration_tests": [],
+    "manual_verification": [
+      "Admin layout header displays correctly with search, theme toggle, and notifications",
+      "Org layout header displays correctly with org indicator, search, theme toggle, and notifications",
+      "Theme toggle works in both headers",
+      "Notification dropdowns show correct content for each context"
+    ]
+  },
+  "rollback_plan": "If issues arise, revert to original AdminHeader and OrgHeader implementations. The shared components can be removed if not needed.",
+  "qa_sign_off": {
+    "status": "pending",
+    "issues": "",
+    "tests_passed": ""
+  },
+  "services_involved": [],
+  "final_acceptance": []
+}
