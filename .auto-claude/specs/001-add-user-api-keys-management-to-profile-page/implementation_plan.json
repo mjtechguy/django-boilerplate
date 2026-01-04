@@ -45,12 +45,13 @@
           "id": "1.3",
           "title": "Create API keys queries module",
           "description": "Create frontend/src/lib/api/api-keys/queries.ts with React Query hooks: useApiKeys (list), useCreateApiKey (mutation), useRevokeApiKey (mutation). Follow patterns from social/queries.ts.",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "frontend/src/lib/api/api-keys/queries.ts"
           ],
           "estimated_minutes": 15,
-          "notes": ""
+          "notes": "Created frontend/src/lib/api/api-keys/queries.ts with all required React Query hooks (useApiKeys, useCreateApiKey, useRevokeApiKey). Follows patterns from social/queries.ts and mfa/queries.ts. Includes proper query invalidation on mutations to keep the list in sync.",
+          "updated_at": "2026-01-04T18:24:58.413503+00:00"
         },
         {
           "id": "1.4",
@@ -232,5 +233,5 @@
     "tests_passed": "",
     "issues": ""
   },
-  "last_updated": "2026-01-04T18:23:38.698511+00:00"
+  "last_updated": "2026-01-04T18:24:58.413509+00:00"
 }
