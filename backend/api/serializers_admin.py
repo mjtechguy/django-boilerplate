@@ -222,8 +222,10 @@ class DivisionListSerializer(serializers.ModelSerializer):
         return obj.memberships.count()
 
 
-class DivisionCreateSerializer(serializers.ModelSerializer):
+class DivisionCreateSerializer(NameValidationMixin, serializers.ModelSerializer):
     """Create serializer for Division."""
+
+    name_entity_type = "Division"
 
     class Meta:
         model = Division
@@ -239,12 +241,6 @@ class DivisionCreateSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
-
-    def validate_name(self, value: str) -> str:
-        """Validate division name is not empty."""
-        if not value or not value.strip():
-            raise serializers.ValidationError("Division name cannot be empty.")
-        return value.strip()
 
     def validate(self, attrs):
         """Validate division constraints."""
