@@ -356,8 +356,10 @@ class TeamListSerializer(serializers.ModelSerializer):
         return obj.memberships.count()
 
 
-class TeamCreateSerializer(serializers.ModelSerializer):
+class TeamCreateSerializer(NameValidationMixin, serializers.ModelSerializer):
     """Serializer for creating a new Team."""
+
+    name_entity_type = "Team"
 
     class Meta:
         model = Team
@@ -370,12 +372,6 @@ class TeamCreateSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
-
-    def validate_name(self, value: str) -> str:
-        """Validate team name is not empty."""
-        if not value or not value.strip():
-            raise serializers.ValidationError("Team name cannot be empty.")
-        return value.strip()
 
     def validate(self, data):
         """Validate team constraints."""
