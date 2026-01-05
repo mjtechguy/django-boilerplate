@@ -1,0 +1,10 @@
+{
+  "discovered_files": {
+    "frontend/src/components/auth/": {
+      "description": "Password toggle buttons in login-form.tsx and register-form.tsx lack aria-label attributes. Login form has 1 toggle, register form has 2 (password + confirm password).",
+      "category": "accessibility",
+      "discovered_at": "2026-01-04T19:08:44.801747+00:00"
+    }
+  },
+  "last_updated": "2026-01-04T19:08:44.801753+00:00"
+}

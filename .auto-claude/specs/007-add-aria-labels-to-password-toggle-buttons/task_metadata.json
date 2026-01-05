@@ -1,0 +1,13 @@
+{
+  "sourceType": "ideation",
+  "ideationType": "ui_ux_improvements",
+  "ideaId": "uiux-001",
+  "rationale": "Screen reader users cannot understand what the eye/eye-off button does without an aria-label. This is a basic accessibility requirement.",
+  "category": "ui_ux",
+  "uiuxCategory": "accessibility",
+  "affectedFiles": [
+    "frontend/src/components/auth/login-form.tsx",
+    "frontend/src/components/auth/register-form.tsx"
+  ],
+  "problemSolved": "Password toggle buttons use only icons (Eye/EyeOff) with no accessible labels. The button element has no aria-label or sr-only text: `<button type=\"button\" onClick={() => setShowPassword(!showPassword)} className=\"absolute right-3...\">`"
+}
