@@ -1,0 +1,9 @@
+{
+  "sourceType": "ideation",
+  "ideationType": "code_quality",
+  "ideaId": "cq-002",
+  "rationale": "Code duplication increases maintenance burden. Fixing bugs or adding features requires changes in multiple places, increasing the risk of inconsistency.",
+  "category": "refactoring",
+  "codeQualitySeverity": "minor",
+  "priority": "medium"
+}

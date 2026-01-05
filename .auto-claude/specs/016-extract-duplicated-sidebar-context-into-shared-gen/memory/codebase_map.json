@@ -1,0 +1,10 @@
+{
+  "discovered_files": {
+    "frontend/src/components/layouts/admin-layout/index.tsx": {
+      "description": "When using the refactored SidebarProvider created by createSidebarContext factory, the Provider does NOT accept a storageKey prop anymore. The storage key is baked into the Provider when the factory is called. Change &lt;SidebarProvider storageKey=\"...\"&gt; to &lt;SidebarProvider&gt;",
+      "category": "refactoring",
+      "discovered_at": "2026-01-04T19:49:30.496044+00:00"
+    }
+  },
+  "last_updated": "2026-01-04T19:49:30.496062+00:00"
+}
