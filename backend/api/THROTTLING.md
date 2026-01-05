@@ -272,6 +272,405 @@ cache = caches["idempotency"]
 cache.delete_pattern("throttle:org:*")
 ```
 
+---
+
+# API Key Creation Limits
+
+This document also describes the rate limiting and quota enforcement for API key creation.
+
+## Overview
+
+The system implements two types of limits for API key creation to prevent abuse:
+
+1. **Rate Limiting** - Limits how quickly a user can create API keys (e.g., 5 per hour)
+2. **Quotas** - Limits the total number of active API keys per user based on org tier
+
+These limits prevent:
+- Resource exhaustion attacks through unlimited key creation
+- Key proliferation that complicates security audits
+- Database overload from malicious users
+
+## Rate Limiting
+
+### How It Works
+
+The `APIKeyCreationThrottle` class limits the rate at which any user can create API keys:
+
+- **Default Rate**: 5 API key creation attempts per hour
+- **Configurable**: Set via `THROTTLE_RATE_API_KEY_CREATE` environment variable
+- **Per-User**: Each user has an independent rate limit
+- **All Attempts Count**: Both successful and failed creation attempts count toward the limit
+- **Unauthenticated Bypass**: Unauthenticated requests are not throttled
+
+### Configuration
+
+Add to your environment variables:
+
+```bash
+# .env
+THROTTLE_RATE_API_KEY_CREATE=5/hour
+```
+
+The throttle is automatically applied to the `UserAPIKeyCreateView` in `backend/api/views_api_keys.py`:
+
+```python
+class UserAPIKeyCreateView(APIView):
+    throttle_classes = [APIKeyCreationThrottle]
+    ...
+```
+
+### Throttled Response
+
+When the rate limit is exceeded, users receive a 429 response:
+
+```http
+HTTP/1.1 429 Too Many Requests
+Retry-After: 3600
+Content-Type: application/json
+
+{
+  "detail": "Request was throttled. Expected available in 3600 seconds."
+}
+```
+
+### Cache Storage
+
+The throttle uses the default cache (Redis DB 0) with keys in the format:
+
+```
+throttle:apikey:create:user:{user_id}
+```
+
+Request timestamps are stored for the duration of the time window (e.g., 1 hour).
+
+## API Key Quotas
+
+### How It Works
+
+Quotas limit the total number of **active** (non-revoked) API keys a user can have:
+
+- **Tier-Based**: Different limits based on organization's license tier
+- **Revoked Keys Excluded**: Only active keys count toward quota
+- **Pre-Creation Check**: Quota is checked before key creation (efficient)
+- **Custom Overrides**: Can be customized per org via feature flags
+
+### Tier-Based Quotas
+
+| Tier       | Max API Keys | Notes                          |
+|------------|--------------|--------------------------------|
+| Free       | 5            | Default for users without org  |
+| Starter    | 10           |                                |
+| Pro        | 25           |                                |
+| Enterprise | Unlimited    | Returns -1 (no quota limit)    |
+
+### Quota Response
+
+#### API Key List Response
+
+The `UserAPIKeyListView` includes quota information:
+
+```http
+GET /api/v1/api-keys/
+
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "keys": [...],
+  "active_keys": 3,
+  "max_keys": 5,
+  "remaining": 2
+}
+```
+
+#### API Key Creation Response
+
+The `UserAPIKeyCreateView` also includes quota information:
+
+```http
+POST /api/v1/api-keys/
+
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+{
+  "id": "uuid-123",
+  "name": "My API Key",
+  "key": "sk_...",
+  "created_at": "2026-01-04T19:00:00Z",
+  "active_keys": 4,
+  "max_keys": 5,
+  "remaining": 1
+}
+```
+
+### Quota Exceeded Response
+
+When quota is exceeded:
+
+```http
+POST /api/v1/api-keys/
+
+HTTP/1.1 403 Forbidden
+Content-Type: application/json
+
+{
+  "error": "API key quota exceeded. You have 5 active keys and your limit is 5. Please revoke unused keys before creating new ones."
+}
+```
+
+### Custom Quota Overrides
+
+Set custom quota for any organization via feature flags:
+
+```python
+org = Org.objects.get(id=org_id)
+org.feature_flags = {"max_api_keys": 50}  # Custom limit
+org.save()
+```
+
+For unlimited quota:
+
+```python
+org.feature_flags = {"max_api_keys": -1}  # Unlimited
+org.save()
+```
+
+## Configuration in Settings
+
+### STRIPE_TIER_FEATURES
+
+API key quotas are configured in `backend/config/settings/base.py`:
+
+```python
+STRIPE_TIER_FEATURES = {
+    "free": {
+        "api_rate_limit": 100,
+        "max_api_keys": 5,  # ← API key quota
+        ...
+    },
+    "starter": {
+        "api_rate_limit": 1000,
+        "max_api_keys": 10,  # ← API key quota
+        ...
+    },
+    "pro": {
+        "api_rate_limit": 10000,
+        "max_api_keys": 25,  # ← API key quota
+        ...
+    },
+    "enterprise": {
+        "api_rate_limit": -1,
+        "max_api_keys": -1,  # ← Unlimited
+        ...
+    },
+}
+```
+
+### Throttle Rates
+
+In the same settings file:
+
+```python
+REST_FRAMEWORK = {
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "100/hour",
+        "user": "1000/hour",
+        "org": "1000/hour",
+        "api_key_create": "5/hour",  # ← API key creation throttle
+    },
+}
+```
+
+## Checking Quota Status
+
+Use the `get_user_api_key_quota()` utility function:
+
+```python
+from api.throttling_api_keys import get_user_api_key_quota
+
+max_keys = get_user_api_key_quota(request.user)
+# Returns:
+# - Positive integer: Maximum allowed API keys
+# - -1: Unlimited (enterprise tier)
+```
+
+Get current usage:
+
+```python
+from api.models import UserAPIKey
+
+active_keys = UserAPIKey.objects.filter(
+    user=request.user,
+    revoked_at__isnull=True
+).count()
+
+remaining = max_keys - active_keys if max_keys != -1 else -1
+```
+
+## Testing
+
+### Quota Tests
+
+Run quota enforcement tests:
+
+```bash
+pytest backend/api/tests/test_api_keys.py::test_api_key_quota -v
+```
+
+Test coverage includes:
+- Quota limits for all tiers (free, starter, pro, enterprise)
+- 403 response when quota exceeded
+- Revoked keys don't count against quota
+- Feature flag custom quota overrides
+- Quota info in list and create responses
+
+### Throttle Tests
+
+Run API key creation throttling tests:
+
+```bash
+pytest backend/api/tests/test_throttling_api_keys.py -v
+```
+
+Test coverage includes:
+- Rate limiting allows configured requests before blocking
+- 429 response when rate limit exceeded
+- Throttle reset after time window
+- Per-user independent throttling
+- Interaction between throttle and quota limits
+
+## Implementation Details
+
+### Class: `APIKeyCreationThrottle`
+
+Located in `backend/api/throttling_api_keys.py`
+
+**Key Methods:**
+
+- `allow_request(request, view)` - Check if request should be allowed
+- `wait()` - Calculate wait time until next allowed request
+- `get_rate()` - Get throttle rate from settings
+- `parse_rate(rate)` - Parse rate string to (num_requests, duration)
+
+**Inheritance:**
+
+Extends `rest_framework.throttling.BaseThrottle` with custom implementation for per-user API key creation throttling.
+
+### Function: `get_user_api_key_quota(user)`
+
+Located in `backend/api/throttling_api_keys.py`
+
+**Algorithm:**
+
+1. Get user's organization from first membership
+2. Check `org.feature_flags['max_api_keys']` for custom override
+3. Fall back to `STRIPE_TIER_FEATURES[tier]['max_api_keys']`
+4. Default to free tier limit (5) if no org found
+
+**Returns:**
+
+- Positive integer for quota limit
+- `-1` for unlimited (enterprise tier)
+
+## Interaction with Other Limits
+
+API key creation is subject to **multiple layers** of limiting:
+
+1. **Global User Rate Limit** - `UserRateThrottle` (1000/hour default)
+2. **Org Rate Limit** - `OrgRateThrottle` (tier-based, see above)
+3. **API Key Creation Rate Limit** - `APIKeyCreationThrottle` (5/hour default)
+4. **API Key Quota** - Per-tier max active keys (5-25 or unlimited)
+
+**All limits are enforced independently.** The most restrictive limit applies.
+
+Example: A user in a Pro org can make 10,000 requests/hour (org limit), but can only create 5 API keys per hour (creation throttle) and can have at most 25 active keys (quota).
+
+## Troubleshooting
+
+### Issue: Can't create API keys despite being under quota
+
+**Check:**
+1. Are you hitting the rate limit (5/hour)?
+2. Check last 5 creation attempts' timestamps
+3. Wait for the throttle window to reset
+
+**Debug:**
+```python
+from api.throttling_api_keys import APIKeyCreationThrottle
+from django.core.cache import caches
+
+cache = caches["default"]
+key = f"throttle:apikey:create:user:{user.id}"
+history = cache.get(key, [])
+print(f"Requests in last hour: {len(history)}")
+```
+
+### Issue: Quota limit seems wrong
+
+**Check:**
+1. User's org `license_tier`
+2. Org's `feature_flags` for custom `max_api_keys`
+3. `STRIPE_TIER_FEATURES` in settings
+
+**Debug:**
+```python
+from api.throttling_api_keys import get_user_api_key_quota
+
+max_keys = get_user_api_key_quota(request.user)
+print(f"Max API keys: {max_keys}")
+
+org = request.user.memberships.first().org
+print(f"Tier: {org.license_tier}")
+print(f"Feature flags: {org.feature_flags}")
+```
+
+### Issue: Need to reset throttle for a user
+
+**Clear throttle cache:**
+```python
+from django.core.cache import caches
+
+cache = caches["default"]
+cache.delete(f"throttle:apikey:create:user:{user.id}")
+```
+
+## Monitoring
+
+### Metrics to Track
+
+1. **Quota usage** - % of quota used per user/tier
+2. **Throttle hits** - Count of 429 responses for API key creation
+3. **Quota exhaustion** - Count of 403 responses (quota exceeded)
+4. **Keys per user** - Distribution of active keys per user
+
+### Log Examples
+
+When quota exceeded:
+
+```json
+{
+  "message": "API key quota exceeded",
+  "user_id": "uuid-123",
+  "active_keys": 5,
+  "max_keys": 5,
+  "status_code": 403
+}
+```
+
+When throttled:
+
+```json
+{
+  "message": "API key creation throttled",
+  "user_id": "uuid-123",
+  "status_code": 429,
+  "retry_after": 3600
+}
+```
+
+---
+
 ## Future Enhancements
 
 Potential improvements:

@@ -1,0 +1,20 @@
+{
+  "discovered_files": {
+    "backend/api/throttling.py": {
+      "description": "OrgRateThrottle class provides tier-based rate limiting using STRIPE_TIER_FEATURES. Uses Redis 'idempotency' cache for storage. Pattern: sliding window with history list in cache.",
+      "category": "patterns",
+      "discovered_at": "2026-01-04T19:09:31.496361+00:00"
+    },
+    "backend/api/throttling_mfa.py": {
+      "description": "MFA throttling uses per-token, per-user, and per-IP throttles. Only counts failures (success doesn't reset). Good pattern for API key creation throttle.",
+      "category": "patterns",
+      "discovered_at": "2026-01-04T19:09:31.509220+00:00"
+    },
+    "backend/config/settings/base.py": {
+      "description": "STRIPE_TIER_FEATURES dict defines per-tier limits: max_users, max_teams, api_rate_limit, audit_retention_days, sso_enabled, webhooks_enabled. Enterprise tier uses -1 for unlimited.",
+      "category": "configuration",
+      "discovered_at": "2026-01-04T19:09:31.520274+00:00"
+    }
+  },
+  "last_updated": "2026-01-04T19:09:31.520285+00:00"
+}

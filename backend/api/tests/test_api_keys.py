@@ -10,6 +10,7 @@ Tests cover:
 """
 import pytest
 from django.contrib.auth import get_user_model
+from django.core.cache import caches
 from django.urls import reverse
 from rest_framework.test import APIClient
 
@@ -22,6 +23,15 @@ pytestmark = pytest.mark.django_db
 @pytest.fixture
 def client():
     return APIClient()
+
+
+@pytest.fixture
+def clear_throttle_cache():
+    """Clear the API key throttle cache before and after each test."""
+    cache = caches["default"]
+    cache.clear()
+    yield
+    cache.clear()
 
 
 @pytest.fixture
@@ -276,3 +286,260 @@ class TestAPIKeyPermissions:
 
         # Verify the permission class exists and is properly configured
         assert IsAuthenticatedOrHasUserAPIKey is not None
+
+
+class TestAPIKeyQuotaEnforcement:
+    """Test API key quota enforcement per tier."""
+
+    @pytest.fixture
+    def org_with_tier(self):
+        """Create an org with a specific tier."""
+        def _create_org(tier="free"):
+            from api.models import Org, Membership
+            org = Org.objects.create(name=f"Test Org {tier}", license_tier=tier)
+            return org
+        return _create_org
+
+    @pytest.fixture
+    def user_with_tier(self, org_with_tier):
+        """Create a user with membership to an org with specific tier."""
+        def _create_user(tier="free"):
+            from api.models import Membership
+            user = User.objects.create_user(
+                username=f"user_{tier}",
+                email=f"user_{tier}@example.com",
+                password="testpass123",
+            )
+            org = org_with_tier(tier)
+            Membership.objects.create(user=user, org=org)
+            return user, org
+        return _create_user
+
+    def test_quota_info_in_list_response(self, client, user_with_tier, clear_throttle_cache):
+        """Test that quota info is included in list response."""
+        user, org = user_with_tier("free")
+        client.force_authenticate(user=user)
+
+        # Create a couple of API keys
+        UserAPIKey.objects.create_key(user=user, name="Key 1")
+        UserAPIKey.objects.create_key(user=user, name="Key 2")
+
+        url = reverse("user-api-key-list")
+        response = client.get(url)
+
+        assert response.status_code == 200
+        data = response.json()
+
+        # Verify quota info is present
+        assert "quota" in data
+        assert data["quota"]["active_keys"] == 2
+        assert data["quota"]["max_keys"] == 5  # Free tier limit
+        assert data["quota"]["remaining"] == 3
+
+    def test_quota_info_in_create_response(self, client, user_with_tier, clear_throttle_cache):
+        """Test that quota info is included in create response."""
+        user, org = user_with_tier("starter")
+        client.force_authenticate(user=user)
+
+        url = reverse("user-api-key-create")
+        response = client.post(url, {"name": "Test Key"})
+
+        assert response.status_code == 201
+        data = response.json()
+
+        # Verify quota info is present
+        assert "quota" in data
+        assert data["quota"]["active_keys"] == 1
+        assert data["quota"]["max_keys"] == 10  # Starter tier limit
+        assert data["quota"]["remaining"] == 9
+
+    def test_free_tier_quota_limit(self, client, user_with_tier, clear_throttle_cache):
+        """Test that free tier users are limited to 5 API keys."""
+        user, org = user_with_tier("free")
+        client.force_authenticate(user=user)
+
+        url = reverse("user-api-key-create")
+
+        # Create 5 keys (should succeed)
+        for i in range(5):
+            response = client.post(url, {"name": f"Key {i+1}"})
+            assert response.status_code == 201
+
+        # Verify we have 5 active keys
+        assert UserAPIKey.objects.filter(user=user, revoked=False).count() == 5
+
+        # 6th key should fail with 403
+        response = client.post(url, {"name": "Key 6"})
+        assert response.status_code == 403
+        data = response.json()
+        assert "quota exceeded" in data["error"].lower()
+        assert "5" in data["error"]  # Should mention the limit
+
+    def test_starter_tier_quota_limit(self, client, user_with_tier, clear_throttle_cache):
+        """Test that starter tier users are limited to 10 API keys."""
+        user, org = user_with_tier("starter")
+        client.force_authenticate(user=user)
+
+        url = reverse("user-api-key-create")
+
+        # Create 10 keys (should succeed)
+        for i in range(10):
+            response = client.post(url, {"name": f"Key {i+1}"})
+            assert response.status_code == 201
+
+        # Verify we have 10 active keys
+        assert UserAPIKey.objects.filter(user=user, revoked=False).count() == 10
+
+        # 11th key should fail with 403
+        response = client.post(url, {"name": "Key 11"})
+        assert response.status_code == 403
+        data = response.json()
+        assert "quota exceeded" in data["error"].lower()
+        assert "10" in data["error"]
+
+    def test_pro_tier_quota_limit(self, client, user_with_tier, clear_throttle_cache):
+        """Test that pro tier users are limited to 25 API keys."""
+        user, org = user_with_tier("pro")
+        client.force_authenticate(user=user)
+
+        url = reverse("user-api-key-create")
+
+        # Create 25 keys (should succeed)
+        for i in range(25):
+            response = client.post(url, {"name": f"Key {i+1}"})
+            assert response.status_code == 201
+
+        # Verify we have 25 active keys
+        assert UserAPIKey.objects.filter(user=user, revoked=False).count() == 25
+
+        # 26th key should fail with 403
+        response = client.post(url, {"name": "Key 26"})
+        assert response.status_code == 403
+        data = response.json()
+        assert "quota exceeded" in data["error"].lower()
+        assert "25" in data["error"]
+
+    def test_enterprise_tier_unlimited_keys(self, client, user_with_tier, clear_throttle_cache):
+        """Test that enterprise tier users can create unlimited API keys."""
+        user, org = user_with_tier("enterprise")
+        client.force_authenticate(user=user)
+
+        url = reverse("user-api-key-create")
+
+        # Create 30 keys (well beyond other tier limits)
+        for i in range(30):
+            response = client.post(url, {"name": f"Key {i+1}"})
+            assert response.status_code == 201
+
+        # Verify we have 30 active keys
+        assert UserAPIKey.objects.filter(user=user, revoked=False).count() == 30
+
+        # Should still be able to create more
+        response = client.post(url, {"name": "Key 31"})
+        assert response.status_code == 201
+
+        # Check quota shows unlimited (-1)
+        data = response.json()
+        assert data["quota"]["max_keys"] == -1
+        assert data["quota"]["remaining"] == -1
+
+    def test_revoked_keys_dont_count_against_quota(self, client, user_with_tier, clear_throttle_cache):
+        """Test that revoked keys don't count against the quota."""
+        user, org = user_with_tier("free")
+        client.force_authenticate(user=user)
+
+        create_url = reverse("user-api-key-create")
+
+        # Create 5 keys (at limit)
+        created_keys = []
+        for i in range(5):
+            response = client.post(create_url, {"name": f"Key {i+1}"})
+            assert response.status_code == 201
+            created_keys.append(response.json()["id"])
+
+        # 6th key should fail
+        response = client.post(create_url, {"name": "Key 6"})
+        assert response.status_code == 403
+
+        # Revoke one key
+        revoke_url = reverse("user-api-key-revoke", kwargs={"key_id": created_keys[0]})
+        response = client.delete(revoke_url)
+        assert response.status_code == 200
+
+        # Now should be able to create another key
+        response = client.post(create_url, {"name": "Key 7"})
+        assert response.status_code == 201
+
+        # Verify active count is still at limit (4 old + 1 new)
+        assert UserAPIKey.objects.filter(user=user, revoked=False).count() == 5
+        # Verify total count includes revoked key
+        assert UserAPIKey.objects.filter(user=user).count() == 6
+
+    def test_quota_with_feature_flag_override(self, client, user_with_tier, clear_throttle_cache):
+        """Test that feature_flags can override tier defaults."""
+        from api.models import Org
+
+        user, org = user_with_tier("free")
+        client.force_authenticate(user=user)
+
+        # Set custom max_api_keys via feature_flags
+        org.feature_flags = {"max_api_keys": 3}
+        org.save()
+
+        url = reverse("user-api-key-create")
+
+        # Create 3 keys (custom limit)
+        for i in range(3):
+            response = client.post(url, {"name": f"Key {i+1}"})
+            assert response.status_code == 201
+
+        # 4th key should fail
+        response = client.post(url, {"name": "Key 4"})
+        assert response.status_code == 403
+        data = response.json()
+        assert "quota exceeded" in data["error"].lower()
+        assert "3" in data["error"]  # Should mention custom limit
+
+    def test_quota_403_response_format(self, client, user_with_tier, clear_throttle_cache):
+        """Test the format of 403 response when quota exceeded."""
+        user, org = user_with_tier("free")
+        client.force_authenticate(user=user)
+
+        url = reverse("user-api-key-create")
+
+        # Create 5 keys to reach limit
+        for i in range(5):
+            client.post(url, {"name": f"Key {i+1}"})
+
+        # Try to create 6th key
+        response = client.post(url, {"name": "Key 6"})
+
+        assert response.status_code == 403
+        data = response.json()
+
+        # Verify error message structure
+        assert "error" in data
+        assert isinstance(data["error"], str)
+        assert "quota exceeded" in data["error"].lower()
+        # Should mention both current count and limit
+        assert "5" in data["error"]
+
+    def test_quota_enforcement_for_user_without_org(self, client, clear_throttle_cache):
+        """Test that users without org membership get free tier quota."""
+        user = User.objects.create_user(
+            username="no_org_user",
+            email="noorg@example.com",
+            password="testpass123",
+        )
+        client.force_authenticate(user=user)
+
+        url = reverse("user-api-key-create")
+
+        # Should be able to create up to free tier limit (5)
+        for i in range(5):
+            response = client.post(url, {"name": f"Key {i+1}"})
+            assert response.status_code == 201
+
+        # 6th should fail
+        response = client.post(url, {"name": "Key 6"})
+        assert response.status_code == 403

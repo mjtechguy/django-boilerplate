@@ -1,0 +1,211 @@
+{
+  "feature": "Add Rate Limiting and Quotas for API Key Creation",
+  "description": "The UserAPIKeyCreateView in backend/api/views_api_keys.py allows authenticated users to create unlimited API keys without rate limiting or per-user quotas. An attacker with valid credentials could create thousands of API keys, potentially exhausting database resources and complicating security audits and key revocation.",
+  "created_at": "2026-01-04T18:25:21.043Z",
+  "updated_at": "2026-01-04T19:06:57.860Z",
+  "status": "in_progress",
+  "planStatus": "in_progress",
+  "workflow_type": "development",
+  "services_involved": [
+    "backend/api"
+  ],
+  "spec_file": "spec.md",
+  "summary": "Implement rate limiting and per-user quotas for the UserAPIKeyCreateView to prevent resource exhaustion attacks and limit API key proliferation. The solution follows existing patterns from OrgRateThrottle and MFA throttles.",
+  "architecture_decisions": [
+    {
+      "decision": "Per-user API key quota with tier-based limits",
+      "rationale": "Different subscription tiers should have different max API key limits. Using STRIPE_TIER_FEATURES pattern allows easy configuration and matches existing tier-based feature limits."
+    },
+    {
+      "decision": "Dedicated APIKeyCreationThrottle class",
+      "rationale": "Separate throttle class following MFA throttle patterns allows specific rate limits for API key creation (e.g., 5/hour) without affecting global user rates."
+    },
+    {
+      "decision": "Quota check in view before key creation",
+      "rationale": "Checking quota before creating keys is more efficient than creating and then deleting. Return 403 with clear error message when quota exceeded."
+    },
+    {
+      "decision": "Environment-configurable defaults",
+      "rationale": "Make quota and rate limits configurable via environment variables for flexibility across deployments."
+    }
+  ],
+  "phases": [
+    {
+      "id": "phase-1",
+      "name": "Configuration and Settings",
+      "description": "Add configurable settings for API key quotas and rate limits",
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": "1.1",
+          "title": "Add API key quota settings to STRIPE_TIER_FEATURES",
+          "description": "Add max_api_keys setting to each tier in STRIPE_TIER_FEATURES in base.py. Free: 5, Starter: 10, Pro: 25, Enterprise: -1 (unlimited)",
+          "files": [
+            "backend/config/settings/base.py"
+          ],
+          "estimated_complexity": "low",
+          "status": "completed",
+          "notes": "Successfully added max_api_keys setting to all tiers in STRIPE_TIER_FEATURES: Free: 5, Starter: 10, Pro: 25, Enterprise: -1 (unlimited)",
+          "updated_at": "2026-01-04T19:10:35.184456+00:00"
+        },
+        {
+          "id": "1.2",
+          "title": "Add environment variables for API key rate limits",
+          "description": "Add THROTTLE_RATE_API_KEY_CREATE env var to control rate limit for API key creation (default: 5/hour)",
+          "files": [
+            "backend/config/settings/base.py",
+            ".env.example"
+          ],
+          "estimated_complexity": "low",
+          "status": "completed",
+          "notes": "Successfully added THROTTLE_RATE_API_KEY_CREATE environment variable with default value of 5/hour to both .env.example and backend/config/settings/base.py. The rate is now configurable and will be used by the APIKeyCreationThrottle class in the next phase.",
+          "updated_at": "2026-01-04T19:11:59.414600+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-2",
+      "name": "Throttle Implementation",
+      "description": "Create rate limiting throttle class for API key creation",
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": "2.1",
+          "title": "Create APIKeyCreationThrottle class",
+          "description": "Create new throttle class in backend/api/throttling_api_keys.py following MFA throttle patterns. Limits API key creation attempts per user (e.g., 5/hour).",
+          "files": [
+            "backend/api/throttling_api_keys.py"
+          ],
+          "estimated_complexity": "medium",
+          "status": "completed",
+          "notes": "Successfully created APIKeyCreationThrottle class in backend/api/throttling_api_keys.py following MFA throttle patterns. The throttle limits API key creation to 5/hour per user (configurable via THROTTLE_RATE_API_KEY_CREATE). Implements BaseThrottle with cache-based history tracking, proper time window handling, and wait() method for retry timing.",
+          "updated_at": "2026-01-04T19:13:37.583355+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-3",
+      "name": "Quota and View Updates",
+      "description": "Add quota checking and apply throttle to the API key creation view",
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": "3.1",
+          "title": "Create get_user_api_key_quota utility function",
+          "description": "Create utility function to get max API keys for a user based on their org's tier and feature flags. Place in throttling_api_keys.py for cohesion.",
+          "files": [
+            "backend/api/throttling_api_keys.py"
+          ],
+          "estimated_complexity": "medium",
+          "status": "completed",
+          "notes": "Successfully created get_user_api_key_quota() utility function in throttling_api_keys.py. The function retrieves max API keys based on user's org tier, checks feature_flags for custom overrides, falls back to STRIPE_TIER_FEATURES tier defaults, and returns -1 for unlimited (enterprise) or positive int for limit. Follows OrgRateThrottle pattern for consistency. Committed in 66603c5.",
+          "updated_at": "2026-01-04T19:16:02.534920+00:00"
+        },
+        {
+          "id": "3.2",
+          "title": "Update UserAPIKeyCreateView with quota check and throttle",
+          "description": "Add quota check before creating keys (return 403 if exceeded). Add APIKeyCreationThrottle to throttle_classes. Include active key count and limit in response.",
+          "files": [
+            "backend/api/views_api_keys.py"
+          ],
+          "estimated_complexity": "medium",
+          "status": "completed",
+          "notes": "Successfully added quota check and throttling to UserAPIKeyCreateView. The view now:\n- Uses APIKeyCreationThrottle for rate limiting (5/hour configurable)\n- Checks quota before creating keys using get_user_api_key_quota()\n- Returns 403 Forbidden when quota exceeded with clear error message\n- Includes quota info in response (active_keys, max_keys, remaining)\n- Only counts non-revoked keys against quota\n- Handles unlimited keys for enterprise tier (-1)\n- Enhanced logging for quota tracking\nCommitted in 9e694d6.",
+          "updated_at": "2026-01-04T19:18:36.878326+00:00"
+        },
+        {
+          "id": "3.3",
+          "title": "Add quota info to UserAPIKeyListView response",
+          "description": "Include current count, max allowed, and remaining quota in list response to help users understand their limits.",
+          "files": [
+            "backend/api/views_api_keys.py"
+          ],
+          "estimated_complexity": "low",
+          "status": "pending",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "phase-4",
+      "name": "Testing",
+      "description": "Comprehensive tests for rate limiting and quotas",
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": "4.1",
+          "title": "Add tests for API key quota enforcement",
+          "description": "Test that quota limits are enforced per tier, test 403 response when quota exceeded, test quota info in responses.",
+          "files": [
+            "backend/api/tests/test_api_keys.py"
+          ],
+          "estimated_complexity": "medium",
+          "status": "pending",
+          "notes": ""
+        },
+        {
+          "id": "4.2",
+          "title": "Add tests for API key creation throttling",
+          "description": "Test that rate limiting is applied, test 429 response when rate exceeded, test throttle reset.",
+          "files": [
+            "backend/api/tests/test_throttling_api_keys.py"
+          ],
+          "estimated_complexity": "medium",
+          "status": "pending",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "phase-5",
+      "name": "Documentation",
+      "description": "Update documentation for the new limits",
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": "5.1",
+          "title": "Update THROTTLING.md with API key creation limits",
+          "description": "Document the new throttle and quota limits for API key creation in the existing throttling documentation.",
+          "files": [
+            "backend/api/THROTTLING.md"
+          ],
+          "estimated_complexity": "low",
+          "status": "pending",
+          "notes": ""
+        }
+      ]
+    }
+  ],
+  "testing_strategy": {
+    "unit_tests": [
+      "Test APIKeyCreationThrottle allows requests under limit",
+      "Test APIKeyCreationThrottle blocks requests over limit",
+      "Test get_user_api_key_quota returns correct tier limits",
+      "Test get_user_api_key_quota respects feature flag overrides"
+    ],
+    "integration_tests": [
+      "Test full quota enforcement flow - create keys until quota reached",
+      "Test 403 response with appropriate error message when quota exceeded",
+      "Test throttle returns 429 with Retry-After header",
+      "Test different users have independent quotas",
+      "Test revoked keys don't count against quota"
+    ],
+    "manual_tests": [
+      "Verify quota info appears in API key list response",
+      "Verify clear error message when creating key over quota"
+    ]
+  },
+  "rollback_plan": "Remove throttle class from view, revert settings changes. No database migrations involved.",
+  "final_acceptance": [
+    "All tests pass including new quota and throttling tests",
+    "API key creation is limited per tier",
+    "Rate limiting prevents rapid key creation",
+    "Documentation updated"
+  ],
+  "qa_signoff": {
+    "status": "pending",
+    "issues": "",
+    "tests_passed": ""
+  },
+  "last_updated": "2026-01-04T19:18:36.878339+00:00"
+}
