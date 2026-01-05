@@ -15,7 +15,7 @@ from rest_framework.views import APIView
 
 from api.models import Membership, Org
 from api.permissions_org import IsOrgAdminForOrg
-from api.serializers_admin import (
+from api.serializers_admin_memberships import (
     MembershipCreateSerializer,
     MembershipListSerializer,
     MembershipSerializer,

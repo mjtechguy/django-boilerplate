@@ -13,7 +13,7 @@ from rest_framework.views import APIView
 
 from api.models import Membership
 from api.permissions import IsPlatformAdmin
-from api.serializers_admin import (
+from api.serializers_admin_memberships import (
     MembershipCreateSerializer,
     MembershipListSerializer,
     MembershipSerializer,

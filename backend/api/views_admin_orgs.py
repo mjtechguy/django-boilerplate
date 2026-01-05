@@ -14,7 +14,7 @@ from rest_framework.views import APIView
 
 from api.models import Org
 from api.permissions import IsPlatformAdmin
-from api.serializers_admin import (
+from api.serializers_admin_orgs import (
     OrgCreateSerializer,
     OrgListSerializer,
     OrgSerializer,

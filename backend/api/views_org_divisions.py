@@ -14,13 +14,13 @@ from rest_framework.response import Response
 
 from api.models import Division, Team
 from api.permissions_org import IsOrgAdminForOrg, IsDivisionAdminForDivision
-from api.serializers_admin import (
+from api.serializers_admin_divisions import (
     DivisionCreateSerializer,
     DivisionListSerializer,
     DivisionSerializer,
     DivisionUpdateSerializer,
-    TeamListSerializer,
 )
+from api.serializers_admin_teams import TeamListSerializer
 
 logger = structlog.get_logger(__name__)
 
