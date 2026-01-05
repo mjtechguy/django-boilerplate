@@ -53,3 +53,4 @@ frontend/.pnpm-store/
 
 # Celery beat schedule files
 backend/celerybeat-schedule*
+.worktrees/
