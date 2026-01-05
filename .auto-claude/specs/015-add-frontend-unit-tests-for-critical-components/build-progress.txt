@@ -1,0 +1,143 @@
+# Build Progress: Add Frontend Unit Tests for Critical Components
+
+## Overview
+Setting up testing infrastructure and adding comprehensive unit tests for critical frontend components including auth, utilities, hooks, and API clients.
+
+## Current Status: Phase 3 - Custom Hook Tests (In Progress)
+
+### Phase Summary
+| Phase | Name | Subtasks | Status |
+|-------|------|----------|--------|
+| 1 | Testing Infrastructure Setup | 5 | ✅ Complete |
+| 2 | Pure Utility Function Tests | 4 | ✅ Complete |
+| 3 | Custom Hook Tests | 2 | 🔄 In Progress (1/2) |
+| 4 | Auth Hook Tests | 1 | Pending |
+| 5 | Auth Component Tests | 3 | Pending |
+| 6 | API Client Tests | 1 | Pending |
+| 7 | Verification and Documentation | 2 | Pending |
+
+**Total Subtasks: 16 (10 completed, 6 remaining)**
+
+## Codebase Analysis
+
+### Frontend Technology Stack
+- React 19.2.0 with TypeScript
+- Vite 7.2.4 build tool
+- TanStack Router + React Query
+- React Hook Form + Zod validation
+- Tailwind CSS 4 + shadcn/ui components
+- ky HTTP client
+- oidc-client-ts for OIDC auth
+
+### Critical Components Identified for Testing
+
+#### 1. Pure Utilities (easiest to test)
+- `lib/color-utils.ts` - Color conversion (hex to oklch, lightness adjustment)
+- `lib/auth/parse-user.ts` - User parsing, role checking functions
+- `lib/auth/local-storage.ts` - Token storage, JWT parsing, expiration checks
+- `lib/utils/cn.ts` - Class name merging utility
+
+#### 2. Custom Hooks
+- `hooks/use-debounce.ts` - Value debouncing
+- `hooks/use-local-storage.ts` - Persistent storage with React state
+
+#### 3. Auth Hooks
+- `lib/auth/use-auth.ts` - useAuth, useUser, useHasRole, etc.
+
+#### 4. Auth Components
+- `components/auth/login-form.tsx` - Login with validation
+- `components/auth/register-form.tsx` - Registration with validation
+- `components/shared/require-role.tsx` - Role-based rendering
+
+#### 5. API Client
+- `lib/api/client.ts` - API helpers with auth injection
+
+### Testing Stack (To Be Installed)
+- Vitest - Test runner (Vite-native)
+- @testing-library/react - Component testing
+- @testing-library/jest-dom - DOM matchers
+- @testing-library/user-event - User interaction simulation
+- jsdom - Browser environment simulation
+
+---
+
+## Progress Log
+
+### 2026-01-04
+
+#### Phase 1: Testing Infrastructure Setup ✅ COMPLETE
+- [x] 1.1 - Install testing dependencies (vitest, @testing-library/react, jsdom, etc.)
+- [x] 1.2 - Configure Vitest with vitest.config.ts
+- [x] 1.3 - Create test setup file (frontend/src/test/setup.ts)
+- [x] 1.4 - Create reusable test utilities
+  - Created `frontend/src/test/test-utils.tsx` with `renderWithProviders` helper
+  - Created `frontend/src/test/mocks/auth.ts` with comprehensive mock auth utilities
+  - Created `frontend/src/test/test-utils.test.tsx` to verify utilities work correctly
+  - All utilities are type-safe and follow TypeScript best practices
+- [x] 1.5 - Add test scripts to package.json
+  - Added `test` script: runs vitest once and exits (for CI)
+  - Added `test:watch` script: runs vitest in watch mode (for development)
+  - Added `test:ui` script: opens Vitest UI for interactive testing
+  - Added `test:coverage` script: generates coverage report with v8 provider
+
+**Phase 1 Complete!** All testing infrastructure is now in place. Ready to begin Phase 2: Pure Utility Function Tests.
+
+---
+
+#### Phase 2: Pure Utility Function Tests ✅ COMPLETE
+- [x] 2.1 - Test color-utils.ts ✅ COMPLETE
+  - Created comprehensive test suite with 31 test cases
+  - Tests for hexToOklch: format validation, color conversions (black, white, red, green, blue), hex format handling
+  - Tests for adjustLightness: positive/negative offsets, clamping to 0-1 range, preservation of chroma/hue
+  - Tests for getPrimaryForeground: light/dark backgrounds, luminance threshold (0.5), various colors
+  - Edge cases: hex format variations, case insensitivity, boundary values
+  - File: `frontend/src/lib/color-utils.test.ts`
+- [x] 2.2 - Test parse-user.ts ✅ COMPLETE
+  - Created comprehensive test suite with 77 test cases
+  - Tests for parseUser: extracts user info, realm/client roles, org/team IDs, handles missing fields
+  - Tests for hasRole: checks both realm and client roles, handles null user, case-sensitive matching
+  - Tests for hasAnyRole: validates alias functionality, multiple role checking
+  - Tests for hasAllRoles: ensures all roles present, handles empty arrays, duplicate roles
+  - Edge cases: empty strings, special characters, very long role arrays, undefined values
+  - File: `frontend/src/lib/auth/parse-user.test.ts`
+- [x] 2.3 - Test local-storage.ts ✅ COMPLETE
+  - Created comprehensive test suite with 60+ test cases
+  - Tests for storeLocalTokens: stores tokens, calculates expiresAt, handles errors, overwrites existing
+  - Tests for getLocalTokens: retrieves tokens, handles missing/malformed data, error handling
+  - Tests for clearLocalTokens: removes tokens, handles missing tokens, error handling
+  - Tests for isLocalTokenExpired: checks expiration with buffer, handles null tokens, various buffer scenarios
+  - Tests for updateAccessToken: updates token/expiry, preserves refresh token, handles missing tokens
+  - Tests for parseJwtPayload: parses JWT, handles invalid tokens, base64url encoding, nested objects
+  - Edge cases: concurrent operations, long tokens, special characters, negative/zero expiry
+  - File: `frontend/src/lib/auth/local-storage.test.ts`
+- [x] 2.4 - Test cn.ts utility ✅ COMPLETE
+  - Created comprehensive test suite with 60+ test cases
+  - Tests for basic class name merging: single/multiple classes, arrays, empty inputs
+  - Tests for Tailwind class conflicts: padding, margin, colors, width/height, directional padding
+  - Tests for undefined/null/false values: filters falsy values, handles mixed falsy values
+  - Tests for conditional class names: boolean conditions, object syntax, complex conditionals
+  - Tests for complex scenarios: nested arrays, long class strings, whitespace handling
+  - Edge cases: arbitrary values, important modifier (!), responsive modifiers (md:, lg:), state modifiers (hover:, focus:)
+  - File: `frontend/src/lib/utils/cn.test.ts`
+
+**Phase 2 Complete!** All pure utility functions now have comprehensive test coverage. Ready to begin Phase 3: Custom Hook Tests.
+
+---
+
+#### Phase 3: Custom Hook Tests (In Progress)
+- [x] 3.1 - Test use-debounce hook ✅ COMPLETE
+  - Created comprehensive test suite with 60+ test cases
+  - Tests for initial value (7 tests): returns immediately for all types (string, number, boolean, object, array, null, undefined)
+  - Tests for debouncing behavior (4 tests): respects delay, uses default 300ms, cancels previous timeouts on rapid changes
+  - Tests for delay changes (3 tests): handles delay updates, longer to shorter, zero delay
+  - Tests for different value types (8 tests): string, number, boolean, object, array, null, undefined
+  - Tests for cleanup behavior (4 tests): clears timeout on unmount, on value change, on delay change
+  - Tests for edge cases (6 tests): long delays, same value updates, empty strings, negative/decimal delays, complex nested objects
+  - Tests for real-time scenarios (3 tests): search input, window resize, form validation debouncing
+  - Uses vitest fake timers (vi.useFakeTimers, vi.advanceTimersByTime) to precisely control time and test debouncing
+  - File: `frontend/src/hooks/use-debounce.test.ts`
+- [ ] 3.2 - Test use-local-storage hook (Pending)
+
+---
+
+**Next:** 3.2 - Test use-local-storage hook

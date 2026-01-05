@@ -9,15 +9,21 @@
     "lint": "eslint .",
     "preview": "vite preview",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> auto-claude/015-add-frontend-unit-tests-for-critical-components
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage"
+<<<<<<< HEAD
 =======
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run"
 >>>>>>> auto-claude/006-connect-notifications-page-to-real-websocket-event
+=======
+>>>>>>> auto-claude/015-add-frontend-unit-tests-for-critical-components
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.2.8",

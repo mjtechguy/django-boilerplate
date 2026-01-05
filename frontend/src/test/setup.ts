@@ -1,4 +1,7 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> auto-claude/015-add-frontend-unit-tests-for-critical-components
 import "@testing-library/jest-dom/vitest";
 import { cleanup } from "@testing-library/react";
 import { afterEach, vi } from "vitest";
@@ -95,6 +98,7 @@ HTMLElement.prototype.scrollIntoView = vi.fn();
 // afterAll(() => {
 //   console.error = originalError;
 // });
+<<<<<<< HEAD
 =======
 import { expect, afterEach } from "vitest";
 import { cleanup } from "@testing-library/react";
@@ -108,3 +112,5 @@ afterEach(() => {
   cleanup();
 });
 >>>>>>> auto-claude/006-connect-notifications-page-to-real-websocket-event
+=======
+>>>>>>> auto-claude/015-add-frontend-unit-tests-for-critical-components
