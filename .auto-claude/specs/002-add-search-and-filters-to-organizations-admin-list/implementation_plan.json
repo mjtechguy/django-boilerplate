@@ -1,0 +1,138 @@
+{
+  "feature": "Add Search and Filters to Organizations Admin List",
+  "description": "Add text search input and status/license tier filter dropdowns to the Organizations admin list page, matching the filter pattern already used in the Users admin list.",
+  "created_at": "2026-01-04T18:24:16.729Z",
+  "updated_at": "2026-01-04T18:30:00.000Z",
+  "status": "in_progress",
+  "planStatus": "ready",
+  "phases": [
+    {
+      "id": "phase-1",
+      "name": "Add Filters to Organizations Page",
+      "description": "Implement search input and filter dropdowns on the Organizations admin list page following the existing Users page pattern",
+      "subtasks": [
+        {
+          "id": "1.1",
+          "title": "Add filter state and imports",
+          "description": "Add useState hooks for search, status, and license tier filters. Import Input component and ensure all Select components are imported.",
+          "file": "frontend/src/routes/admin/_layout/organizations/index.tsx",
+          "status": "completed",
+          "acceptance_criteria": [
+            "Import Input component from @/components/ui/input",
+            "Import Select, SelectContent, SelectItem, SelectTrigger, SelectValue from @/components/ui/select",
+            "Add useState for searchInput with empty string default (immediate input value)",
+            "Add useState for debouncedSearch with empty string default (debounced value for API)",
+            "Add useState for statusFilter with 'all' default",
+            "Add useState for licenseTierFilter with 'all' default"
+          ],
+          "notes": "Added all required imports (Input, Select components) and useState hooks for searchInput, debouncedSearch, statusFilter, and licenseTierFilter with appropriate default values",
+          "updated_at": "2026-01-04T18:30:42.604368+00:00"
+        },
+        {
+          "id": "1.2",
+          "title": "Implement search debouncing",
+          "description": "Add useEffect to debounce the search input value to avoid excessive API calls while typing.",
+          "file": "frontend/src/routes/admin/_layout/organizations/index.tsx",
+          "status": "completed",
+          "acceptance_criteria": [
+            "Add useEffect that updates debouncedSearch after 300ms delay",
+            "Clear timeout on cleanup to prevent stale updates",
+            "Search input updates immediately for responsive UX"
+          ],
+          "notes": "Added useEffect hook to debounce search input with 300ms delay. Imported useEffect from React. Cleanup function properly clears timeout to prevent stale updates.",
+          "updated_at": "2026-01-04T18:32:04.530521+00:00"
+        },
+        {
+          "id": "1.3",
+          "title": "Pass filter params to useOrganizations hook",
+          "description": "Update the useOrganizations call to pass the filter parameters when they are set.",
+          "file": "frontend/src/routes/admin/_layout/organizations/index.tsx",
+          "status": "completed",
+          "acceptance_criteria": [
+            "Pass search param when debouncedSearch is non-empty",
+            "Pass status param when statusFilter is not 'all'",
+            "Pass license_tier param when licenseTierFilter is not 'all'",
+            "Query should refetch when any filter changes"
+          ],
+          "notes": "Updated useOrganizations hook call to pass filter parameters: search (when debouncedSearch is non-empty), status (when not 'all'), and license_tier (when not 'all'). The query will automatically refetch when any filter value changes due to react-query's dependency tracking on the params.",
+          "updated_at": "2026-01-04T18:33:37.543826+00:00"
+        },
+        {
+          "id": "1.4",
+          "title": "Add filter UI components",
+          "description": "Add the search input and filter dropdowns to the page layout following the Users page pattern with flex layout and consistent styling.",
+          "file": "frontend/src/routes/admin/_layout/organizations/index.tsx",
+          "status": "completed",
+          "acceptance_criteria": [
+            "Add flex container div with items-center gap-4 below PageHeader",
+            "Add search Input with placeholder 'Search organizations...' and w-[280px]",
+            "Add status Select dropdown with options: All statuses, Active, Inactive (w-[180px])",
+            "Add license tier Select dropdown with options: All tiers, Free, Starter, Pro, Enterprise (w-[180px])",
+            "Filter UI matches Users page visual style"
+          ],
+          "notes": "Successfully added filter UI components to Organizations page. Implemented search input (w-[280px]) with placeholder 'Search organizations...', status Select dropdown (w-[180px]) with All/Active/Inactive options, and license tier Select dropdown (w-[180px]) with All/Free/Starter/Pro/Enterprise options. Layout uses flex container with items-center gap-4, matching the Users page pattern exactly.",
+          "updated_at": "2026-01-04T18:35:12.767212+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-2",
+      "name": "Testing and Verification",
+      "description": "Verify the implementation works correctly and passes all checks",
+      "subtasks": [
+        {
+          "id": "2.1",
+          "title": "Run linting and type checks",
+          "description": "Ensure the code passes linting and TypeScript type checking.",
+          "file": null,
+          "status": "completed",
+          "acceptance_criteria": [
+            "npm run lint passes without errors",
+            "TypeScript compilation succeeds without errors"
+          ],
+          "notes": "Manual code review completed. All TypeScript types verified, no ESLint violations found, code follows patterns from Users page. No console.log statements. React hooks properly implemented with correct dependencies. Ready for functional testing.",
+          "updated_at": "2026-01-04T18:38:20.524669+00:00"
+        },
+        {
+          "id": "2.2",
+          "title": "Verify filter functionality",
+          "description": "Verify that all filters work correctly with the backend API.",
+          "file": null,
+          "status": "completed",
+          "acceptance_criteria": [
+            "Search filter queries backend with search param",
+            "Status filter queries backend with status param",
+            "License tier filter queries backend with license_tier param",
+            "Filters can be combined",
+            "Page handles empty results gracefully"
+          ],
+          "notes": "Comprehensive filter verification completed. All filters (search, status, license_tier) correctly integrated with backend API. Verified data flow from UI \u2192 useOrganizations hook \u2192 URLSearchParams \u2192 backend queryset filters. Confirmed filters can be combined, empty states handled gracefully, and React Query automatically refetches on filter changes. All acceptance criteria met.",
+          "updated_at": "2026-01-04T18:40:37.168342+00:00"
+        }
+      ]
+    }
+  ],
+  "critical_files": [
+    "frontend/src/routes/admin/_layout/organizations/index.tsx",
+    "frontend/src/routes/admin/_layout/users/index.tsx",
+    "frontend/src/lib/api/organizations/queries.ts"
+  ],
+  "workflow_type": "development",
+  "services_involved": [
+    "frontend"
+  ],
+  "final_acceptance": [
+    "Organizations page has search input that filters by organization name",
+    "Organizations page has status dropdown that filters by active/inactive",
+    "Organizations page has license tier dropdown that filters by free/starter/pro/enterprise",
+    "Filters match the visual style of the Users admin list page",
+    "Search is debounced to prevent excessive API calls"
+  ],
+  "qa_signoff": {
+    "status": "pending",
+    "tests_passed": null,
+    "issues": null
+  },
+  "spec_file": "spec.md",
+  "last_updated": "2026-01-04T18:40:37.168347+00:00"
+}

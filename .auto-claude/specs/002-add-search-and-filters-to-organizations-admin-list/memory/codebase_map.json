@@ -1,0 +1,10 @@
+{
+  "discovered_files": {
+    "frontend/src/routes/admin/_layout/users/index.tsx": {
+      "description": "Reference implementation for admin list filters - uses useState for filter state, Select components for dropdowns, flex layout with gap-4, and w-[180px] for dropdown widths",
+      "category": "pattern",
+      "discovered_at": "2026-01-04T18:29:28.199010+00:00"
+    }
+  },
+  "last_updated": "2026-01-04T18:29:28.199020+00:00"
+}

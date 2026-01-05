@@ -1,0 +1,12 @@
+{
+  "sourceType": "ideation",
+  "ideationType": "code_improvements",
+  "ideaId": "ci-001",
+  "rationale": "Backend API in views_admin_orgs.py already supports search, status, and license_tier query parameters. Frontend useOrganizations hook already accepts params. The Users page demonstrates the exact filter UI pattern with Select components. Organizations page has no filtering despite backend support.",
+  "category": "feature",
+  "estimatedEffort": "small",
+  "complexity": "small",
+  "affectedFiles": [
+    "frontend/src/routes/admin/_layout/organizations/index.tsx"
+  ]
+}

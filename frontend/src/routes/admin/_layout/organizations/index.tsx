@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { type ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal, Building2 } from "lucide-react";
@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { DataTable, DataTableColumnHeader } from "@/components/shared/data-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,6 +16,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useOrganizations, type OrgListItem } from "@/lib/api/organizations";
 import { EmptyState } from "@/components/shared/empty-state";
 import { CreateOrgDialog } from "./-components/create-org-dialog";
@@ -25,8 +33,25 @@ export const Route = createFileRoute("/admin/_layout/organizations/")({
 });
 
 function OrganizationsPage() {
-  const { data, isLoading } = useOrganizations();
+  const [searchInput, setSearchInput] = useState<string>("");
+  const [debouncedSearch, setDebouncedSearch] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [licenseTierFilter, setLicenseTierFilter] = useState<string>("all");
+  const { data, isLoading } = useOrganizations({
+    search: debouncedSearch || undefined,
+    status: statusFilter === "all" ? undefined : statusFilter,
+    license_tier: licenseTierFilter === "all" ? undefined : licenseTierFilter,
+  });
   const [deactivateOrg, setDeactivateOrg] = useState<{ id: string; name: string } | null>(null);
+
+  // Debounce search input to avoid excessive API calls
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchInput);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   const columns: ColumnDef<OrgListItem>[] = [
     {
@@ -164,6 +189,41 @@ function OrganizationsPage() {
         description="Manage platform organizations and their licenses"
         actions={<CreateOrgDialog />}
       />
+
+      <div className="flex items-center gap-4">
+        <Input
+          placeholder="Search organizations..."
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          className="w-[280px]"
+        />
+        <div className="w-[180px]">
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger>
+              <SelectValue placeholder="All statuses" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All statuses</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="inactive">Inactive</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="w-[180px]">
+          <Select value={licenseTierFilter} onValueChange={setLicenseTierFilter}>
+            <SelectTrigger>
+              <SelectValue placeholder="All tiers" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All tiers</SelectItem>
+              <SelectItem value="free">Free</SelectItem>
+              <SelectItem value="starter">Starter</SelectItem>
+              <SelectItem value="pro">Pro</SelectItem>
+              <SelectItem value="enterprise">Enterprise</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
 
       {!isLoading && (!data?.results || data.results.length === 0) ? (
         <EmptyState
