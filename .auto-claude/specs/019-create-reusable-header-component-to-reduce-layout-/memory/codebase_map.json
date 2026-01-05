@@ -1,0 +1,15 @@
+{
+  "discovered_files": {
+    "frontend/src/components/layouts/": {
+      "description": "Header components (AdminHeader, OrgHeader) share ~70% code duplication. Both use identical patterns for: sticky header wrapper with backdrop blur, search input with icon, ThemeToggle, and NotificationDropdown.",
+      "category": "architecture",
+      "discovered_at": "2026-01-04T19:40:00.493168+00:00"
+    },
+    "frontend/src/components/shared/": {
+      "description": "Shared components folder contains reusable UI components like theme-toggle.tsx and page-header.tsx. New shared header components should be placed in shared/header/ subfolder.",
+      "category": "patterns",
+      "discovered_at": "2026-01-04T19:40:00.505706+00:00"
+    }
+  },
+  "last_updated": "2026-01-04T19:40:00.505709+00:00"
+}
