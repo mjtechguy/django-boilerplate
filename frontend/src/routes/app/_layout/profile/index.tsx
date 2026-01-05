@@ -20,6 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { useUser } from "@/lib/auth";
+import { ApiKeysCard } from "@/components/profile/api-keys-card";
 
 export const Route = createFileRoute("/app/_layout/profile/")({
   component: ProfilePage,
@@ -179,6 +180,9 @@ function ProfilePage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* API Keys */}
+      <ApiKeysCard />
 
       {/* Save Button */}
       <div className="flex justify-end">

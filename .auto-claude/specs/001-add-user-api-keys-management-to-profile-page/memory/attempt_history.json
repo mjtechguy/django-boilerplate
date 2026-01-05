@@ -1,0 +1,105 @@
+{
+  "subtasks": {
+    "1.1": {
+      "attempts": [
+        {
+          "session": 2,
+          "timestamp": "2026-01-04T13:22:29.771971",
+          "approach": "Implemented: Add 'apiKeys' section to the query keys configuration in frontend/src/lib/api/query-keys.ts followin",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "1.2": {
+      "attempts": [
+        {
+          "session": 3,
+          "timestamp": "2026-01-04T13:23:59.284388",
+          "approach": "Implemented: Create frontend/src/lib/api/api-keys/types.ts with Zod schemas for UserAPIKey, CreateAPIKeyInput, Cr",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "1.3": {
+      "attempts": [
+        {
+          "session": 4,
+          "timestamp": "2026-01-04T13:25:07.135777",
+          "approach": "Implemented: Create frontend/src/lib/api/api-keys/queries.ts with React Query hooks: useApiKeys (list), useCreate",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "1.4": {
+      "attempts": [
+        {
+          "session": 5,
+          "timestamp": "2026-01-04T13:26:05.529442",
+          "approach": "Implemented: Create frontend/src/lib/api/api-keys/index.ts that re-exports all types and queries for clean import",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "2.1": {
+      "attempts": [
+        {
+          "session": 6,
+          "timestamp": "2026-01-04T13:28:23.032410",
+          "approach": "Implemented: Create frontend/src/components/profile/api-keys-card.tsx - main Card component that displays the API",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "2.2": {
+      "attempts": [
+        {
+          "session": 7,
+          "timestamp": "2026-01-04T13:30:11.565360",
+          "approach": "Implemented: Create frontend/src/components/profile/create-api-key-dialog.tsx - Dialog for creating a new API key",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "2.3": {
+      "attempts": [
+        {
+          "session": 8,
+          "timestamp": "2026-01-04T13:32:48.137272",
+          "approach": "Implemented: Create frontend/src/components/profile/revoke-api-key-dialog.tsx - Confirmation dialog for revoking ",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "2.4": {
+      "attempts": [
+        {
+          "session": 9,
+          "timestamp": "2026-01-04T13:34:52.446378",
+          "approach": "Implemented: Create frontend/src/components/profile/api-key-list-item.tsx - Individual list item showing API key ",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    }
+  },
+  "stuck_subtasks": [],
+  "metadata": {
+    "created_at": "2026-01-04T13:18:02.931944",
+    "last_updated": "2026-01-04T13:34:52.446400"
+  }
+}

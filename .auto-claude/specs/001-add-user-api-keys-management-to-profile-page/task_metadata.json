@@ -1,0 +1,14 @@
+{
+  "sourceType": "ideation",
+  "ideationType": "code_improvements",
+  "ideaId": "ci-002",
+  "rationale": "Backend has complete API key management (UserAPIKeyListView, UserAPIKeyCreateView, UserAPIKeyRevokeView) at /api/v1/me/api-keys but the frontend profile page only has placeholder UI. The profile page already has Card sections for Security features making this a natural extension.",
+  "category": "feature",
+  "estimatedEffort": "small",
+  "complexity": "small",
+  "affectedFiles": [
+    "frontend/src/routes/app/_layout/profile/index.tsx",
+    "frontend/src/lib/api/api-keys/queries.ts",
+    "frontend/src/lib/api/api-keys/types.ts"
+  ]
+}
