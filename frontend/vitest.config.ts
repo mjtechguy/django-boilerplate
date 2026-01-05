@@ -1,10 +1,17 @@
+<<<<<<< HEAD
 import path from "path";
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
+=======
+import { defineConfig } from "vitest/config";
+import react from "@vitejs/plugin-react";
+import path from "path";
+>>>>>>> auto-claude/006-connect-notifications-page-to-real-websocket-event
 
 export default defineConfig({
   plugins: [react()],
   test: {
+<<<<<<< HEAD
     // Use jsdom environment to simulate browser DOM
     environment: "jsdom",
 
@@ -50,6 +57,12 @@ export default defineConfig({
       ".git",
       ".cache",
     ],
+=======
+    globals: true,
+    environment: "jsdom",
+    setupFiles: ["./src/test/setup.ts"],
+    css: true,
+>>>>>>> auto-claude/006-connect-notifications-page-to-real-websocket-event
   },
   resolve: {
     alias: {

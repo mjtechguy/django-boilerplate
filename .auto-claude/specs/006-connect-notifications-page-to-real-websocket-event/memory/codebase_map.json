@@ -1,0 +1,15 @@
+{
+  "discovered_files": {
+    "frontend/src/lib/websocket/ws-context.tsx": {
+      "description": "WebSocket context already manages notifications state with markAsRead, markAllAsRead, clearNotifications methods. Need to add removeNotification method for delete functionality.",
+      "category": "architecture",
+      "discovered_at": "2026-01-04T19:10:29.881240+00:00"
+    },
+    "frontend/src/routes/app/_layout/notifications/index.tsx": {
+      "description": "Notifications page uses hardcoded mock data. Need to connect to useWebSocket() hook and map notification format (body\u2192message, add relative timestamps).",
+      "category": "implementation",
+      "discovered_at": "2026-01-04T19:10:29.894165+00:00"
+    }
+  },
+  "last_updated": "2026-01-04T19:10:29.894169+00:00"
+}

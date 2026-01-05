@@ -8,10 +8,16 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+<<<<<<< HEAD
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage"
+=======
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run"
+>>>>>>> auto-claude/006-connect-notifications-page-to-real-websocket-event
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.2.8",

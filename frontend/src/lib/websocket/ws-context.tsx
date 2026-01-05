@@ -28,6 +28,7 @@ interface WebSocketContextType {
   unreadCount: number;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
+  removeNotification: (id: string) => void;
   clearNotifications: () => void;
 
   // Org events
@@ -81,19 +82,12 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
         ...prev,
       ]);
     }
-    // Handle connection established
-    if (message.type === "connection.established") {
-      console.log("Notification WebSocket connected:", message);
-    }
   }, []);
 
   // Handle org event messages
   const handleOrgEventMessage = useCallback((message: WSMessage) => {
     if (message.type === "event") {
       setOrgEvents((prev) => [message, ...prev.slice(0, 99)]); // Keep last 100 events
-    }
-    if (message.type === "connection.established") {
-      console.log("Org events WebSocket connected:", message);
     }
   }, []);
 
@@ -178,6 +172,10 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   }, []);
 
+  const removeNotification = useCallback((id: string) => {
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  }, []);
+
   const clearNotifications = useCallback(() => {
     setNotifications([]);
   }, []);
@@ -193,6 +191,7 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
     unreadCount,
     markAsRead,
     markAllAsRead,
+    removeNotification,
     clearNotifications,
     orgEvents,
     clearOrgEvents,

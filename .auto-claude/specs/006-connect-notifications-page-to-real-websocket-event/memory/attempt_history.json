@@ -1,0 +1,105 @@
+{
+  "subtasks": {
+    "1.1": {
+      "attempts": [
+        {
+          "session": 2,
+          "timestamp": "2026-01-04T14:12:20.271309",
+          "approach": "Implemented: Remove the hardcoded mock notifications array and use the useWebSocket() hook to get notifications, ",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "1.2": {
+      "attempts": [
+        {
+          "session": 3,
+          "timestamp": "2026-01-04T14:14:21.391825",
+          "approach": "Implemented: The WebSocket context provides notifications with {id, title, body, timestamp, read} format. Map 'bo",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "2.1": {
+      "attempts": [
+        {
+          "session": 4,
+          "timestamp": "2026-01-04T14:15:51.455875",
+          "approach": "Implemented: Wire the 'Mark as read' button on individual notifications to the markAsRead(id) method from WebSock",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "2.2": {
+      "attempts": [
+        {
+          "session": 5,
+          "timestamp": "2026-01-04T14:17:11.715338",
+          "approach": "Implemented: Wire the 'Mark all read' header button to the markAllAsRead() method from WebSocket context",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "2.3": {
+      "attempts": [
+        {
+          "session": 6,
+          "timestamp": "2026-01-04T14:18:52.477899",
+          "approach": "Implemented: Implement removeNotification method in ws-context.tsx and wire the trash button to remove individual",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "3.1": {
+      "attempts": [
+        {
+          "session": 7,
+          "timestamp": "2026-01-04T14:20:55.104801",
+          "approach": "Implemented: Show a small status badge indicating WebSocket connection state (connected/connecting/disconnected/e",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "3.2": {
+      "attempts": [
+        {
+          "session": 8,
+          "timestamp": "2026-01-04T14:23:03.767969",
+          "approach": "Implemented: Show a friendly empty state when there are no notifications, with appropriate messaging",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "4.1": {
+      "attempts": [
+        {
+          "session": 9,
+          "timestamp": "2026-01-04T14:26:36.940572",
+          "approach": "Implemented: Create tests that verify: rendering with mock WebSocket context, mark as read functionality, mark al",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    }
+  },
+  "stuck_subtasks": [],
+  "metadata": {
+    "created_at": "2026-01-04T14:07:19.256724",
+    "last_updated": "2026-01-04T14:26:36.940590"
+  }
+}

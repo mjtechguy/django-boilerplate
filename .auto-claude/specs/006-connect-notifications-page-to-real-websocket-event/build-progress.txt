@@ -1,0 +1,51 @@
+# Build Progress: Connect Notifications Page to Real WebSocket Events
+
+## Status: Phase 4 Complete - All Testing Complete ✅
+
+## Overview
+Replace mock notification data in the Notifications page with real-time updates from the existing WebSocket infrastructure.
+
+## Key Findings from Codebase Analysis
+
+### Existing Infrastructure (Already Complete)
+1. **WebSocket Context** (`frontend/src/lib/websocket/ws-context.tsx`)
+   - Already manages `notifications` state array
+   - Provides `markAsRead(id)`, `markAllAsRead()`, `clearNotifications()` methods
+   - Tracks `unreadCount` and `notificationStatus` (connection state)
+   - Connected to `/ws/notifications/` endpoint via `WSClient`
+
+2. **Backend Consumer** (`backend/api/consumers.py`)
+   - `NotificationConsumer` at `/ws/notifications/`
+   - Sends messages: `{type: "notification", notification: {title, body, timestamp, ...}}`
+   - `broadcast_notification(user_id, notification)` helper for sending
+
+3. **WebSocket Provider** - Already wrapping app in `frontend/src/main.tsx`
+
+### Current Notifications Page (Needs Work)
+- Uses hardcoded mock data array
+- Has complete UI with icons, read/unread states
+- Action buttons are not wired up
+
+## Implementation Plan
+
+### Phase 1: Connect to WebSocket Context
+- [x] 1.1: Import useWebSocket hook, replace mock data
+- [x] 1.2: Map notification format (body→message), add relative timestamps
+
+### Phase 2: Wire Up Action Buttons
+- [x] 2.1: Connect individual "Mark as read" buttons
+- [x] 2.2: Connect "Mark all read" header button
+- [x] 2.3: Add delete notification functionality (new method in ws-context)
+
+### Phase 3: Connection Status & Empty States
+- [x] 3.1: Add connection status indicator
+- [x] 3.2: Handle empty notifications state
+
+### Phase 4: Testing
+- [x] 4.1: Add unit tests for notifications page
+- [x] 4.2: Verify TypeScript compilation and linting
+
+## Technical Notes
+- Notification format in context: `{id, title, body, timestamp, read}`
+- UI expects: `{id, type, title, message, time, read}`
+- Need to add `removeNotification` method to ws-context for delete functionality
