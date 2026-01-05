@@ -1,0 +1,10 @@
+{
+  "discovered_files": {
+    "backend/api/tasks.py": {
+      "description": "The deliver_webhook task (lines 251-381) makes HTTP POST requests to user-controlled URLs without SSRF protection. Uses requests.post directly with endpoint.url from WebhookEndpoint model.",
+      "category": "security-vulnerability",
+      "discovered_at": "2026-01-04T20:31:20.002819+00:00"
+    }
+  },
+  "last_updated": "2026-01-04T20:31:20.002831+00:00"
+}
