@@ -1,0 +1,15 @@
+{
+  "discovered_files": {
+    "frontend/src/lib/api/audit/queries.ts": {
+      "description": "useAuditLogs hook already accepts AuditFilters parameter - backend filtering is fully implemented, only frontend UI needed",
+      "category": "api",
+      "discovered_at": "2026-01-04T18:30:05.712385+00:00"
+    },
+    "backend/api/views_audit.py": {
+      "description": "Backend supports filters: action, resource_type, actor_id, start_date, end_date, limit, offset via query params",
+      "category": "api",
+      "discovered_at": "2026-01-04T18:30:05.726459+00:00"
+    }
+  },
+  "last_updated": "2026-01-04T18:30:05.726462+00:00"
+}

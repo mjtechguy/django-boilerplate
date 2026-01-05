@@ -1,0 +1,13 @@
+{
+  "sourceType": "ideation",
+  "ideationType": "code_improvements",
+  "ideaId": "ci-002",
+  "rationale": "The Audit Logs page has a Filter button in the UI but it does nothing when clicked. Backend views_audit.py already supports action, resource_type, actor_id, start_date, end_date filters via query params. Only the filter UI and state management are missing.",
+  "category": "feature",
+  "estimatedEffort": "trivial",
+  "complexity": "trivial",
+  "affectedFiles": [
+    "frontend/src/routes/admin/_layout/audit/index.tsx",
+    "frontend/src/lib/api/audit/queries.ts"
+  ]
+}
