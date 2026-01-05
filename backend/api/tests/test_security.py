@@ -139,6 +139,21 @@ class TestSecuritySettings:
         assert hasattr(settings, "CSP_FRAME_ANCESTORS")
         assert settings.CSP_FRAME_ANCESTORS == ("'none'",)
 
+    def test_csp_style_src_no_unsafe_inline(self):
+        """CSP_STYLE_SRC should not contain 'unsafe-inline'."""
+        from django.conf import settings
+
+        assert hasattr(settings, "CSP_STYLE_SRC")
+        assert "'unsafe-inline'" not in settings.CSP_STYLE_SRC
+
+    def test_csp_exclude_url_prefixes_configured(self):
+        """CSP_EXCLUDE_URL_PREFIXES should be configured with admin paths."""
+        from django.conf import settings
+
+        assert hasattr(settings, "CSP_EXCLUDE_URL_PREFIXES")
+        assert "/admin/" in settings.CSP_EXCLUDE_URL_PREFIXES
+        assert "/cms/" in settings.CSP_EXCLUDE_URL_PREFIXES
+
     def test_cors_settings_present(self):
         """CORS settings should be configured."""
         from django.conf import settings
@@ -211,6 +226,10 @@ class TestProductionSecuritySettings:
         assert "SESSION_COOKIE_SECURE = True" in content
         assert "CSRF_COOKIE_SECURE = True" in content
         assert "DEBUG = False" in content
+
+        # CSP_STYLE_SRC should NOT be overridden in production.py
+        # (it's properly configured in base.py now)
+        assert "CSP_STYLE_SRC = " not in content
 
     def test_production_settings_has_secret_key_check(self):
         """Production settings should fail if SECRET_KEY is default."""

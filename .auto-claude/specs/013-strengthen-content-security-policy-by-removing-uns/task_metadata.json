@@ -1,0 +1,10 @@
+{
+  "sourceType": "ideation",
+  "ideationType": "security_hardening",
+  "ideaId": "sec-004",
+  "rationale": "Content Security Policy is a critical defense-in-depth measure against XSS attacks. The 'unsafe-inline' directive for styles can be exploited by attackers to exfiltrate data using CSS-based attacks (e.g., attribute selectors to read input values character by character). Modern applications can use CSP nonces or hash-based allowlisting instead.",
+  "category": "security",
+  "securitySeverity": "medium",
+  "impact": "medium",
+  "priority": "medium"
+}

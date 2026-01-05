@@ -43,9 +43,9 @@ X_FRAME_OPTIONS = "DENY"
 # Tighten CORS in production (should be explicit list of allowed origins)
 # CORS_ALLOWED_ORIGINS should be set via environment variable to exact origins
 
-# Tighten CSP in production
-# Override any 'unsafe-inline' if your frontend doesn't require it
-CSP_STYLE_SRC = ("'self'",)  # Remove 'unsafe-inline' if possible
+# CSP is properly configured in base.py with 'unsafe-inline' removed from CSP_STYLE_SRC.
+# Admin paths (/admin/, /cms/) are excluded via CSP_EXCLUDE_URL_PREFIXES to allow
+# Django admin and Wagtail CMS inline styles while maintaining strong CSP for the main app.
 
 # Logging - ensure no sensitive data in production logs
 AXES_VERBOSE = False  # Don't log verbose info in production
