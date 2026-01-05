@@ -1,0 +1,12 @@
+{
+  "sourceType": "ideation",
+  "ideationType": "ui_ux_improvements",
+  "ideaId": "uiux-004",
+  "rationale": "Consistent visual patterns improve form readability and create a more polished, professional appearance",
+  "category": "ui_ux",
+  "uiuxCategory": "visual",
+  "affectedFiles": [
+    "frontend/src/components/auth/register-form.tsx"
+  ],
+  "problemSolved": "First name input has `<User className=\"absolute left-3...\" />` with `className=\"pl-10\"` padding, but last name input has no icon and no left padding, causing misaligned input text between the two fields"
+}
